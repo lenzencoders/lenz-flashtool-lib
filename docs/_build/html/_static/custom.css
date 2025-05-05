@@ -1,0 +1,140 @@
+
+/* docs/_static/custom.css */
+/* Add gradient to headers */
+h1, h2, h3 {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(90deg, #6c034e, #3f90c9); /* Purple to blue gradient */
+    display: inline-block; /* Needed for gradient to work properly */
+}
+
+/* Dark mode gradient */
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3 {
+    # background-image: linear-gradient(90deg, #4cb5ff, #912583); /* Blue to purple gradient */
+    # background-image: linear-gradient(102deg, #e5b6ff -1%, #8e9fef 99%);
+    background-image: linear-gradient(98deg, #2aa2c1, #aebcff);
+
+}
+
+/* Fallback for browsers that don't support gradient text */
+@supports not (-webkit-background-clip: text) {
+    h1, h2, h3 {
+        color: #6c034e; /* Fallback to primary color */
+    }
+    html[data-theme="dark"] h1,
+    html[data-theme="dark"] h2,
+    html[data-theme="dark"] h3 {
+        color: #4cb5ff; /* Fallback for dark mode */
+    }
+}
+
+html[data-theme="light"] {
+    --pst-color-primary: #6c034e;
+}
+
+html[data-theme="dark"] {
+    --pst-color-primary: #4cb5ff;
+}
+
+/* Style for code blocks to make them stand out */
+.highlight {
+    background: #f8f8f8; /* Light gray background */
+    padding: 10px;
+    margin: 10px 0;
+    font-family: 'Fira Code', 'Consolas', monospace; /* Modern monospace font */
+}
+
+.sig-name {
+    color: #912583;
+}
+
+html[data-theme="dark"] dt:target, span.highlighted {
+    background-color: #2d2337;
+}
+
+html[data-theme="dark"] .highlight {
+    background: #14181e; /* Dark background for dark mode */
+}
+
+/* Ensure code text is readable */
+.highlight pre {
+    color: #333333; /* Dark text for light mode */
+    line-height: 1.5;
+}
+
+html[data-theme="dark"] .highlight pre {
+    color: #f8f8f8; /* Light text for dark mode */
+}
+
+/* Accent specific Pygments classes for keywords, strings, etc. */
+.highlight .k { color: #D81B60; font-weight: bold; } /* Keywords (e.g., def, class) */
+.highlight .s { color: #43A047; } /* Strings */
+.highlight .c { color: #757575; font-style: italic; } /* Comments */
+.highlight .n { color: #0277BD; } /* Names (e.g., variables) */
+
+html[data-theme="dark"] .highlight .k { color: #F06292; } /* Keywords in dark mode */
+html[data-theme="dark"] .highlight .s { color: #66BB6A; } /* Strings in dark mode */
+html[data-theme="dark"] .highlight .c { color: #B0BEC5; } /* Comments in dark mode */
+html[data-theme="dark"] .highlight .n { color: #4FC3F7; } /* Names in dark mode */
+
+a {
+    transition: color 0.3s ease;
+    color: #3f90c9;
+}
+a>code {
+    color: #3f90c9;
+}
+a:hover {
+    color: #FFA726; /* Warm orange on hover */
+    text-decoration: underline; /* Standard underline */
+}
+
+/* Sidebar link styles */
+.bd-sidebar .nav-depth-0 .nav-item .nav-link {
+    font-weight: bold;
+    color: #37474F; /* Dark slate gray for light mode */
+    border-left: 4px solid #00b0ff; /* Blue sidebar highlight */
+}
+
+html[data-theme="dark"] .bd-sidebar .nav-depth-0 .nav-item .nav-link {
+    color: #CFD8DC; /* Soft off-white for dark mode */
+    border-left: 4px solid #4fc3f7; /* Light blue for dark mode */
+}
+
+.bd-sidebar .nav-depth-0 .nav-item .nav-link:hover {
+    color: #FFA726; /* Warm orange on hover */
+}
+
+/* Ensure sidebar visibility */
+.bd-sidebar {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Hide 'Table of Contents' heading in sidebar */
+.bd-sidebar .nav > li > a.nav-link.toc-heading {
+    display: none;
+}
+.bd-sidebar-primary h3 {
+    display: none;
+}
+nav.bd-links p.bd-links__title, nav.bd-links p.caption {
+    display: none;
+}
+
+a.current.reference.internal {
+    background-color: transparent;
+    //box-shadow: inset max(3px, .1875rem, .12em) 0 0 var(--pst-color-primary);
+    color: var(--pst-color-primary);
+    font-weight: 600;
+}
+html[data-theme="light"] .highlight .c1 {
+    color: #268510;
+}
+em {
+    font-style: normal;
+}
+

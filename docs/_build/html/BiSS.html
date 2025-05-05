@@ -1,0 +1,1177 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>BiSS Module &#8212; lenz-flashtool 0.1.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=ce421a57" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'BiSS';</script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="EncProc Module" href="EncProc.html" />
+    <link rel="prev" title="FlashTool Module" href="FlashTool.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">lenz-flashtool</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api.html">
+    lenz-flashtool Library API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="FlashTool.html">
+    FlashTool Module
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="#">
+    BiSS Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="EncProc.html">
+    EncProc Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="utils.html">
+    utils Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="testing.html">
+    testing Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="BiSS%20CLI.html">
+    BiSS CLI Module
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api.html">
+    lenz-flashtool Library API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="FlashTool.html">
+    FlashTool Module
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    BiSS Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="EncProc.html">
+    EncProc Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="utils.html">
+    utils Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="testing.html">
+    testing Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="BiSS%20CLI.html">
+    BiSS CLI Module
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<h3><a href="index.html">Table of Contents</a></h3>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="api.html">lenz-flashtool Library API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FlashTool.html">FlashTool Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BiSS Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.biss.BiSSBank"><code class="docutils literal notranslate"><span class="pre">BiSSBank</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.biss.biss_crc6_calc"><code class="docutils literal notranslate"><span class="pre">biss_crc6_calc()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.biss.interpret_biss_commandstate"><code class="docutils literal notranslate"><span class="pre">interpret_biss_commandstate()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.biss.interpret_error_flags"><code class="docutils literal notranslate"><span class="pre">interpret_error_flags()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="EncProc.html">EncProc Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">testing Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BiSS%20CLI.html">BiSS CLI Module</a></li>
+</ul>
+</div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">BiSS Module</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-lenz_flashtool.biss">
+<span id="biss-module"></span><h1>BiSS Module<a class="headerlink" href="#module-lenz_flashtool.biss" title="Link to this heading">#</a></h1>
+<p>LENZ BiSS Protocol Implementation</p>
+<p>Provides BiSS encoder protocol standarts and utilities.</p>
+<dl class="simple">
+<dt>Author:</dt><dd><p>LENZ ENCODERS, 2020-2025</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lenz_flashtool.biss.</span></span><span class="sig-name descname"><span class="pre">BiSSBank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
+<p>Enumeration of BiSS C encoder register indices and banking constants.</p>
+<p>Defines indices for programmable registers (0-63), fixed-address registers (64-127),
+and constants for the banking system. Each constant represents either a register index
+or a size/bank definition used for device configuration, operation, and data access.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.BANKS_PER_PAGE">
+<span class="sig-name descname"><span class="pre">BANKS_PER_PAGE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">32</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.BANKS_PER_PAGE" title="Link to this definition">#</a></dt>
+<dd><p>Number of banks per page.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.BISS_BANK_SERV">
+<span class="sig-name descname"><span class="pre">BISS_BANK_SERV</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.BISS_BANK_SERV" title="Link to this definition">#</a></dt>
+<dd><p>Service bank index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.BISS_USERBANK_END">
+<span class="sig-name descname"><span class="pre">BISS_USERBANK_END</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">37</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.BISS_USERBANK_END" title="Link to this definition">#</a></dt>
+<dd><p>End index of user banks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.BISS_USERBANK_START">
+<span class="sig-name descname"><span class="pre">BISS_USERBANK_START</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.BISS_USERBANK_START" title="Link to this definition">#</a></dt>
+<dd><p>Start index of user banks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.BOOTLOADER_VER_REG_INDEX">
+<span class="sig-name descname"><span class="pre">BOOTLOADER_VER_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">108</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.BOOTLOADER_VER_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Bootloader version register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.BOOTLOADER_VER_SIZE">
+<span class="sig-name descname"><span class="pre">BOOTLOADER_VER_SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.BOOTLOADER_VER_SIZE" title="Link to this definition">#</a></dt>
+<dd><p>Bootloader version size in bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.BSEL_REG_INDEX">
+<span class="sig-name descname"><span class="pre">BSEL_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">64</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.BSEL_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Bank select register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.CMD_REG_INDEX">
+<span class="sig-name descname"><span class="pre">CMD_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">72</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.CMD_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Command register index - 2 bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.CMD_STATE_FLAG_REG_INDEX">
+<span class="sig-name descname"><span class="pre">CMD_STATE_FLAG_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">97</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.CMD_STATE_FLAG_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Command state flag register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.CRC32_REG_INDEX">
+<span class="sig-name descname"><span class="pre">CRC32_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">12</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.CRC32_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Index for the CRC32 register for data integrity checks while programming.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.CRC_ARRAY_REG_INDEX">
+<span class="sig-name descname"><span class="pre">CRC_ARRAY_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">24</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.CRC_ARRAY_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>CRC array programming register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.DEVID_CRC_REG_INDEX">
+<span class="sig-name descname"><span class="pre">DEVID_CRC_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">27</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.DEVID_CRC_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Device ID CRC programming register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.DEVID_H_REG_INDEX">
+<span class="sig-name descname"><span class="pre">DEVID_H_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">58</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.DEVID_H_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Higher part of device ID programming register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.DEVID_L_REG_INDEX">
+<span class="sig-name descname"><span class="pre">DEVID_L_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">54</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.DEVID_L_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Lower part of device ID programming register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.DEV_ID_H_REG_INDEX">
+<span class="sig-name descname"><span class="pre">DEV_ID_H_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">120</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.DEV_ID_H_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Device ID (high part) register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.DEV_ID_H_SIZE">
+<span class="sig-name descname"><span class="pre">DEV_ID_H_SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.DEV_ID_H_SIZE" title="Link to this definition">#</a></dt>
+<dd><p>Device ID (high part) size in bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.DEV_ID_L_REG_INDEX">
+<span class="sig-name descname"><span class="pre">DEV_ID_L_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">124</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.DEV_ID_L_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Device ID (low part) register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.DEV_ID_L_SIZE">
+<span class="sig-name descname"><span class="pre">DEV_ID_L_SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.DEV_ID_L_SIZE" title="Link to this definition">#</a></dt>
+<dd><p>Device ID (low part) size in bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.DEV_SN_REG_INDEX">
+<span class="sig-name descname"><span class="pre">DEV_SN_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">68</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.DEV_SN_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Device serial number index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.DEV_SN_SIZE">
+<span class="sig-name descname"><span class="pre">DEV_SN_SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.DEV_SN_SIZE" title="Link to this definition">#</a></dt>
+<dd><p>Device serial number size in bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.ENC_DATA_REG_INDEX">
+<span class="sig-name descname"><span class="pre">ENC_DATA_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">74</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.ENC_DATA_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Encoder data register index (calibration state, temperature, Vcc, Signal Mod).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.FIRSTHARMAMP_REG_INDEX">
+<span class="sig-name descname"><span class="pre">FIRSTHARMAMP_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">80</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.FIRSTHARMAMP_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>First harmonic amplitude register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.FIRSTHARMANGLE_REG_INDEX">
+<span class="sig-name descname"><span class="pre">FIRSTHARMANGLE_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">82</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.FIRSTHARMANGLE_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>First harmonic angle register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.FIXED_ADDRESSES_START_INDEX">
+<span class="sig-name descname"><span class="pre">FIXED_ADDRESSES_START_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">64</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.FIXED_ADDRESSES_START_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Start index of fixed address registers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.FIXED_BANK_SIZE">
+<span class="sig-name descname"><span class="pre">FIXED_BANK_SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">64</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.FIXED_BANK_SIZE" title="Link to this definition">#</a></dt>
+<dd><p>Fixed bank size in bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.KEY_CRC_REG_INDEX">
+<span class="sig-name descname"><span class="pre">KEY_CRC_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">26</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.KEY_CRC_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Key CRC programming register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.KEY_REG_INDEX">
+<span class="sig-name descname"><span class="pre">KEY_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">28</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.KEY_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Key programming register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.MFG_ID_SIZE">
+<span class="sig-name descname"><span class="pre">MFG_ID_SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.MFG_ID_SIZE" title="Link to this definition">#</a></dt>
+<dd><p>Manufacturer ID size in bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.MFG_REG_INDEX">
+<span class="sig-name descname"><span class="pre">MFG_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">116</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.MFG_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Manufacturing date register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.MFG_REG_SIZE">
+<span class="sig-name descname"><span class="pre">MFG_REG_SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.MFG_REG_SIZE" title="Link to this definition">#</a></dt>
+<dd><p>Manufacturer date register size in bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.MFR_ID_REG_INDEX">
+<span class="sig-name descname"><span class="pre">MFR_ID_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">126</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.MFR_ID_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Manufacturer ID register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.NONCE_REG_INDEX">
+<span class="sig-name descname"><span class="pre">NONCE_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.NONCE_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Index for the nonce register while programming.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.PAGENUM_REG_INDEX">
+<span class="sig-name descname"><span class="pre">PAGENUM_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">24</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.PAGENUM_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Page number programming register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.PRODDATE_REG_INDEX">
+<span class="sig-name descname"><span class="pre">PRODDATE_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.PRODDATE_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Index for the production date programming register.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.PROGVER_REG_INDEX">
+<span class="sig-name descname"><span class="pre">PROGVER_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">112</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.PROGVER_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Program version register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.PROGVER_REG_SIZE">
+<span class="sig-name descname"><span class="pre">PROGVER_REG_SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.PROGVER_REG_SIZE" title="Link to this definition">#</a></dt>
+<dd><p>Program version size in bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.REGISTER_PLUS_BSEL_SIZE">
+<span class="sig-name descname"><span class="pre">REGISTER_PLUS_BSEL_SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">65</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.REGISTER_PLUS_BSEL_SIZE" title="Link to this definition">#</a></dt>
+<dd><p>Size of each bank in bytes (64) plus BSEL reg size (1) (data + bank number).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.REGISTER_PLUS_FIXED_BANK_SIZE">
+<span class="sig-name descname"><span class="pre">REGISTER_PLUS_FIXED_BANK_SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">128</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.REGISTER_PLUS_FIXED_BANK_SIZE" title="Link to this definition">#</a></dt>
+<dd><p>Register bank (64) and Fixed Addresses (64) size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.REV_RES_REG_INDEX">
+<span class="sig-name descname"><span class="pre">REV_RES_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">84</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.REV_RES_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Revolution and resolution register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.SERIALNUM_CRC_REG_INDEX">
+<span class="sig-name descname"><span class="pre">SERIALNUM_CRC_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">25</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.SERIALNUM_CRC_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Serial number CRC programming register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.SERIALNUM_REG_INDEX">
+<span class="sig-name descname"><span class="pre">SERIALNUM_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.SERIALNUM_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Index for the serial number programming register.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.SHIFT_REG_INDEX">
+<span class="sig-name descname"><span class="pre">SHIFT_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">85</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.SHIFT_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>Shift register index (3 bytes for 180° shift).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.BiSSBank.STATE_FLAG_REG_INDEX">
+<span class="sig-name descname"><span class="pre">STATE_FLAG_REG_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">98</span></em><a class="headerlink" href="#lenz_flashtool.biss.BiSSBank.STATE_FLAG_REG_INDEX" title="Link to this definition">#</a></dt>
+<dd><p>State flag register index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.biss_crc6_calc">
+<span class="sig-prename descclassname"><span class="pre">lenz_flashtool.biss.</span></span><span class="sig-name descname"><span class="pre">biss_crc6_calc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.biss.biss_crc6_calc" title="Link to this definition">#</a></dt>
+<dd><p>Calculate the BiSS C CRC6 checksum for a 32-bit data word.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>int</em>) – A 32-bit integer representing the data for which to calculate the CRC6 checksum.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated 6-bit CRC checksum.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.interpret_biss_commandstate">
+<span class="sig-prename descclassname"><span class="pre">lenz_flashtool.biss.</span></span><span class="sig-name descname"><span class="pre">interpret_biss_commandstate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.biss.interpret_biss_commandstate" title="Link to this definition">#</a></dt>
+<dd><p>Interpret a given integer as a BiSS command state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>state_int</strong> (<em>int</em>) – An integer representing the current command state.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list containing the description of the current command state.</dt><dd><p>If the state is not recognized, returns [“Unknown state”].</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lenz_flashtool.biss.interpret_error_flags">
+<span class="sig-prename descclassname"><span class="pre">lenz_flashtool.biss.</span></span><span class="sig-name descname"><span class="pre">interpret_error_flags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.biss.interpret_error_flags" title="Link to this definition">#</a></dt>
+<dd><p>Interpret a given integer as a set of error flags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>error_int</strong> (<em>int</em>) – An integer where each bit represents a different error flag.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of active error flags based on the set bits in the input integer.</dt><dd><p>If no flags are set, returns [“No error flags set”].</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="FlashTool.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">FlashTool Module</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="EncProc.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">EncProc Module</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank"><code class="docutils literal notranslate"><span class="pre">BiSSBank</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.BANKS_PER_PAGE"><code class="docutils literal notranslate"><span class="pre">BiSSBank.BANKS_PER_PAGE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.BISS_BANK_SERV"><code class="docutils literal notranslate"><span class="pre">BiSSBank.BISS_BANK_SERV</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.BISS_USERBANK_END"><code class="docutils literal notranslate"><span class="pre">BiSSBank.BISS_USERBANK_END</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.BISS_USERBANK_START"><code class="docutils literal notranslate"><span class="pre">BiSSBank.BISS_USERBANK_START</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.BOOTLOADER_VER_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.BOOTLOADER_VER_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.BOOTLOADER_VER_SIZE"><code class="docutils literal notranslate"><span class="pre">BiSSBank.BOOTLOADER_VER_SIZE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.BSEL_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.BSEL_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.CMD_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.CMD_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.CMD_STATE_FLAG_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.CMD_STATE_FLAG_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.CRC32_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.CRC32_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.CRC_ARRAY_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.CRC_ARRAY_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.DEVID_CRC_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.DEVID_CRC_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.DEVID_H_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.DEVID_H_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.DEVID_L_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.DEVID_L_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.DEV_ID_H_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.DEV_ID_H_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.DEV_ID_H_SIZE"><code class="docutils literal notranslate"><span class="pre">BiSSBank.DEV_ID_H_SIZE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.DEV_ID_L_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.DEV_ID_L_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.DEV_ID_L_SIZE"><code class="docutils literal notranslate"><span class="pre">BiSSBank.DEV_ID_L_SIZE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.DEV_SN_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.DEV_SN_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.DEV_SN_SIZE"><code class="docutils literal notranslate"><span class="pre">BiSSBank.DEV_SN_SIZE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.ENC_DATA_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.ENC_DATA_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.FIRSTHARMAMP_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.FIRSTHARMAMP_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.FIRSTHARMANGLE_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.FIRSTHARMANGLE_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.FIXED_ADDRESSES_START_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.FIXED_ADDRESSES_START_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.FIXED_BANK_SIZE"><code class="docutils literal notranslate"><span class="pre">BiSSBank.FIXED_BANK_SIZE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.KEY_CRC_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.KEY_CRC_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.KEY_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.KEY_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.MFG_ID_SIZE"><code class="docutils literal notranslate"><span class="pre">BiSSBank.MFG_ID_SIZE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.MFG_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.MFG_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.MFG_REG_SIZE"><code class="docutils literal notranslate"><span class="pre">BiSSBank.MFG_REG_SIZE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.MFR_ID_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.MFR_ID_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.NONCE_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.NONCE_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.PAGENUM_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.PAGENUM_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.PRODDATE_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.PRODDATE_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.PROGVER_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.PROGVER_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.PROGVER_REG_SIZE"><code class="docutils literal notranslate"><span class="pre">BiSSBank.PROGVER_REG_SIZE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.REGISTER_PLUS_BSEL_SIZE"><code class="docutils literal notranslate"><span class="pre">BiSSBank.REGISTER_PLUS_BSEL_SIZE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.REGISTER_PLUS_FIXED_BANK_SIZE"><code class="docutils literal notranslate"><span class="pre">BiSSBank.REGISTER_PLUS_FIXED_BANK_SIZE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.REV_RES_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.REV_RES_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.SERIALNUM_CRC_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.SERIALNUM_CRC_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.SERIALNUM_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.SERIALNUM_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.SHIFT_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.SHIFT_REG_INDEX</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.BiSSBank.STATE_FLAG_REG_INDEX"><code class="docutils literal notranslate"><span class="pre">BiSSBank.STATE_FLAG_REG_INDEX</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.biss_crc6_calc"><code class="docutils literal notranslate"><span class="pre">biss_crc6_calc()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.interpret_biss_commandstate"><code class="docutils literal notranslate"><span class="pre">interpret_biss_commandstate()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss.interpret_error_flags"><code class="docutils literal notranslate"><span class="pre">interpret_error_flags()</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/BiSS.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, LENZ Encoders.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

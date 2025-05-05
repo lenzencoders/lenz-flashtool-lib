@@ -1,0 +1,935 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>EncProc Module &#8212; lenz-flashtool 0.1.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=ce421a57" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'EncProc';</script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils Module" href="utils.html" />
+    <link rel="prev" title="BiSS Module" href="BiSS.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">lenz-flashtool</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api.html">
+    lenz-flashtool Library API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="FlashTool.html">
+    FlashTool Module
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="BiSS.html">
+    BiSS Module
+  </a>
+</li>
+
+
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="#">
+    EncProc Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="utils.html">
+    utils Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="testing.html">
+    testing Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="BiSS%20CLI.html">
+    BiSS CLI Module
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api.html">
+    lenz-flashtool Library API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="FlashTool.html">
+    FlashTool Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="BiSS.html">
+    BiSS Module
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    EncProc Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="utils.html">
+    utils Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="testing.html">
+    testing Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="BiSS%20CLI.html">
+    BiSS CLI Module
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<h3><a href="index.html">Table of Contents</a></h3>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="api.html">lenz-flashtool Library API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FlashTool.html">FlashTool Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BiSS.html">BiSS Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">EncProc Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.encproc.LenzEncoderProcessor"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">testing Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BiSS%20CLI.html">BiSS CLI Module</a></li>
+</ul>
+</div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">EncProc Module</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-lenz_flashtool.encproc">
+<span id="encproc-module"></span><h1>EncProc Module<a class="headerlink" href="#module-lenz_flashtool.encproc" title="Link to this heading">#</a></h1>
+<p>LENZ Encoder Signal Processing Library</p>
+<p>This library provides a comprehensive suite of signal processing functions for high-precision
+LENZ encoder systems, designed to enhance the accuracy of position measurements in applications
+such as motor control, robotics, and industrial automation. It includes advanced algorithms for
+differential signal computation, harmonic analysis, noise filtering, and calibration table
+generation, with specialized support for motor-driven systems to suppress harmonic errors.</p>
+<p>Key Features:</p>
+<ul class="simple">
+<li><p>Differential signal computation between paired encoder signals for error analysis.</p></li>
+<li><p>Advanced filtering techniques, including bidirectional moving average and custom smoothing filters.</p></li>
+<li><p>Harmonic analysis using Fast Fourier Transform (FFT) to identify and quantify periodic errors.</p></li>
+<li><p>Generation of difference compensation tables for systematic error correction.</p></li>
+<li><p>Motor harmonic suppression for enhanced accuracy in motor-driven encoder systems.</p></li>
+<li><p>Support for 24-bit encoder data with proper handling of wrap-around effects.</p></li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li><p>The library assumes 24-bit encoder data (0 to 2^24 - 1) but can be adapted for other resolutions.</p></li>
+<li><p>Functions are designed for static use, requiring no instantiation of <cite>LenzEncoderProcessor</cite>.</p></li>
+<li><p>Calibration routines (<cite>lenz_cal</cite>, <cite>lenz_cal_motor_harm</cite>) are optimized for high-precision
+applications but may require tuning of parameters like <cite>coarse_red</cite> and <cite>motor_harm</cite> for
+specific use cases.</p></li>
+<li><p>The <cite>diff_table_gen_motor_harm</cite> function includes motor harmonic suppression, which is critical
+for motor-driven systems but requires a valid <cite>motor_harm</cite> value.</p></li>
+</ul>
+<dl class="simple">
+<dt>Author:</dt><dd><p>LENZ ENCODERS, 2020-2025</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lenz_flashtool.encproc.</span></span><span class="sig-name descname"><span class="pre">LenzEncoderProcessor</span></span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Main class for LENZ encoder signal processing operations.</p>
+<p>Provides static methods for differential signal calculation, compensation table generation,
+harmonic analysis, and calibration routines for LENZ encoders.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.analyze_harmonics">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">analyze_harmonics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff_table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.analyze_harmonics" title="Link to this definition">#</a></dt>
+<dd><p>Analyzes frequency components of the difference table using FFT.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>diff_table</strong> (<em>np.array</em>) – Difference table array.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Amplitude of first harmonic</p></li>
+<li><p>Angle of first harmonic</p></li>
+<li><p>Full FFT result</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple containing</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.as_filt">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">as_filt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.as_filt" title="Link to this definition">#</a></dt>
+<dd><p>Applies a custom filter to smooth the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.array</em>) – Input data to filter.</p></li>
+<li><p><strong>depth</strong> (<em>int</em>) – Filter depth parameter</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Filtered data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.calc_diff">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">calc_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.calc_diff" title="Link to this definition">#</a></dt>
+<dd><p>Computes the differential signal between two encoder readings with scaling.</p>
+<p>This function calculates the difference between two encoder signals, applies mean centering,
+and scales the result according to the coarse reduction factor. The output represents
+the relative error between the two encoders, normalized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder_1</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int32</span></code></span>) – First encoder readings array (24-bit values)</p></li>
+<li><p><strong>encoder_2</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int32</span></code></span>) – Second encoder readings array (24-bit values)</p></li>
+<li><p><strong>coarse_red</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Scaling factor for coarse reduction (typically 2^11 for 24-bit encoders)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Differential signal array with mean removed and scaled by coarse_red/2048</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.clip_to_int8">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clip_to_int8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.clip_to_int8" title="Link to this definition">#</a></dt>
+<dd><p>Clips and converts data to 8-bit integers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>np.array</em>) – Input data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Clipped and converted data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.comp_diff">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">comp_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff_table_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.comp_diff" title="Link to this definition">#</a></dt>
+<dd><p>Compensates encoder data using a difference table for error correction.</p>
+<p>This function applies a compensation table to raw encoder data to correct
+systematic errors, using linear interpolation between table entries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder_in</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Raw encoder input data (24-bit values as int32)</p></li>
+<li><p><strong>diff_table_in</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Difference compensation table (int16 values)</p></li>
+<li><p><strong>coarse_red</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Coarse reduction factor (scaling parameter)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Compensated encoder data (24-bit values as int32)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.compute_difftable">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_difftable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lenz_fix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.compute_difftable" title="Link to this definition">#</a></dt>
+<dd><p>Computes a difference compensation table by averaging error values at each encoder position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>diff</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Array of measured error values (difference between reference and raw encoder values)</p></li>
+<li><p><strong>lenz_fix</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Array of fixed LENZ encoder positions corresponding to the error measurements.</p></li>
+<li><p><strong>coarse_red</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Coarse reduction factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Difference compensation table where each index corresponds to an encoder</dt><dd><p>position and contains the average error at that position.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.diff_gen">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">diff_gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enc_filt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_gen" title="Link to this definition">#</a></dt>
+<dd><p>Generates difference signal between filtered and raw encoder data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>enc_filt</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Filtered encoder data</p></li>
+<li><p><strong>enc_in</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Raw encoder input data</p></li>
+<li><p><strong>coarse_red</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Coarse reduction factor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Difference signal (double)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">diff_table_gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_fix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen" title="Link to this definition">#</a></dt>
+<dd><p>Generates a difference compensation table from error measurements.</p>
+<p>The table is created by averaging error measurements at each position,
+then applying FFT-based filtering to remove noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>diff_in</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Array of measured errors (double)</p></li>
+<li><p><strong>enc_fix</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Array of fixed encoder positions corresponding to errors (int32)</p></li>
+<li><p><strong>coarse_red</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Coarse reduction factor (scaling parameter)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Generated difference table (int16 values)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen_motor_harm">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">diff_table_gen_motor_harm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_fix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">motor_harm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen_motor_harm" title="Link to this definition">#</a></dt>
+<dd><p>Generates difference table with additional motor harmonic suppression.</p>
+<p>Similar to DifTableGen but specifically removes motor-related harmonics
+from the compensation table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>diff_in</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Array of measured errors (double)</p></li>
+<li><p><strong>enc_fix</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Array of fixed encoder positions (int32)</p></li>
+<li><p><strong>coarse_red</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Coarse reduction factor</p></li>
+<li><p><strong>motor_harm</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Motor harmonic frequency to suppress</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Generated difference table with motor harmonics removed (int16)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.ext_gen">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ext_gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_in</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.ext_gen" title="Link to this definition">#</a></dt>
+<dd><p>Extends 24-bit encoder data to 32-bit by handling overflow correctly.</p>
+<p>This function processes raw 24-bit encoder data by maintaining proper sign extension
+when converting to 32-bit values, ensuring correct handling of overflow cases.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_in</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Input array of 24-bit encoder values (as int32)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of extended 32-bit encoder values with proper overflow handling</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.extrapolate">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extrapolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.extrapolate" title="Link to this definition">#</a></dt>
+<dd><p>Extrapolates data to handle discontinuities or wrap-around effects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.array</em>) – Input data to extrapolate.</p></li>
+<li><p><strong>res</strong> (<em>int</em>) – Bit resolution for extrapolation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Extrapolated data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.filt_enc">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">filt_enc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.filt_enc" title="Link to this definition">#</a></dt>
+<dd><p>Applies a bidirectional moving average filter to encoder data.</p>
+<p>The filter processes data both forwards and backwards to minimize phase distortion,
+then averages both results for the final output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder_in</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Raw encoder input data (int32 values)</p></li>
+<li><p><strong>window_size</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Size of the moving average window</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Filtered encoder data (int32 values)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lenz_cal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal" title="Link to this definition">#</a></dt>
+<dd><p>Main calibration routine for LENZ encoder compensation.</p>
+<p>Performs a two-stage calibration process to generate a final compensation table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder_in</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Raw encoder input data</p></li>
+<li><p><strong>coarse_red</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Coarse reduction factor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Final compensation table (int8 values)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal_motor_harm">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lenz_cal_motor_harm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">motor_harm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal_motor_harm" title="Link to this definition">#</a></dt>
+<dd><p>LENZ encoder calibration with additional motor harmonic suppression.</p>
+<p>Similar to lenz_cal method but includes motor harmonic removal in the compensation table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder_in</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Raw encoder input data</p></li>
+<li><p><strong>coarse_red</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Coarse reduction factor</p></li>
+<li><p><strong>motor_harm</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Motor harmonic frequency to suppress</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Final compensation table with motor harmonics removed (int8)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="BiSS.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">BiSS Module</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="utils.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">utils Module</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.analyze_harmonics"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.analyze_harmonics()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.as_filt"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.as_filt()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.calc_diff"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.calc_diff()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.clip_to_int8"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.clip_to_int8()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.comp_diff"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.comp_diff()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.compute_difftable"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.compute_difftable()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_gen"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.diff_gen()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.diff_table_gen()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen_motor_harm"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.diff_table_gen_motor_harm()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.ext_gen"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.ext_gen()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.extrapolate"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.extrapolate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.filt_enc"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.filt_enc()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.lenz_cal()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal_motor_harm"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.lenz_cal_motor_harm()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/EncProc.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, LENZ Encoders.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

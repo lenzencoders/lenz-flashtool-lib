@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lenz-flashtool"
+version = "0.1.0"
+description = "FlashTool library for BiSS C Firmware Update and Calibration by LENZ Encoders"
+readme = "README.md"
+authors = [{name = "LENZ ENCODERS", email = "devs@lenzencoders.com"}]
+license = {file = "LICENSE"}
+keywords = ["biss", "lenz", "encoder", "flashtool", "angle"]
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pyserial>=3.5",
+    "numpy>=1.21.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/lenzencoders/lenz-flashtool-lib"
+"Source" = "https://github.com/lenzencoders/lenz-flashtool-lib"
+"Documentation" = "https://flashtool.lenzencoders.com"
+
+[project.scripts]
+lenz-flashtool-cli = "lenz_flashtool.biss.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.hatch.build]
+include = [
+    "lenz_flashtool/**/*.py",
+]
+exclude = [
+    "**/__pycache__",
+    "**/*.pyc"
+]
+
+[tool.hatch.version]
+path = "lenz_flashtool/__init__.py"
+
+[tool.flake8]
+max-line-length = 130
