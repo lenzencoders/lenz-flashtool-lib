@@ -104,4 +104,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contact
 
 For support or inquiries, contact LENZ ENCODERS at [info@lenzencoders.com](mailto:devs@lenzencoders.com).
-```
