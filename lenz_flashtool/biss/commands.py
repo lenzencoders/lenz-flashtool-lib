@@ -146,12 +146,9 @@ def interpret_error_flags(error_int: int) -> list:
         List[str]: A list of active error flags based on the set bits in the input integer.
                    If no flags are set, returns ["No error flags set"].
     """
-    active_flags = []
-
-    for bit_pos, flag_name in ERROR_FLAGS.items():
-        if error_int & (1 << bit_pos):
-            active_flags.append(flag_name)
-
-    if active_flags:
-        return active_flags
-    return ["No error flags set"]
+    error_int = int(error_int)
+    active_flags = [
+        flag_name for bit_pos, flag_name in ERROR_FLAGS.items()
+        if error_int & (1 << bit_pos)
+    ]
+    return active_flags or ["No error flags set"]
