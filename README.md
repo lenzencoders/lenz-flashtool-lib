@@ -1,10 +1,11 @@
-[![PyPI Version](https://img.shields.io/pypi/v/lenz-flashtool)](https://pypi.org/project/lenz-flashtool/)
-
 # lenz-flashtool
+[![PyPI Version](https://img.shields.io/pypi/v/lenz-flashtool)](https://pypi.org/project/lenz-flashtool/)
 
 FlashTool library for BiSS C Firmware Update and Calibration by LENZ Encoders.
 
 This is the source repository for the `lenz-flashtool` Python package, designed to interface with LENZ BiSS C encoders for firmware updates, calibration, and data reading. It provides a `FlashTool` class and utility functions for working with encoder hardware, including hex file manipulation and color formatting utilities.
+
+[**📚 Full Documentation: flashtool.lenzencoders.com**](https://flashtool.lenzencoders.com)
 
 ## Features
 
@@ -15,14 +16,14 @@ This is the source repository for the `lenz-flashtool` Python package, designed 
 
 ## Installation
 
+### From PyPI (Recommended)
+```bash
+pip install lenz-flashtool
+```
+
 ### From local folder
 ```bash
 pip install .
-```
-
-### From PyPI
-```bash
-pip install lenz-flashtool
 ```
 
 ### From GitHub
@@ -45,12 +46,12 @@ from lenz_flashtool import FlashTool, init_logging
 # Set up logging
 #
 # Level	            Integer Value
-# logging.CRITICAL	50
-# logging.ERROR	    40
-# logging.WARNING	  30
-# logging.INFO	    20
-# logging.DEBUG	    10
-# logging.NOTSET	  0
+# logging.CRITICAL  50
+# logging.ERROR     40
+# logging.WARNING   30
+# logging.INFO      20
+# logging.DEBUG     10
+# logging.NOTSET    0
 init_logging(logfilename="flashtool.log", stdout_level=20, file_level=10)
 
 # Initialize FlashTool
@@ -104,6 +105,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support or inquiries, contact LENZ ENCODERS at [info@lenzencoders.com](mailto:devs@lenzencoders.com).
 ```
-
-
-
