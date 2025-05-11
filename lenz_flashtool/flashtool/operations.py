@@ -96,12 +96,12 @@ def biss_send_hex(file_path: str, nonce: Optional[int] = None, pbar: Optional[An
     # ft.biss_read_registers(BISS_BANK_SERV)
     # print('=====')
     ft.send_data_to_device(pages, crc_values, page_numbers, START_PAGE, END_PAGE, pbar)
-    ft.read_flags()
+    ft.biss_read_flags()
     sleep(0.2)
     logger.info('Sending \'run\' command...')
     ft.biss_write_command("run")
     sleep(0.4)
-    ft.read_flags()
+    ft.biss_read_flags()
     ft.close()
 
 

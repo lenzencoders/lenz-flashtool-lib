@@ -223,7 +223,7 @@ class BiSSCommandLine:
             biss_commands[command][0] & 0xFF,
             (biss_commands[command][0] >> 8) & 0xFF
         ]
-        self.ft.biss_write_word(BiSSBank.CMD_REG_INDEX, 0, cmd_data)
+        self.ft.biss_write_word(BiSSBank.CMD_REG_INDEX, cmd_data)
         time.sleep(0.3)
         self.ft.biss_read_flags()
 

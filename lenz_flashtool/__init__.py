@@ -31,7 +31,8 @@ from .flashtool import (
     get_nonce,
     _readhex,
     biss_send_hex,
-    biss_send_dif
+    biss_send_dif,
+    calculate_checksum
 )
 from .testing import MockFlashTool
 from .encproc import LenzEncoderProcessor
@@ -56,6 +57,7 @@ __all__ = [
     'generate_hex_line',
     'init_logging',
     'get_nonce',
+    'calculate_checksum',
     '_readhex',
     'biss_send_dif',
     'biss_send_hex',
