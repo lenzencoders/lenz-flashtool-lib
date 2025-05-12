@@ -4,17 +4,48 @@ build-backend = "hatchling.build"
 
 [project]
 name = "lenz-flashtool"
-version = "0.1.0"
+version = "0.1.1"
 description = "FlashTool library for BiSS C Firmware Update and Calibration by LENZ Encoders"
 readme = "README.md"
 authors = [{name = "LENZ ENCODERS", email = "devs@lenzencoders.com"}]
 license = {file = "LICENSE"}
-keywords = ["biss", "lenz", "encoder", "flashtool", "angle"]
+keywords = [
+    "biss",
+    "lenz",
+    "flashtool",
+    "biss-c",
+    "biss encoder",
+    "angle",
+    "servomotor",
+    "encoder",
+    "firmware",
+    "calibration",
+    "serial communication",
+    "embedded systems",
+    "hardware",
+    "automation",
+    "motion control"
+]
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Manufacturing",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Hardware",
+    "Topic :: Utilities",
+    "Topic :: Communications",
+    "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Topic :: Utilities",
+    "Environment :: Embedded",
+    "Environment :: Console",
+    "Development Status :: 4 - Beta",
+    "Natural Language :: English",
+
 ]
 dependencies = [
     "pyserial>=3.5",

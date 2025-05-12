@@ -398,6 +398,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.UartCmd"><code class="docutils literal notranslate"><span class="pre">UartCmd</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.biss_send_dif"><code class="docutils literal notranslate"><span class="pre">biss_send_dif()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.biss_send_hex"><code class="docutils literal notranslate"><span class="pre">biss_send_hex()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.calculate_checksum"><code class="docutils literal notranslate"><span class="pre">calculate_checksum()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.generate_hex_line"><code class="docutils literal notranslate"><span class="pre">generate_hex_line()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.get_nonce"><code class="docutils literal notranslate"><span class="pre">get_nonce()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#lenz_flashtool.init_logging"><code class="docutils literal notranslate"><span class="pre">init_logging()</span></code></a></li>
@@ -3391,6 +3392,28 @@ Response: None</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="lenz_flashtool.calculate_checksum">
+<span class="sig-prename descclassname"><span class="pre">lenz_flashtool.</span></span><span class="sig-name descname"><span class="pre">calculate_checksum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hex_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.calculate_checksum" title="Link to this definition">#</a></dt>
+<dd><p>Calculate Intel HEX-style checksum for a hex string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>hex_data</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Hex string without leading ‘:’ or ending checksum</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Checksum byte (0-255)</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">calculate_checksum</span><span class="p">(</span><span class="s2">&quot;10010000214601360121470136007EFE09D21901&quot;</span><span class="p">)</span>
+<span class="go">64</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="lenz_flashtool.generate_hex_line">
 <span class="sig-prename descclassname"><span class="pre">lenz_flashtool.</span></span><span class="sig-name descname"><span class="pre">generate_hex_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.generate_hex_line" title="Link to this definition">#</a></dt>
 <dd><p>Generate a formatted hex line for communication with a device.</p>
@@ -3775,6 +3798,7 @@ If None, the root logger is configured.</p></li>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss_send_dif"><code class="docutils literal notranslate"><span class="pre">biss_send_dif()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.biss_send_hex"><code class="docutils literal notranslate"><span class="pre">biss_send_hex()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.calculate_checksum"><code class="docutils literal notranslate"><span class="pre">calculate_checksum()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.generate_hex_line"><code class="docutils literal notranslate"><span class="pre">generate_hex_line()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.get_nonce"><code class="docutils literal notranslate"><span class="pre">get_nonce()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.init_logging"><code class="docutils literal notranslate"><span class="pre">init_logging()</span></code></a></li>
