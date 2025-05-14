@@ -1444,7 +1444,7 @@ class FlashTool:
         try:
             state_flags = self.biss_read_state_flags()
             logger.debug("State flags raw data: %s", state_flags)
-            flags = (state_flags[1] << 8) | state_flags[0]
+            flags = (np.uint16(state_flags[1]) << 8) | state_flags[0]
             interpreted_flags = interpret_error_flags(flags)
             logger.info("Interpreted error flags: %s", interpreted_flags)
             command_state = self.biss_read_command_state()[0]
