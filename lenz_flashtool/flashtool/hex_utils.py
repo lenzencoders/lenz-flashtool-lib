@@ -765,19 +765,92 @@ def _readhex(filepath: str) -> list[str]:
     return dataframe
 
 
-def prep_hex(filepath: str) -> None:
+def dif2hex(DifTable: bytes, filename: str, start_page: int) -> None:
+    """
+    Convert a Diff table to Intel HEX format and save to a file.
+
+    This function takes a byte array representing a Diff table, converts it to Intel HEX format
+    with proper address handling and checksums, and writes the result to the specified file.
+    The output includes extended address records, data records, a CRC32 record, and an end-of-file record.
+
+    Args:
+        DifTable: The input byte array containing the data to be converted.
+        filename: The path of the output file where the HEX data will be written.
+        start_page: The starting page number used to calculate the initial address offset.
+                    Each page is 2048 bytes (0x800).
+
+    Returns:
+        None: The function writes the result to a file but doesn't return anything.
+
+    The function handles:
+    - 64KB address boundary crossing with extended address records
+    - Proper checksum calculation for all record types
+    - Generation of data records with 16 bytes per line (standard HEX format)
+    - Addition of a CRC32 record (type 0x03) at the end of the file
+    - Proper end-of-file marker
+
+    Example:
+        >>> data = bytes([0x01, 0x02, 0x03, 0x04])
+        >>> dif2hex(data, "output.hex", 24)
+        # Creates output.hex with the converted data
+    """
+    CRC_RECORD_TYPE = '03'
+    lower_addr = 0x800 * start_page  # (0x800 = 2048) bytes -- page size
+    upper_addr = 0x0800  # Initial upper address
+    base_addr = (upper_addr << 16) | lower_addr
+    data = bytearray(DifTable)
+    hex_file_content = []
+    current_upper_addr = upper_addr
+
+    # Initial extended address record
+    extended_addr_record = f":02000004{current_upper_addr:04X}{((~(2 + 4 + (current_upper_addr >> 8) + (current_upper_addr & 0xFF)) + 1) & 0xFF):02X}"
+    hex_file_content.append(extended_addr_record)
+
+    for i in range(0, len(data), 16):
+        chunk = data[i:i+16]
+        byte_count = len(chunk)
+        addr = base_addr + i
+        new_upper_addr = (addr >> 16) & 0xFFFF
+
+        # Check 64 KB boundary
+        if new_upper_addr != current_upper_addr:
+            current_upper_addr = new_upper_addr
+            extended_addr_record = f":02000004{current_upper_addr:04X}{((~(2 + 4 + (current_upper_addr >> 8) + (current_upper_addr & 0xFF)) + 1) & 0xFF):02X}"
+            hex_file_content.append(extended_addr_record)
+
+        record_type = 0
+        address_field = addr & 0xFFFF  # Lower 16 bits of address
+        checksum = byte_count + (address_field >> 8) + (address_field & 0xFF) + record_type + sum(chunk)
+        data_record = f":{byte_count:02X}{address_field:04X}{record_type:02X}" + \
+                      ''.join(f"{b:02X}" for b in chunk) + \
+                      f"{(256 - checksum % 256) % 256:02X}"
+        hex_file_content.append(data_record)
+
+    crc_record = f"040000{CRC_RECORD_TYPE}{binascii.crc32(data):08X}"
+    hex_file_content.append(f":{crc_record}{calculate_checksum(crc_record):02X}")
+    hex_file_content.append(":00000001FF")
+
+    with open(filename, "w") as output:
+        for row in hex_file_content:
+            output.write(str(row).upper() + '\n')
+
+
+def prep_hex(filepath: str, section_id: int, count: int, desc: str) -> None:
     """
     Main function to prepare HEX file for firmware update.
 
     Args:
-        filepath: Path to input HEX file
+        filepath: Path to the input HEX file to be processed
+        section_id: Memory section identifier (used to calculate base address)
+        count: Number of bytes in the section that need hash protection
+        desc: Description tag used to locate the hash file (format: lenz_hash_{desc}.bin)
 
     Returns:
-        None (writes output to <filename>_op.hex)
+        None: Writes the processed output to <input_filename>_op.hex
 
     Raises:
-        FileNotFoundError: If input file doesn't exist
-        IOError: If there are file access issues
+        FileNotFoundError: If either the input HEX file or hash binary file doesn't exist
+        IOError: If there are file access/permission issues
     """
     try:
         inputhexfile = _readhex(filepath)
@@ -790,14 +863,21 @@ def prep_hex(filepath: str) -> None:
 
     print("Input hexfile:", filepath)
     filename, _ = path.splitext(filepath)
-    # TODO move hashes to the function args
-    hashes = [(24, 6144, 'actis')]
     hash_bytes = []
-    for section_id, count, desc in hashes:
-        base_offset = section_id << 5
-        with open(f'lenz_hash_{desc}.bin', "rb") as f:
+    base_offset = section_id << 5
+    hash_filename = f'lenz_hash_{desc}.bin'
+    try:
+        with open(hash_filename, "rb") as f:
             for _ in range(base_offset, base_offset + ((count >> 6) or 1)):
                 hash_bytes.append(f.read(64))
+
+    except FileNotFoundError:
+        sys.stderr.write(f"Error: Hash file '{hash_filename}' not found.\n")
+        sys.exit(1)
+    except IOError as e:
+        sys.stderr.write(f"Error reading hash file: {e}\n")
+        sys.exit(1)
+
     hexdata = []
     fullhexdataout = []
     hexdata_parts = (len(inputhexfile) - 4) // 128 + 1
@@ -832,11 +912,10 @@ def prep_hex(filepath: str) -> None:
     output_filepath = f"{filename}_op.hex"
     try:
         with open(output_filepath, "w") as output:
-            print("Output:", output_filepath)
+            print("Successfully generated output:", output_filepath)
             for hexdataout in fullhexdataout:
                 for cell in hexdataout:
                     output.write(cell.upper() + '\n')
-        # print("\n")
     except Exception as e:
         sys.stderr.write(f"Error writing output file: {e}\n")
         sys.exit(1)

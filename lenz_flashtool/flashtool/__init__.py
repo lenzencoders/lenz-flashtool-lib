@@ -20,7 +20,7 @@ Author:
 from .uart import UartCmd
 from .core import FlashTool
 from .logging import init_logging
-from .hex_utils import get_nonce, generate_hex_line, calculate_checksum, _readhex
+from .hex_utils import get_nonce, generate_hex_line, calculate_checksum, _readhex, dif2hex, prep_hex
 from .errors import FlashToolError
 from .operations import biss_send_dif, biss_send_hex
 __all__ = [
@@ -33,5 +33,7 @@ __all__ = [
     'FlashToolError',
     '_readhex',
     'biss_send_dif',
-    'biss_send_hex'
+    'biss_send_hex',
+    "dif2hex",
+    "prep_hex"
 ]
