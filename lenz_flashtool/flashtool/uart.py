@@ -215,7 +215,7 @@ class UartCmd(IntEnum):
         Where CHANNEL_BYTE is 0x00 or 0x01 or 0x02
 
     Example:
-        >>> :0100000e01ed  Select channel 1 SPI mode - CH1_LENZ_BISS
+        >>> :0100000e02ef  Select channel 1 SPI mode - CH1_LENZ_BISS
     """
 
     HEX_READ_ENC2_CURRENT = 0x12
