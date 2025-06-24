@@ -27,7 +27,7 @@ import serial.tools.list_ports
 import numpy as np
 from ..biss import (
     biss_commands, interpret_biss_commandstate, interpret_error_flags,
-    BiSSBank
+    BiSSBank,
 )
 from .uart import UartCmd
 from .errors import FlashToolError
@@ -300,7 +300,9 @@ class FlashTool:
             >>> ft._write_to_port(b'\\x01\\x00@\\x0b\\xff\\xb5')  # Power off encoder on channel 2
         """
         try:
+            self.__port.reset_output_buffer()
             self.__port.write(data)
+            self.__port.flush()
         except (serial.SerialException, OSError) as e:
             logger.error("Port write failed: %s", e)
             raise FlashToolError(f"Hardware communication failed: {e}") from e
@@ -476,7 +478,7 @@ class FlashTool:
         """
         # logger.debug(f'Uploading {hex_line} to the FlashTool.')
         tx_row = bytes.fromhex(hex_line[1:])
-        # logger.debug(tx_row)
+        logger.debug(tx_row.hex())
         self._write_to_port(tx_row)
         return tx_row
 
@@ -619,6 +621,7 @@ class FlashTool:
             array([0x01, 0x00], dtype=uint8)
         """
         self._write_to_port(generate_byte_line(BiSSBank.STATE_FLAG_REG_INDEX, UartCmd.HEX_READ_CMD, [1, 2]))
+        self.__port.reset_input_buffer()
         time.sleep(0.01)
 
         if self.__port.in_waiting >= 1:
@@ -660,7 +663,8 @@ class FlashTool:
             ...
         """
         self.biss_set_bank(bissbank)
-        self.__port.flushInput()
+        # self.__port.flushInput()
+        self.__port.reset_input_buffer()
         self._write_to_port(
                             generate_byte_line(0, UartCmd.HEX_READ_CMD,
                                                [item for item in list(range(BiSSBank.REGISTER_PLUS_FIXED_BANK_SIZE))]))
@@ -749,7 +753,7 @@ class FlashTool:
         """
         logger.debug('Sending POWER_ON command to the encoder')
         tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_CH1_POWER_ON, [0])[1:])
-        # logger.debug(tx_row)
+        logger.debug(tx_row.hex())
         self._write_to_port(tx_row)
 
     def encoder_power_cycle(self) -> None:
@@ -807,8 +811,9 @@ class FlashTool:
         tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_NVRST, [0])[1:])
         # logger.debug(tx_row)
         self._write_to_port(tx_row)
+        time.sleep(0.01)
 
-    def select_SPI_channel(self, channel: np.uint8) -> None:
+    def select_spi_channel(self, channel: np.uint8) -> None:
         """
         Select SPI communication channel.
 
@@ -849,46 +854,146 @@ class FlashTool:
         self.__port.write(tx_row)
         self.__port.flush()
 
-    def select_FlashTool_mode(self, mode: np.uint8):
+    def select_flashtool_mode(self, mode: np.uint8):
         """
         Select FlashTool mode.
 
-        Sends a SELECT Flashtool mode command to the FlashTool.
+        Sends a SELECT FLASHTOOL MODE command to configure the communication protocol
+        for both channels of the FlashTool.
 
-        There are three modes:
-            0 --> BISS_MODE_SPI_SPI.
-            1 --> BISS_MODE_AB_UART.
-            2 --> BISS_MODE_SPI_UART_IRS.
-            3 --> BISS_MODE_AB_SPI.
+        Available modes:
+            0 (BISS_MODE_SPI_SPI):
+                Channel 1: SPI, Channel 2: SPI
+            1 (BISS_MODE_AB_UART):
+                Channel 1: AB signal, Channel 2: UART
+            2 (BISS_MODE_SPI_UART_IRS):
+                Channel 1: SPI, Channel 2: UART for IRS encoders
+            3 (BISS_MODE_AB_SPI):
+                Channel 1: AB signal, Channel 2: SPI
+            4 (BISS_MODE_DEFAULT_SPI):
+                Default mode - Channel 1: Without communication, Channel 2: SPI
 
         Args:
-            mode (uint8): The mode number (must be 0, 1, 2, 3).
+            mode (np.uint8): The communication mode number (0-4)
+                - 0: SPI on both channels
+                - 1: AB sginal + UART
+                - 2: SPI + UART for IRS encoders
+                - 3: AB signal + SPI
+                - 4: Without communication + SPI
 
         Returns:
             None
 
         Raises:
-            ValueError: If the mode is not 0, 1, 2, 3.
+            ValueError: If the mode is not in range 0-4
+            TypeError: If the mode is not convertible to np.uint8
 
         Example:
             >>> ft = FlashTool()
-            >>> ft.select_FlashTool_mode(0)
+            >>> ft.select_flashtool_mode(0)  # Sets SPI on both channels
+            >>> ft.select_flashtool_mode(2)  # Sets SPI + UART for IRS encoders
         """
         mode = np.uint8(mode)
-        valid_modes = {np.uint8(0), np.uint8(1), np.uint8(2), np.uint8(3)}
+        valid_modes = {np.uint8(0), np.uint8(1), np.uint8(2), np.uint8(3), np.uint8(4)}
         if mode not in valid_modes:
             raise ValueError(f"Invalid mode: {mode}. Must be one of the {valid_modes} (0: BISS_MODE_SPI_SPI, 1: \
-                             BISS_MODE_AB_UART, 2: BISS_MODE_SPI_UART_IRS, 3: BISS_MODE_AB_SPI).")
+                             BISS_MODE_AB_UART, 2: BISS_MODE_SPI_UART_IRS, 3: BISS_MODE_AB_SPI, 4: BISS_MODE_DEFAULT_SPI).")
 
         mode_descriptions = {
             0: "BISS_MODE_SPI_SPI",
             1: "BISS_MODE_AB_UART",
             2: "BISS_MODE_SPI_UART_IRS",
-            3: "BISS_MODE_AB_SPI"
+            3: "BISS_MODE_AB_SPI",
+            4: "BISS_MODE_DEFAULT_SPI"
         }
         logger.info(f"Selected FlashTool mode: {mode} - {mode_descriptions[mode]}")
 
         tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_FLASHTOOL_MODE, [mode])[1:])
+        # logger.debug(tx_row)
+        self.__port.reset_output_buffer()
+        self.__port.write(tx_row)
+        self.__port.flush()
+        time.sleep(0.05)
+
+    def select_FlashTool_current_sensor_mode(self, mode: np.uint8):
+        """
+        Select FlashTool Current sensor mode.
+
+        Sends a SELECT Current sensor mode command to the FlashTool.
+
+        There are two modes:
+            0 --> CURRENT_SENSOR_MODE_DISABLE.
+            1 --> CURRENT_SENSOR_MODE_ENABLE.
+
+        Args:
+            mode (uint8): The mode number (must be 0, 1).
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the mode is not 0, 1.
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft.select_FlashTool_current_sensor_mode(0)
+        """
+        mode = np.uint8(mode)
+        valid_modes = {np.uint8(0), np.uint8(1)}
+        if mode not in valid_modes:
+            raise ValueError(f"Invalid mode: {mode}. Must be one of the {valid_modes} (0: CURRENT_SENSOR_MODE_DISABLE, 1: \
+                             CURRENT_SENSOR_MODE_ENABLE).")
+
+        mode_descriptions = {
+            0: "CURRENT_SENSOR_MODE_DISABLE",
+            1: "CURRENT_SENSOR_MODE_ENABLE"
+        }
+        logger.info(f"Selected current sensor mode: {mode} - {mode_descriptions[mode]}")
+
+        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_FLASHTOOL_CURRENT_SENSOR_MODE, [mode])[1:])
+        logger.debug(tx_row.hex())
+        self.__port.reset_output_buffer()
+        self.__port.write(tx_row)
+        self.__port.flush()
+
+    def select_spi_ch1_mode(self, mode: np.uint8) -> None:
+        """
+        Select SPI channel 1 mode.
+
+        Sends a SELECT channel 1 SPI mode command to the FlashTool.
+
+        There are three modes:
+            0 --> CH1_LENZ_BISS;
+            1 --> CH1_LIR_SSI;
+            2 --> CH1_LIR_BISS_21B
+
+        Args:
+            mode (uint8): The mode number (must be 0 or 1 or 2).
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the mode is not 0 or 1 or 2.
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft.select_spi_ch1_mode(0)
+        """
+        mode = np.uint8(mode)
+        valid_channels = {np.uint8(0), np.uint8(1), np.uint8(2)}
+        if mode not in valid_channels:
+            raise ValueError(f"Invalid mode: {mode}. Must be one of the {valid_channels} (0: CH1_LENZ_BISS, 1: \
+                             CH1_LIR_SSI, 2: CH1_LIR_BISS_21B).")
+
+        channel_descriptions = {
+            0: "CH1_LENZ_BISS",
+            1: "CH1_LIR_SSI",
+            2: "CH1_LIR_BISS_21B"
+        }
+        logger.info(f"Selected SPI channel 1 Mode: {mode} - {channel_descriptions[mode]}")
+
+        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_CH1_MODE, [mode])[1:])
         # logger.debug(tx_row)
         self.__port.reset_output_buffer()
         self.__port.write(tx_row)
@@ -1145,6 +1250,7 @@ class FlashTool:
         """
         try:
             self._write_to_port(generate_byte_line(BiSSBank.FIXED_ADDRESSES_START_INDEX, UartCmd.HEX_READ_CMD, list(range(64))))
+            self.__port.reset_input_buffer()
             time.sleep(0.1)
             cor = BiSSBank.FIXED_ADDRESSES_START_INDEX
             enc_ver_answ_uint8 = self.port_read(BiSSBank.FIXED_BANK_SIZE)
@@ -1473,14 +1579,44 @@ class FlashTool:
             [2119664]:    45° 30' 15"
         """
         degree_sign = "\N{DEGREE SIGN}"
-        _, ans = self.read_data_enc1_enc2_SPI(0.01, False)
-        res = 2**24
-        ang = int(ans[0]) * 360 / res
-        degrs = int(ang)
-        mins = int((ang - degrs) * 60)
-        secs = int((ang - degrs - (mins / 60)) * 3600)
-        sys.stdout.write("\r" + f'[{ans[0]}]: \t {str(degrs):>3}{degree_sign} {str(mins):2}\' {str(secs):2}\"' + '\t\t')
-        logger.debug(f'[{ans[0]}]: \t {str(degrs):>3}{degree_sign} {str(mins):2}\' {str(secs):2}\"')
+        try:
+            # _, ans = self.read_data_enc1_enc2_SPI(0.01, False)
+            ans, _ = self.read_data_enc1_AB_enc2_SPI(0.01, False)
+            if not ans.any() or len(ans) < 1:
+                logger.error("No valid data received from encoder")
+                return
+
+            raw_value = int(ans[0])
+            resolution = 2**24
+            total_degrees = raw_value * 360.0 / resolution
+
+            degrees = int(total_degrees)
+            remaining = total_degrees - degrees
+            minutes = int(remaining * 60)
+            seconds = round((remaining * 60 - minutes) * 60, 2)
+
+            output = (f"[{raw_value}]: \t"
+                      f"{degrees:>3}{degree_sign} "
+                      f"{minutes:02d}' "
+                      f"{seconds:05.2f}\"")
+
+            sys.stdout.write("\r" + output + " " * 10)
+            logger.debug(output)
+
+        except ValueError as e:
+            logger.error(f"Invalid encoder data: {e}")
+        except Exception as e:
+            logger.error(f"Error reading angle: {e}")
+
+        # degree_sign = "\N{DEGREE SIGN}"
+        # _, ans = self.read_data_enc1_enc2_SPI(0.01, False)
+        # res = 2**24
+        # ang = int(ans[0]) * 360 / res
+        # degrs = int(ang)
+        # mins = int((ang - degrs) * 60)
+        # secs = int((ang - degrs - (mins / 60)) * 3600)
+        # sys.stdout.write("\r" + f'[{ans[0]}]: \t {str(degrs):>3}{degree_sign} {str(mins):2}\' {str(secs):2}\"' + '\t\t')
+        # logger.debug(f'[{ans[0]}]: \t {str(degrs):>3}{degree_sign} {str(mins):2}\' {str(secs):2}\"')
 
     def biss_zeroing(self) -> None:
         """
@@ -1663,7 +1799,7 @@ class FlashTool:
                 else:
                     self.biss_write_command('load2k')
 
-                time.sleep(0.25)
+                time.sleep(1.25)
 
                 if not self.biss_read_flags_flashCRC()[0]:
                     success = True
@@ -1678,3 +1814,127 @@ class FlashTool:
                         sys.exit(1)
 
         logger.info(" Done uploading!")
+
+    def read_enc2_current(self) -> tuple[str, float] | bool:
+        """
+        Read current of the encoder on channel 2.
+
+        Args:
+            None
+
+        Returns:
+            tuple[str, int]: If successful, returns:
+                - str: Encoder2 current in hexadecimal format
+                - float: Current in mA
+            bool: False if operation fails (CRC error, no response, etc.)
+        """
+        try:
+            self.__port.reset_output_buffer()
+            self.__port.reset_input_buffer()
+            self.__port.write(generate_byte_line(0, UartCmd.HEX_READ_ENC2_CURRENT, list(range(UartCmd.RX_DATA_LENGTH_CURRENT))))
+            self.__port.flush()
+
+            enc_ans = self.__port.read(UartCmd.RX_DATA_LENGTH_CURRENT + UartCmd.PKG_INFO_LENGTH)
+
+            logger.debug(enc_ans.hex())
+
+            if not enc_ans:
+                logger.error("No response from encoder!")
+                return False
+
+            enc_data_np = np.array(list(enc_ans), dtype='uint8')
+
+            if (enc_data_np[0] != enc_data_np.size - UartCmd.PKG_INFO_LENGTH) or \
+                (enc_data_np[3] != UartCmd.HEX_READ_ENC2_CURRENT + UartCmd.CMD_VAL_ADD):
+                logger.error("Invalid response structure from encoder!")
+                return False
+
+            calculated_crc = calculate_checksum(enc_ans[0:-1].hex())
+            if calculated_crc != enc_data_np[-1]:
+                logger.error(f"CRC mismatch: calculated {calculated_crc}, expected {enc_data_np[-1]}")
+                return False
+
+            logger.debug("CRC check passed.")
+
+            enc2_current = enc_ans[4:4+UartCmd.RX_DATA_LENGTH_CURRENT]
+
+            data_hex = enc2_current.hex()
+
+            ans_enc2_current_ma = int.from_bytes(enc2_current, byteorder='little', signed=False) / 1000
+
+            return data_hex, ans_enc2_current_ma
+
+        except Exception as e:
+            logger.error(f"Error reading encoder current: {str(e)}", exc_info=True)
+            return False
+
+    def read_current_angle_enc_SPI(self) -> tuple[str, list[int]] | bool:
+        """
+        Read current angle encoder via SPI over USB.
+
+        Returns:
+            tuple[str, list[int]]: If successful, returns:
+                - str: Encoder angle in hexadecimal format
+                - list[int]: Angle parts [degrees, minutes, seconds]
+            bool: False if operation fails (CRC error, no response, etc.)
+        """
+        CMD_VAL_ADD = 16
+        RX_DATA_LENGTH = 4
+        PKG_INFO_LENGTH = 5  # 5 bytes: length | address_l | address_h | cmd+0x10 | crc [-1]
+        DEGREE_SIGN = "\N{DEGREE SIGN}"
+
+        try:
+            self.__port.reset_output_buffer()
+            self.__port.reset_input_buffer()
+            self.__port.write(generate_byte_line(0, UartCmd.HEX_READ_CURRENT_ANGLE_ENC_SPI, list(range(RX_DATA_LENGTH))))
+            self.__port.flush()
+
+            enc_ans = self.__port.read(RX_DATA_LENGTH + PKG_INFO_LENGTH)
+            # print(f"{enc_ans.hex()}")
+
+            if not enc_ans:
+                logger.error("No response from IRS encoder!")
+                return False
+
+            enc_data_np = np.array(list(enc_ans), dtype='uint8')
+
+            if (enc_data_np[0] != enc_data_np.size - PKG_INFO_LENGTH) or \
+                (enc_data_np[3] != UartCmd.HEX_READ_CURRENT_ANGLE_ENC_SPI + CMD_VAL_ADD):
+                logger.error("Invalid response structure from IRS encoder!")
+                return False
+
+            calculated_crc = calculate_checksum(enc_ans[0:-1].hex())
+            if calculated_crc != enc_data_np[-1]:
+                logger.error(f"CRC mismatch: calculated {calculated_crc}, expected {enc_data_np[-1]}")
+                return False
+
+            logger.debug("CRC check passed.")
+
+            angle_data = enc_ans[4:4+RX_DATA_LENGTH]
+
+            data_hex = angle_data.hex()
+
+            ans_angle = int.from_bytes(angle_data[:3], byteorder='little', signed=False)
+
+            angle_raw = (
+                int(data_hex[4:6], 16) * 65536 +
+                int(data_hex[2:4], 16) * 256 +
+                int(data_hex[0:2], 16)
+            )
+            angle_deg = angle_raw * 360 / 2**24
+
+            degrees = int(angle_deg)
+            remaining = angle_deg - degrees
+            minutes = int(remaining * 60)
+            seconds = int((remaining * 60 - minutes) * 60)
+
+            logger.info(
+                f"[{ans_angle}]: {degrees:>3}{DEGREE_SIGN} "
+                f"{minutes:02d}' {seconds:02d}\""
+            )
+
+            return ans_angle, [degrees, minutes, seconds]
+
+        except Exception as e:
+            logger.error(f"Error reading encoder angle: {str(e)}", exc_info=True)
+            return False

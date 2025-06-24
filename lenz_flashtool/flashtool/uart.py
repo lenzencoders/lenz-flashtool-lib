@@ -22,6 +22,32 @@ class UartCmd(IntEnum):
     channel selection, and data communication with the FlashTool hardware.
     """
 
+    PKG_INFO_LENGTH = 0x05
+    """int: Packet INFO constant structure length of 5 bytes
+    Request Packet:
+        [DUMMY_DATA_SIZE][REG_ADDR][ CMD  ][DUMMY_DATA][CHECKSUM]
+        [     1 byte    ][2 bytes ][1 byte][----------][ 1 byte ]
+    Response Packet:
+        [DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]
+        [     1 byte    ][2 bytes ][     1 byte    ][----------][ 1 byte ]
+    """
+
+    RX_DATA_LENGTH_IRS = 0xFC
+    """int: Data length for command:
+        HEX_IRS_ENC_WRITE_READ_CMD: 0x0F
+    """
+
+    RX_DATA_LENGTH_CURRENT = 0x04
+    """int: Data length for commands:
+        HEX_READ_ENC2_CURRENT: 0x12
+    """
+
+    CMD_VAL_ADD = 0x10
+    """int: Value that added to CMD in Repsonse Packet
+    Response:
+        [DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]
+    """
+
     CMD_POWER_OFF = 0x0B
     """int: Command to power off encoder on channel 2.
 
@@ -125,12 +151,13 @@ class UartCmd(IntEnum):
             0x01 for BISS_MODE_AB_UART,
             0x02 for BISS_MODE_SPI_UART_IRS,
             0x03 for BISS_MODE_AB_SPI
+            0x04 for BISS_MODE_DEFAULT_SPI
         - Defines all subsequent communications via SPI, AB (incremental), UART for channels 1 and 2 until changed
         - Address in packet doesn't matter
 
     Note:
         FlashTool mode is persistent until changed or power cycled
-        Default: BISS_MODE_SPI_SPI (0x00)
+        Default: BISS_MODE_DEFAULT_SPI (0x04) - Channel 1: Without communication, Channel 2: SPI
 
     Packet Structure:
         Request: [01][REG_ADDR][0x01][CHANNEL_BYTE][CHECKSUM]
@@ -138,6 +165,94 @@ class UartCmd(IntEnum):
 
     Example:
         >>> :0100000100FE  Select FlashTool mode - BISS_MODE_SPI_SPI
+    """
+
+    CMD_SELECT_FLASHTOOL_CURRENT_SENSOR_MODE = 0x11
+    """int: Command to select FlashTool current sensor mode.
+
+    Black FlashTool has Current Sensor mode.
+    Green FlashTool has NOT Current Sensor mode.
+
+    Usage:
+        - Sent before any channel-specific operations
+        - Parameter:
+            0x00 for CURRENT_SENSOR_MODE_DISABLE,
+            0x01 for CURRENT_SENSOR_MODE_ENABLE
+        - Defines all subsequent communications via SPI, AB (incremental), UART for channels 1 and 2 until changed
+        - Address in packet doesn't matter
+
+    Note:
+        FlashTool current sensor mode is persistent until changed or power cycled
+        Default: CURRENT_SENSOR_MODE_ENABLE (0x01)
+
+    Packet Structure:
+        Request: [01][REG_ADDR][0x11][CHANNEL_BYTE][CHECKSUM]
+        Where CHANNEL_BYTE is 0x00 or 0x01
+
+    Example:
+        >>> :0100001101ed  Select current sensor mode - CURRENT_SENSOR_MODE_ENABLE
+    """
+
+    CMD_SELECT_CH1_MODE = 0x0E
+    """ Command to select FlashTool channel 1 SPI mode.
+    Works for BISS_MODE_SPI_SPI.
+
+    Usage:
+        - Sent before any channel-specific operations
+        - Parameter:
+            0x00 for CH1_LENZ_BISS,
+            0x01 for CH1_LIR_SSI,
+            0x02 for CH1_LIR_BISS_21B
+        - Defines all subsequent communications via SPI for channel 1
+        - Address in packet doesn't matter
+
+    Note:
+        FlashTool current sensor mode is persistent until changed or power cycled
+        Default: CH1_LENZ_BISS (0x00)
+
+    Packet Structure:
+        Request: [01][REG_ADDR][0x0E][CHANNEL_BYTE][CHECKSUM]
+        Where CHANNEL_BYTE is 0x00 or 0x01 or 0x02
+
+    Example:
+        >>> :0100000e02ef  Select channel 1 SPI mode - CH1_LENZ_BISS
+    """
+
+    HEX_READ_ENC2_CURRENT = 0x12
+    """int: Command to read current from encoder on channel 2.
+
+    Usage:
+        - Single data frame
+        - Requires encoder to be powered on
+        - Returns one measurement frame in each response packet
+        - Address in packet doesn't matter
+
+    Packet Structure:
+        Request: [DUMMY_DATA_SIZE][REG_ADDR][0x12][DUMMY_DATA][CHECKSUM]
+
+        Where:
+
+        - DUMMY_DATA_SIZE: 4 bytes
+
+    Example Request Packet Structure:
+        >>> 0400001200010203e4
+
+    Response Format:
+        Data frame contains:
+
+        >>> [Header][DataFrame][Checksum]
+
+        Where:
+
+        - Header: `[0x04, 0x00, 0x00, 0x22]` (fixed pattern)
+        - DataFrame: 1 measurement frame (4 bytes):
+
+        >>> [ENC2_CURRENT_HIGH][ENC2_CURRENT_MID][ENC2_CURRENT_LOW]
+
+        - Checksum: 1 byte (sum of first 8 bytes modulo ...)
+
+    Example Response Packet Structure:
+        >>> 04 00 00 22 [frame] [checksum]
     """
 
     CMD_NVRST = 0x83      # Command to reset the FlashTool
@@ -170,6 +285,51 @@ class UartCmd(IntEnum):
 
     Example:
         >>>  :0100400D05AD
+    """
+
+    HEX_IRS_ENC_WRITE_READ_CMD = 0x0F
+    """int: Command to write data to encoder registers.
+
+    Usage:
+        - Used for configuration and parameter setting
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x0D][DATA_MSB][DATA_LSB][CHECKSUM]
+        Response: None
+
+    Example:
+        >>>  :0100400D05AD
+    """
+
+    HEX_READ_CURRENT_ANGLE_ENC_SPI = 0x10
+    """int: Command to read current angle data from encoder via SPI.
+
+    Usage:
+        - Single data frame for encoder reading
+        - Requires encoder to be powered on
+        - Returns one measurement frame in each response packet
+
+    Response Format:
+        Data frame contains:
+
+        >>> [Header][DataFrame][Checksum]
+
+        Where:
+
+        - Header: `[0x04, 0x00, 0x00, 0x20]` (fixed pattern)
+        - DataFrame: 1 measurement frame (8 bytes):
+
+        >>> [ENC2_LOW][ENC2_MID][ENC2_HIGH][ENC2_COUNTER]
+
+        - Checksum: 1 byte (sum of first 12 bytes modulo ...)
+
+    Data Interpretation:
+        >>> Encoder Angle = (HIGH << 16) | (MID << 8) | LOW
+
+        Counter = Single byte turn counter
+
+    Example Packet Structure:
+        >>> 04 00 00 20 [1 frame...] [checksum]
     """
 
     HEX_READ_ANGLE_TWO_ENC_SPI = 0x80
