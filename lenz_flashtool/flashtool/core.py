@@ -914,7 +914,7 @@ class FlashTool:
         self.__port.reset_output_buffer()
         self.__port.write(tx_row)
         self.__port.flush()
-        time.sleep(0.01)
+        time.sleep(0.05)
 
     def select_FlashTool_current_sensor_mode(self, mode: np.uint8):
         """
@@ -953,6 +953,49 @@ class FlashTool:
 
         tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_FLASHTOOL_CURRENT_SENSOR_MODE, [mode])[1:])
         logger.debug(tx_row.hex())
+        self.__port.reset_output_buffer()
+        self.__port.write(tx_row)
+        self.__port.flush()
+
+    def select_spi_ch1_mode(self, mode: np.uint8) -> None:
+        """
+        Select SPI channel 1 mode.
+
+        Sends a SELECT channel 1 SPI mode command to the FlashTool.
+
+        There are three modes:
+            0 --> CH1_LENZ_BISS;
+            1 --> CH1_LIR_SSI;
+            2 --> CH1_LIR_BISS_21B
+
+        Args:
+            mode (uint8): The mode number (must be 0 or 1 or 2).
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the mode is not 0 or 1 or 2.
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft.select_spi_ch1_mode(0)
+        """
+        mode = np.uint8(mode)
+        valid_channels = {np.uint8(0), np.uint8(1), np.uint8(2)}
+        if mode not in valid_channels:
+            raise ValueError(f"Invalid mode: {mode}. Must be one of the {valid_channels} (0: CH1_LENZ_BISS, 1: \
+                             CH1_LIR_SSI, 2: CH1_LIR_BISS_21B).")
+
+        channel_descriptions = {
+            0: "CH1_LENZ_BISS",
+            1: "CH1_LIR_SSI",
+            2: "CH1_LIR_BISS_21B"
+        }
+        logger.info(f"Selected SPI channel 1 Mode: {mode} - {channel_descriptions[mode]}")
+
+        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_CH1_MODE, [mode])[1:])
+        # logger.debug(tx_row)
         self.__port.reset_output_buffer()
         self.__port.write(tx_row)
         self.__port.flush()

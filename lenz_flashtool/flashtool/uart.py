@@ -193,6 +193,31 @@ class UartCmd(IntEnum):
         >>> :0100001101ed  Select current sensor mode - CURRENT_SENSOR_MODE_ENABLE
     """
 
+    CMD_SELECT_CH1_MODE = 0x0E
+    """ Command to select FlashTool channel 1 SPI mode.
+    Works for BISS_MODE_SPI_SPI.
+
+    Usage:
+        - Sent before any channel-specific operations
+        - Parameter:
+            0x00 for CH1_LENZ_BISS,
+            0x01 for CH1_LIR_SSI,
+            0x02 for CH1_LIR_BISS_21B
+        - Defines all subsequent communications via SPI for channel 1
+        - Address in packet doesn't matter
+
+    Note:
+        FlashTool current sensor mode is persistent until changed or power cycled
+        Default: CH1_LENZ_BISS (0x00)
+
+    Packet Structure:
+        Request: [01][REG_ADDR][0x0E][CHANNEL_BYTE][CHECKSUM]
+        Where CHANNEL_BYTE is 0x00 or 0x01 or 0x02
+
+    Example:
+        >>> :0100000e01ed  Select channel 1 SPI mode - CH1_LENZ_BISS
+    """
+
     HEX_READ_ENC2_CURRENT = 0x12
     """int: Command to read current from encoder on channel 2.
 
