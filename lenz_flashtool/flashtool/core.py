@@ -26,9 +26,8 @@ import serial
 import serial.tools.list_ports
 import numpy as np
 from ..biss import (
-    biss_commands, interpret_biss_commandstate, interpret_error_flags, 
+    biss_commands, interpret_biss_commandstate, interpret_error_flags,
     BiSSBank,
-    BissCmdIrs
 )
 from .uart import UartCmd
 from .errors import FlashToolError
@@ -1792,7 +1791,6 @@ class FlashTool:
                         percent_complete(bank_idx, BiSSBank.BANKS_PER_PAGE - 1, title=f"Sending Page {page_idx}")
                     # print('HEX-LINE', generate_hex_line(0, HEX_WRITE_CMD, bank_data))
                     hex_line = generate_hex_line(0, UartCmd.HEX_WRITE_CMD, bank_data)
-                    logger.debug(f"Sent hex: {hex_line}")
                     self.hex_line_send(hex_line)
 
                 time.sleep(0.3)
@@ -1801,8 +1799,7 @@ class FlashTool:
                 else:
                     self.biss_write_command('load2k')
 
-                time.sleep(0.25)
-                time.sleep(1)
+                time.sleep(1.25)
 
                 if not self.biss_read_flags_flashCRC()[0]:
                     success = True
@@ -1817,121 +1814,6 @@ class FlashTool:
                         sys.exit(1)
 
         logger.info(" Done uploading!")
-
-    def connect_IRS_enc(self) -> bool:
-        """
-        Enter bootloader of IRS encoder and verify connection.
-
-        Args:
-            None
-
-        Returns:
-            bool: True if connected successfully, False otherwise.
-        """
-        # CMD_VAL_ADD = 16
-        # RX_DATA_LENGTH = 252
-        # PKG_INFO_LENGTH = 5  # 5 bytes: length | address_l | address_h | cmd+0x10 | crc [-1]
-
-        try:
-            self.select_spi_channel(1)
-            self.select_flashtool_mode(2)
-
-            self.encoder_ch1_power_off()
-            time.sleep(0.1)
-            self.encoder_ch1_power_on()
-            time.sleep(0.01)
-
-            self.__port.reset_output_buffer()
-            self.__port.write(generate_byte_line(0, UartCmd.HEX_IRS_ENC_WRITE_READ_CMD, BissCmdIrs.start_bootloader_cmd))
-            self.__port.flush()
-            self.__port.reset_input_buffer()
-
-            enc_ans = self.__port.read(UartCmd.RX_DATA_LENGTH_IRS + UartCmd.PKG_INFO_LENGTH)
-            if not enc_ans:
-                logger.error("ERROR: No response from IRS encoder!")
-                return False
-
-            enc_data_np = np.array(list(enc_ans), 'uint8')
-
-            if (enc_data_np[0] == enc_data_np.size - UartCmd.PKG_INFO_LENGTH) & (enc_data_np[3] == UartCmd.HEX_IRS_ENC_WRITE_READ_CMD + UartCmd.CMD_VAL_ADD):
-                if (calculate_checksum(enc_ans[0:-1].hex()) == enc_data_np[-1]):
-                    logger.debug("CRC check passed.")
-                else:
-                    logger.error(f"CRC mismatch: calculated {calculate_checksum(enc_ans[0:-1].hex())}, expected {enc_data_np[-1]}")
-                    return False
-            else:
-                logger.error("ERROR: Invalid response from IRS encoder!")
-                return False
-
-            data_hex = enc_ans[4:4+(len(BissCmdIrs.ans_start_bootloader_cmd))].hex()
-            logger.debug(f"Bootloader connection data: {data_hex}")
-
-            if enc_ans[4:4+(len(BissCmdIrs.ans_start_bootloader_cmd))] == BissCmdIrs.ans_start_bootloader_cmd:
-                logger.info("IRS Encoder connected successfully!")
-                return True
-            else:
-                logger.error("ERROR: Failed to connect to encoder! Unexpected response.")
-                return False
-
-        except Exception as e:
-            logger.error(f"ERROR: An exception occurred while connecting to encoder: {e}")
-            return False
-
-    def disconnect_IRS_enc(self) -> bool:
-        """
-        Exit from bootloader of IRS encoder.
-
-        Args:
-            None
-
-        Returns:
-            bool: True if the operation is successful, False otherwise.
-        """
-        # CMD_VAL_ADD = 16
-        # RX_DATA_LENGTH = 252
-        # PKG_INFO_LENGTH = 5  # 5 bytes: length | address_l | address_h | cmd+0x10 | crc [-1]
-
-        def _cleanup_and_return(success: bool) -> bool:
-            self.select_flashtool_mode(0)
-            return success
-
-        try:
-            self.__port.reset_output_buffer()
-            self.__port.write(generate_byte_line(0, UartCmd.HEX_IRS_ENC_WRITE_READ_CMD, BissCmdIrs.exit_bootloader_cmd))
-            self.__port.flush()
-            self.__port.reset_input_buffer()
-
-            enc_ans = self.__port.read(UartCmd.RX_DATA_LENGTH_IRS + UartCmd.PKG_INFO_LENGTH)
-            if not enc_ans:
-                logger.error("ERROR: No response from IRS encoder!")
-                return _cleanup_and_return(False)
-
-            enc_data_np = np.array(list(enc_ans), 'uint8')
-
-            if (enc_data_np[0] == enc_data_np.size - UartCmd.PKG_INFO_LENGTH) & (enc_data_np[3] == UartCmd.HEX_IRS_ENC_WRITE_READ_CMD + UartCmd.CMD_VAL_ADD):
-                if (calculate_checksum(enc_ans[0:-1].hex()) == enc_data_np[-1]):
-                    logger.debug("CRC check passed.")
-                else:
-                    logger.error(f"CRC mismatch: calculated {calculate_checksum(enc_ans[0:-1])},\
-                                   expected {enc_data_np[-1]}")
-                    return _cleanup_and_return(False)
-            else:
-                logger.error("ERROR: Invalid response from IRS encoder!")
-                return _cleanup_and_return(False)
-
-            data_hex = enc_ans[4:4+(len(BissCmdIrs.exit_bootloader_cmd))].hex()
-            logger.debug(f"Disconnect from bootloader data: {data_hex}")
-
-            if enc_ans[4:4+(len(BissCmdIrs.exit_bootloader_cmd))] == BissCmdIrs.ans_exit_bootloader_cmd:
-                logger.info("IRS Encoder disconnect from bootloader successfully!")
-                return _cleanup_and_return(False)
-            else:
-                logger.error("ERROR: Failed to disconnect bootloader! Unexpected response.")
-                return _cleanup_and_return(False)
-
-        except Exception as e:
-            logger.error(f"ERROR: An exception occurred while disconnecting from bootloader: {e}")
-            return _cleanup_and_return(False)
 
     def read_enc2_current(self) -> tuple[str, float] | bool:
         """
