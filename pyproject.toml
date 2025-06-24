@@ -41,7 +41,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
     "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
     "Topic :: Utilities",
-    "Environment :: Embedded",
     "Environment :: Console",
     "Development Status :: 4 - Beta",
     "Natural Language :: English",
