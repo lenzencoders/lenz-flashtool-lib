@@ -53,7 +53,7 @@ Author:
 from os import path
 import sys
 import logging
-from typing import List, Tuple
+from typing import List, Tuple, Generator
 import struct
 import binascii
 from csv import reader
@@ -645,6 +645,51 @@ def _create_dummy_data_row(address: str, fill: str = FILL_BYTE) -> str:
     return dummy_data_row + f"{checksum:02X}"
 
 
+def dif2hex(DifTable: bytes, filename: str, start_page: int) -> None:
+    CRC_RECORD_TYPE = '03'
+    lower_addr = 0x800 * start_page  # (0x800 = 2048) bytes -- page size
+    upper_addr = 0x0800  # Initial upper address
+    base_addr = (upper_addr << 16) | lower_addr
+    data = bytearray(DifTable)
+    hex_file_content = []
+    current_upper_addr = upper_addr
+
+    # Initial extended address record
+    extended_addr_record = f":02000004{current_upper_addr:04X}{((~(2 + 4 + (current_upper_addr >> 8) + (current_upper_addr & 0xFF)) + 1) & 0xFF):02X}"
+    hex_file_content.append(extended_addr_record)
+
+    for i in range(0, len(data), 16):
+        chunk = data[i:i+16]
+        byte_count = len(chunk)
+        addr = base_addr + i
+        new_upper_addr = (addr >> 16) & 0xFFFF
+
+        # Check 64 KB boundary
+        if new_upper_addr != current_upper_addr:
+            current_upper_addr = new_upper_addr
+            extended_addr_record = f":02000004{current_upper_addr:04X}{((~(2 + 4 + (current_upper_addr >> 8) + (current_upper_addr & 0xFF)) + 1) & 0xFF):02X}"
+            hex_file_content.append(extended_addr_record)
+
+        record_type = 0
+        address_field = addr & 0xFFFF  # Lower 16 bits of address
+        checksum = byte_count + (address_field >> 8) + (address_field & 0xFF) + record_type + sum(chunk)
+        data_record = f":{byte_count:02X}{address_field:04X}{record_type:02X}" + \
+                      ''.join(f"{b:02X}" for b in chunk) + \
+                      f"{(256 - checksum % 256) % 256:02X}"
+        hex_file_content.append(data_record)
+
+    # EOF records
+    # hex_file_content.append(":0400000508000000EF")
+    # print(data)
+    crc_record = f"040000{CRC_RECORD_TYPE}{binascii.crc32(data):08X}"
+    hex_file_content.append(f":{crc_record}{calculate_checksum(crc_record):02X}")
+    hex_file_content.append(":00000001FF")
+
+    with open(filename, "w") as output:
+        for row in hex_file_content:
+            output.write(str(row).upper() + '\n')
+
+
 def _prep_data_rows(df: List[str], section_id: int, base_offset: int,
                     prep_bytes: List[bytes]) -> List[str]:
     """
@@ -840,3 +885,427 @@ def prep_hex(filepath: str) -> None:
     except Exception as e:
         sys.stderr.write(f"Error writing output file: {e}\n")
         sys.exit(1)
+
+
+class HexFileProcessor:
+    """
+    Processes Intel HEX format files for FlashTool programming.
+
+    Key Features:
+        Parses standard HEX files and extracts data segments
+        Splits firmware into configurable page-sized chunks (default 2KB)
+        Generates CRC32 checksums for each chunk
+        Creates metadata structures for firmware management
+        Maintains original HEX record structure in output
+
+    Usage:
+        Initialize processor
+        Parse input HEX file (parse_hex_file())
+        Generate processed output (split_with_crc())
+        Write output to new HEX file
+    """
+
+    def __init__(self):
+        """
+        Initialize the HEX file processor with empty state.
+        """
+        self.current_extended_address = 0
+        self.data_segments = []
+        self.bootloader_segments = []
+        self.original_records = []
+
+    def parse_hex_file(self, filename: str, is_bootloader: bool = False) -> List[Tuple[int, bytearray]]:
+        """
+        Parse an Intel HEX file and extract addressable data segments.
+
+        Args:
+            filename: Path to input HEX file
+
+        Returns:
+            List of (address, data) tuples representing contiguous memory blocks
+
+        Processes:
+            Standard data records (0x00)
+            Extended address records (0x04)
+            End-of-file markers (0x01)
+            Skips unsupported record types
+
+        Note: Preserves original records for accurate output generation.
+        """
+        segments = self.bootloader_segments if is_bootloader else self.data_segments
+
+        with open(filename, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if not line.startswith(':'):
+                    continue
+
+                record = HexRecord.from_line(line)
+                if not is_bootloader:
+                    self.original_records.append(record)
+
+                if record.record_type == 0x04:  # Extended linear address
+                    self.current_extended_address = (record.data[0] << 24) | (record.data[1] << 16)
+                elif record.record_type == 0x00:  # Data record
+                    full_address = self.current_extended_address + record.address
+                    segments.append((full_address, record.data))
+                elif record.record_type == 0x01:  # EOF
+                    break
+
+        return segments
+
+    def _combine_segments(self, segments: List[Tuple[int, bytearray]], chunk_size: int) -> Tuple[bytearray, int, int]:
+        """
+        Combine memory segments into a contiguous block, pad to chunk alignment, and calculate CRC/length.
+
+        Args:
+            segments: List of (address, data) tuples representing discontinuous memory segments
+            chunk_size: The alignment size for padding (typically flash page size)
+
+        Returns:
+            Tuple containing:
+            - combined_data: Contiguous bytearray with padding
+            - crc: Calculated CRC32 checksum of the combined data
+            - length_pages: Total length in chunks/pages (rounded up)
+
+        Process:
+            1. Handles empty input case
+            2. Creates contiguous block by filling gaps with 0xFF (erased flash value)
+            3. Adds padding at end to meet chunk size alignment
+            4. Calculates CRC32 checksum of the entire block
+            5. Computes size in chunks/pages (rounding up partial chunks)
+        """
+        if not segments:
+            return bytearray(), 0xFFFFFFFF, 0
+
+        combined_data = bytearray()
+        current_address = segments[0][0]
+
+        for addr, data in segments:
+            expected_addr = current_address + len(combined_data)
+            if addr != expected_addr:
+                padding_len = addr - expected_addr
+                combined_data.extend(b'\xFF' * padding_len)
+            combined_data.extend(data)
+
+        if len(combined_data) % chunk_size != 0:
+            padding = chunk_size - (len(combined_data) % chunk_size)
+            combined_data.extend(b'\xFF' * padding)
+
+        crc = binascii.crc32(combined_data) & 0xFFFFFFFF
+        length_pages = len(combined_data) // chunk_size
+        if len(combined_data) % chunk_size != 0:
+            length_pages += 1
+
+        return combined_data, crc, length_pages
+
+    def generate_first_page(
+        self,
+        program_crc: int,
+        program_version: int,
+        program_length: int,
+        bootloader_crc: int,
+        bootloader_version: int,
+        bootloader_length: int,
+        page_size: int = 2048,
+        program_date: int = int('202507'),
+        bootloader_date: int = int('202507'),
+    ) -> bytearray:
+        """
+        Generate metadata page for firmware management.
+
+        Args:
+            program_crc: CRC32 of entire program data
+            program_version: Version number (e.g., 0x00000100 for v1.0)
+            program_length: Program length in pages
+            bootloader_*: Corresponding bootloader metadata
+            page_size: Flash page size in bytes (default 2048)
+
+        Returns:
+            bytearray containing:
+            - 64-byte metadata structure
+            - 1984-byte padding (0xFF)
+
+        Metadata Structure (64 bytes):
+        Offset  Field                     Type
+        0x00    ProgramCRC32              uint32
+        0x04    ProgramDate (timestamp)   uint32
+        0x08    ProgramVersion            uint32
+        0x0C    ProgramLen (pages)        uint32
+        0x10    BootloaderCRC32           uint32
+        0x14    BootloaderDate           uint32
+        0x18    BootloaderVersion        uint32
+        0x1C    BootloaderLen            uint32
+        0x20    ProgramCurrentPageCRC32  uint32
+        0x24    BootloaderCurrentPageCRC uint32
+        """
+        page = bytearray([0xFF] * page_size)
+
+        # Pack the UartBank1_t structure into the first 64 bytes
+        metadata = struct.pack(
+            "<IIIIIIIIII",  # Little-endian, 10x uint32
+            program_crc,                # ProgramCRC32 (0x00)
+            program_date,              # ProgramDate (0x04)
+            program_version,            # ProgramVersion (0x08)
+            program_length,             # ProgramLen (0x0C) - теперь uint32 вместо uint16
+            bootloader_crc,             # BootloaderCRC32 (0x10)
+            bootloader_date,            # BootloaderDate (0x14)
+            bootloader_version,         # BootloaderVersion (0x18)
+            bootloader_length,          # BootloaderLen (0x1C)
+            0x00000000,                # ProgramCurrentPageCRC32 (0x20) - заполнится позже
+            0x00000000                 # BootloaderCurrentPageCRC32 (0x24) - заполнится позже
+        )
+
+        page[0:len(metadata)] = metadata
+
+        page[12] = program_length & 0xFFFFFFFF        # PROGRAM_LENGTH_ADR
+        page[28] = bootloader_length & 0xFFFFFFFF      # BOOTLOADER_LENGTH_ADR
+
+        page_crc = binascii.crc32(page) & 0xFFFFFFFF
+        page[32:36] = struct.pack("<I", page_crc)  # PROGRAM_CURPAGE_CRC_ADR
+
+        return page
+
+    def split_with_crc(
+        self,
+        chunk_size: int = 2048,
+        metadata: bool = True,
+        program_version: int = 0x00000100,
+        bootloader_version: int = 0x00000100,
+        program_date: int = int('202507'),
+        bootloader_date: int = int('202507'),
+        ) -> List[str]:
+        """
+        Process firmware data into page-aligned chunks with CRCs.
+
+        Args:
+            chunk_size: Flash page size (default 2048 bytes)
+            metadata: Whether to prepend metadata page
+
+        Returns:
+            List of HEX format strings ready for file writing
+
+        Processing Steps:
+        1. Combine all data segments into contiguous block
+        2. Handle address gaps with 0xFF padding
+        3. Add page alignment padding if needed
+        4. Calculate overall program CRC32
+        5. Generate metadata page (optional)
+        6. Split into chunks with individual CRCs
+        7. Generate HEX records
+        """
+        program_data, program_crc, program_length = self._combine_segments(self.data_segments, chunk_size)
+
+        if self.bootloader_segments:
+            bootloader_data, bootloader_crc, bootloader_length = self._combine_segments(
+                self.bootloader_segments, chunk_size)
+        else:
+            bootloader_data = bytearray()
+            bootloader_crc = 0xFFFFFFFF
+            bootloader_length = 0
+
+        if metadata:
+            metadata_page = self.generate_first_page(
+                program_crc=program_crc,
+                program_version=program_version,
+                program_length=program_length,
+                bootloader_crc=bootloader_crc,
+                bootloader_version=bootloader_version,
+                bootloader_length=bootloader_length,
+                program_date=program_date,
+                bootloader_date=bootloader_date,
+            )
+
+            combined_data = metadata_page + program_data + bootloader_data
+            current_address = self.data_segments[0][0] - len(metadata_page)
+        else:
+            combined_data = program_data + bootloader_data
+            current_address = self.data_segments[0][0]
+
+        chunks = []
+        for i in range(0, len(combined_data), chunk_size):
+            chunk_data = combined_data[i:i + chunk_size]
+            crc = binascii.crc32(chunk_data) & 0xFFFFFFFF
+            chunks.append((current_address + i, chunk_data, crc))
+
+        return self._generate_hex_output(chunks)
+
+    def _generate_hex_output(self, chunks: List[Tuple[int, bytearray, int]]) -> List[str]:
+        """
+        Generate final HEX file output from processed chunks.
+
+        Args:
+            chunks: List of (address, data, crc) tuples
+
+        Returns:
+            List of HEX format strings
+
+        Maintains:
+        - Original extended address records
+        - Data records split into 16-byte lines
+        - CRC records after each chunk
+        - Proper EOF termination
+        """
+        output = []
+
+        for record in self.original_records:
+            if record.record_type in {0x04}:
+                if isinstance(record.data, list):
+                    record.data = bytearray(record.data)
+                output.append(record.to_hex_line())
+
+        for address, data, crc in chunks:
+            remaining_data = data
+            current_offset = 0
+
+            while remaining_data:
+                chunk = remaining_data[:16]
+                rec_address = (address + current_offset) & 0xFFFF
+                data_rec = HexRecord(
+                    byte_count=len(chunk),
+                    address=rec_address,
+                    record_type=0x00,
+                    data=chunk
+                )
+                output.append(data_rec.to_hex_line())
+                remaining_data = remaining_data[16:]
+                current_offset += 16
+
+            output.append(HexRecord.create_crc_record(crc).to_hex_line())
+
+        eof_rec = HexRecord(byte_count=0, address=0, record_type=0x01, data=bytearray())
+        output.append(eof_rec.to_hex_line())
+
+        return output
+
+
+class HexBlockExtractor:
+    """
+    Extracts and processes blocks of data from Intel HEX files for FlashTool.
+
+    This class handles:
+    - Parsing HEX file records
+    - Combining discontinuous memory segments into contiguous blocks
+    - Tracking CRC values associated with each block
+    - Managing extended address segments
+    - Yielding complete blocks with their metadata
+    """
+    def __init__(self):
+        """Initialize the HEX block extractor with empty state."""
+        self.current_extended_addr = 0x00000000
+        self.current_block_data = bytearray()
+        self.current_block_start = 0
+        self.crc_records = []
+        self.data_records = []
+
+    def process_hex_file(self, filename: str) -> Generator[Tuple[int, bytes, int], None, None]:
+        """Main processing method that reads a HEX file and yields data blocks.
+
+        Args:
+            filename: Path to the Intel HEX format file
+
+        Yields:
+            Tuples containing:
+            - block_start: Starting address of the block
+            - block_data: Binary data contained in the block
+            - block_crc: CRC32 checksum associated with the block
+
+        Note:
+            Processes the file line by line and handles the final block if exists.
+        """
+        with open(filename, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if not line.startswith(':'):
+                    continue
+
+                record = self._parse_hex_line(line)
+                for block in self._process_record(record):
+                    yield block
+
+        # Process the last block if exists
+        if self.current_block_data:
+            yield self._finalize_block()
+
+    def _parse_hex_line(self, line: str) -> dict:
+        """Parse a single line of HEX file into its components.
+
+        Args:
+            line: A single line from HEX file (e.g., ':10010000214601360121470136007EFE09D2190140')
+
+        Returns:
+            Dictionary containing:
+            - byte_count: Number of data bytes in record
+            - address: 16-bit offset address
+            - record_type: HEX record type (0x00=data, 0x04=extended address, etc.)
+            - data: Raw bytes contained in record
+            - checksum: Record checksum byte
+
+        Raises:
+            ValueError: If line format is invalid
+        """
+        byte_count = int(line[1:3], 16)
+        address = int(line[3:7], 16)
+        record_type = int(line[7:9], 16)
+        data = bytes.fromhex(line[9:9+byte_count*2])
+        checksum = int(line[9+byte_count*2:], 16)
+
+        return {
+            'byte_count': byte_count,
+            'address': address,
+            'record_type': record_type,
+            'data': data,
+            'checksum': checksum
+        }
+
+    def _process_record(self, record: dict) -> Generator[Tuple[int, bytes, int], None, None]:
+        """Process a single parsed HEX record and manage block construction.
+
+        Args:
+            record: Parsed HEX record dictionary from _parse_hex_line()
+
+        Yields:
+            Completed blocks when encountering CRC records or address changes
+
+        Handles:
+        - Extended address records (type 0x04): Updates current addressing
+        - Data records (type 0x00): Accumulates data into current block
+        - CRC records (type 0x03): Triggers block completion and yield
+        """
+        if record['record_type'] == 0x04:  # Extended Linear Address
+            self.current_extended_addr = (record['data'][0] << 24 | record['data'][1] << 16)
+        elif record['record_type'] == 0x00:  # Data Record
+            full_addr = self.current_extended_addr + record['address']
+
+            # Initialize new block if needed
+            if not self.current_block_data:
+                self.current_block_start = full_addr
+
+            self.current_block_data.extend(record['data'])
+        elif record['record_type'] == 0x03:  # CRC Record
+            crc_value = int.from_bytes(record['data'], 'big')
+            self.crc_records.append((self.current_block_start, crc_value))
+
+            # Yield the completed block
+            if self.current_block_data:
+                yield self._finalize_block()
+
+    def _finalize_block(self) -> Tuple[int, bytes, int]:
+        """Package the current block of data and prepare for new block.
+
+        Returns:
+            Tuple containing:
+            - Starting address of the completed block
+            - Binary data of the block
+            - Associated CRC32 checksum (0 if none available)
+
+        Note:
+            Clears current block buffers after packaging the data.
+        """
+        block_data = bytes(self.current_block_data)
+        block_crc = self.crc_records.pop(0)[1] if self.crc_records else 0
+
+        # Reset for next block
+        self.current_block_data = bytearray()
+
+        return (self.current_block_start, block_data, block_crc)

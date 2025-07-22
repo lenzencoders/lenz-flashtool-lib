@@ -26,10 +26,10 @@ import serial
 import serial.tools.list_ports
 import numpy as np
 from ..biss import (
-    biss_commands, interpret_biss_commandstate, interpret_error_flags,
+    biss_commands, interpret_biss_commandstate, interpret_error_flags, 
     BiSSBank,
 )
-from .uart import UartCmd
+from .uart import UartCmd, UartBootloaderCmd, UartBootloaderMemoryStates, UartBootloaderSeq
 from .errors import FlashToolError
 from .hex_utils import (
     calculate_checksum,
@@ -38,6 +38,9 @@ from .hex_utils import (
     reverse_endian, bytes_to_hex_str
 )
 from ..utils.progress import percent_complete
+from ..utils.termcolors import TermColors
+from .hex_utils import HexBlockExtractor
+
 
 logger = logging.getLogger(__name__)
 
@@ -812,6 +815,271 @@ class FlashTool:
         # logger.debug(tx_row)
         self._write_to_port(tx_row)
         time.sleep(0.01)
+
+    def reboot_to_bl(self) -> None:
+        """
+        Reboot to BOOTLOADER FlashTool device.
+
+        Sends a Reboot to Bootloader command to the FlashTool.
+
+        Returns:
+            None
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft.reboot_to_bl()
+        """
+        logger.info('Sending REBOOT to BOOTLOADER command to FlashTool')
+        tx_row = bytes.fromhex(generate_hex_line(
+            address=0x0000,
+            command=UartCmd.CMD_REBOOT_TO_BL,
+            data=[0x00]
+        )[1:])
+        self._write_to_port(tx_row)
+        time.sleep(0.01)
+
+    def reboot_to_fw(self):
+        """
+        Reboot to FIRMWARE FlashTool device.
+
+        Sends a Reboot to Firmware command to the FlashTool.
+
+        Returns:
+            None
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft.reboot_to_fw()
+        """
+        logger.info('Sending REBOOT to FIRMWARE command to FlashTool')
+        tx_row = bytes.fromhex(generate_hex_line(
+            address=0x0000,
+            command=UartBootloaderCmd.UART_COMMAND_RUN_PROGRAM,
+            data=[0x00]
+        )[1:])
+        logger.debug(f"Sent BiSS Data: {tx_row.hex()}")
+        self._write_to_port(tx_row)
+        time.sleep(0.01)
+
+    def read_memory_state_bl(self) -> UartBootloaderMemoryStates:
+        """
+        Read Memory State of FlashTool bootloader.
+
+        Sends a Read Memory State command to FlashTool.
+
+        Returns:
+            UartBootloaderMemoryStates
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft.read_memory_state_bl()
+        """
+        tx_row = bytes.fromhex(generate_hex_line(
+            address=0x0000,
+            command=UartBootloaderCmd.UART_COMMAND_READ_MEMORYSTATE,
+            data=[0x00]
+        )[1:])
+        logger.debug(f"Sent BiSS Data: {tx_row.hex()}")
+        self._write_to_port(tx_row)
+        response = self.port_read(len(tx_row) - 1)
+        state = self._decode_memory_state_bl(response)
+        time.sleep(0.01)
+        return state
+
+    def _decode_memory_state_bl(self, response: np.ndarray) -> UartBootloaderMemoryStates:
+        """
+        Decode Memory State of FlashTool bootloader.
+
+        Input:
+            response: value from read_memory_state_bl
+
+        Returns:
+            UartBootloaderMemoryStates
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft._decode_memory_state_bl(response)
+            UartBootloaderMemoryStates
+        """
+        response = response[0]
+        if response in {state.value for state in UartBootloaderMemoryStates}:
+            matched_state = UartBootloaderMemoryStates(response)
+            print(f"{TermColors.Blue}Response: {matched_state.name} (0x{response:02x}{TermColors.Default})")
+            if matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_OK:
+                logger.info('Firmware CRC check passed!')
+            elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_FAULT:
+                logger.error('Firmware CRC check failed!')
+            elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_IDLE:
+                logger.info('Uart state is IDLE!')
+            elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FW_CHECK_CRC32_FAULT:
+                logger.error('Firmware CRC check failed!')
+            elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FW_CHECK_CRC32_OK:
+                logger.info('Firmware CRC check passed!')
+        return matched_state
+
+    def check_main_fw_crc32(self) -> None:
+        """
+        Compare calculated main FlashTool firmware crc32 with ProgramCRC32 value in flash.
+
+        Input:
+            None
+
+        Returns:
+            None
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft.check_main_fw_crc32()
+            'Response: UART_MEMORYSTATE_FW_CHECK_CRC32_OK (0x05)'
+        """
+        logger.info('Sending check main firmware CRC32 command to FlashTool')
+        tx_row = bytes.fromhex(generate_hex_line(
+            address=0x0000,
+            command=UartBootloaderCmd.UART_COMMAND_CHECK_PROGRAM_CRC32,
+            data=[0x00]
+        )[1:])
+        logger.debug(f"Sent BiSS Data: {tx_row.hex()}")
+        self._write_to_port(tx_row)
+        self.read_memory_state_bl()
+
+    def download_fw_to_ft(self, hex_file_path: str, max_retries: int = 3, pbar: Optional[Any] = None):
+        """
+        Download main firmware from HEX file to FlashTool device using bootloader protocol.
+
+        Implements a robust flash programming routine with:
+        - Automatic CRC verification
+        - Retry mechanism for failed pages
+        - Progress tracking
+        - Error recovery
+
+        Protocol Flow:
+        1. For each 2KB block in HEX file:
+            a. Send block's CRC32 checksum first
+            b. Transfer data in 64-byte chunks
+            c. Verify flash operation success
+            d. Retry on failure (up to max_retries)
+        2. Handle both successful and error cases gracefully
+
+        Args:
+            hex_file_path (str): Path to Intel HEX format firmware file
+            max_retries (int): Maximum retry attempts per page (default: 3)
+
+        Raises:
+            RuntimeError: When exceeding max retries for a page
+            IOError: For file access problems
+            ValueError: For invalid HEX file format
+            Exception: For communication errors with device
+
+        Returns:
+            None: Success is implied by normal completion
+
+        Side Effects:
+            - Programs firmware to target device flash
+            - Modifies device memory state
+            - May reset communication interface
+
+        Example:
+            >>> tool = FlashTool()
+            >>> tool.download_fw_to_ft("firmware_v1.2.hex")
+
+        Notes:
+            - Requires active bootloader connection
+            - Uses 2KB page size (device-specific)
+            - 64-byte chunk size optimized for UART throughput
+            - Includes mandatory 1s delay after programming
+            - CRC verification is mandatory for each page
+        """
+        extractor = HexBlockExtractor()
+        retry_count = 0
+        total_pages = 12  # Default value
+        metadata_total_pages = 1
+
+        try:
+            first_block_start, first_block_data, _ = next(extractor.process_hex_file(hex_file_path))
+            first_lower_addr = first_block_start & 0xFFFF
+            first_page_number = first_lower_addr // 2048
+
+            # Extract ProgramLen from metadata (offset 0x0C, 4 bytes)
+            if len(first_block_data) >= 0x0C + 4:
+                program_len_bytes = first_block_data[0x0C:0x0C+4]
+                program_total_pages = int.from_bytes(program_len_bytes, byteorder='little')
+                logger.info(f"Extracted program total pages from metadata: {program_total_pages}")
+
+            # Extract BootloaderLen from metadata (offset 0x1C, 4 bytes)
+            if len(first_block_data) >= 0x1C + 4:
+                program_len_bytes = first_block_data[0x1C:0x1C+4]
+                bootloader_total_pages = int.from_bytes(program_len_bytes, byteorder='little')
+                logger.info(f"Extracted bootloader total pages from metadata: {bootloader_total_pages}")
+
+            total_pages = program_total_pages + bootloader_total_pages + metadata_total_pages
+            logger.info(f"Extracted total pages from metadata: {total_pages}")
+
+            for block_start, block_data, block_crc in extractor.process_hex_file(hex_file_path):
+                lower_addr = block_start & 0xFFFF
+                page_number = lower_addr // 2048
+                count_pages = page_number - first_page_number + 1
+                success = False
+
+                while not success and retry_count < max_retries:
+                    try:
+                        # 1. Send CRC Record
+                        crc_bytes = [
+                            (block_crc >> 24) & 0xFF,
+                            (block_crc >> 16) & 0xFF,
+                            (block_crc >> 8) & 0xFF,
+                            block_crc & 0xFF
+                        ]
+                        crc_line = generate_hex_line(
+                            address=0x0000,
+                            command=UartBootloaderCmd.UART_COMMAND_WRITE_CURRENT_PAGE_CRC32,
+                            data=crc_bytes
+                        )
+                        logger.info(f"Sent BiSS Data: {crc_line}")
+                        self.hex_line_send(crc_line)
+
+                        # 2. Send Data Records in 64-byte chunks
+                        for offset in range(0, len(block_data), 64):
+                            chunk = block_data[offset:offset+64]
+                            chunk_addr = (0x01 << 8) | ((page_number) & 0xFF)
+                            data_line = generate_hex_line(
+                                address=chunk_addr,
+                                command=UartBootloaderCmd.UART_COMMAND_LOAD_2K,
+                                data=list(chunk)
+                            )
+                            self.hex_line_send(data_line)
+
+                        if pbar:
+                            percent_complete(count_pages, total_pages, title=f"Sending Page {count_pages}")
+                        # 3. Wait for flash 2048 bytes operation to complete
+                        time.sleep(1)
+
+                        # 4. Verify CRC32 check
+                        matched_state = self.read_memory_state_bl()
+                        if matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_FAULT:
+                            retry_count += 1
+                            print(f"CRC Error on page {page_number}, retry {retry_count}/{max_retries}")
+                            if retry_count >= max_retries:
+                                raise RuntimeError(f"Max retries ({max_retries}) exceeded for page {page_number}")
+                            continue
+                        elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_OK:
+                            success = True
+                            retry_count = 0
+                        else:
+                            raise RuntimeError(f"Unexpected memory state: {matched_state.name}")
+
+                    except Exception as e:
+                        retry_count += 1
+                        print(f"Error on page {page_number}, retry {retry_count}/{max_retries}: {str(e)}")
+                        if retry_count >= max_retries:
+                            raise RuntimeError(f"Max retries ({max_retries}) exceeded for page {page_number}")
+                        time.sleep(1)
+                        continue
+
+        except Exception as e:
+            print(f"Fatal error during firmware upload: {str(e)}")
+            raise
+        self.check_main_fw_crc32()
+        time.sleep(0.05)
 
     def select_spi_channel(self, channel: np.uint8) -> None:
         """

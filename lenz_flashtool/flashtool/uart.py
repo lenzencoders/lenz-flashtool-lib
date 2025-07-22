@@ -215,7 +215,7 @@ class UartCmd(IntEnum):
         Where CHANNEL_BYTE is 0x00 or 0x01 or 0x02
 
     Example:
-        >>> :0100000e02ef  Select channel 1 SPI mode - CH1_LENZ_BISS
+        >>> :0100000e01ed  Select channel 1 SPI mode - CH1_LENZ_BISS
     """
 
     HEX_READ_ENC2_CURRENT = 0x12
@@ -412,3 +412,145 @@ class UartCmd(IntEnum):
         Response:
             >>>  0x1004092032A  Register 0x40 keeps 0x03
     """
+
+    CMD_REBOOT_TO_BL = 0xFF
+    """int: Command to reboot to bootloader.
+
+    Usage:
+        - Used for entering bootloader
+        - Address in packet doesn't matter
+
+    Note:
+        Need to use bootloader cmd to reboot to main fw.
+
+    Packet Structure:
+        - Request: [0x01][REG_ADDR][0xFF][DUMMY_DATA][CHECKSUM]
+
+    Example:
+        >>> :010000ff0000
+    """
+
+
+class UartBootloaderCmd(IntEnum):
+    UART_COMMAND_STATE_STAY_BL = 0x00
+    """int: Command to stay in bootloader.
+
+    Need to be sent in 5s after FlashTool is powered on. 
+    To try again to reset the power of FlashTool.
+
+    Usage:
+        - Request consist UART_SEQ_STAY_IN_BL as data
+        - Address in packet doesn't matter
+        - Response consist UART_SEQ_ANSWER_TO_STAY_IN_BL as data
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x00][UART_SEQ_STAY_IN_BL][CHECKSUM]
+        Response: [DATA_SIZE][REG_ADDR][0x10][UART_SEQ_ANSWER_TO_STAY_IN_BL][CHECKSUM]
+
+    Examples:
+        Requests:
+            >>>  :040000000531f6b917
+        Response:
+            >>>  :0400001006b14ef9ee
+    """
+
+    UART_COMMAND_LOAD_2K = 0x01
+    """int: Command to load 2048 bytes of fw to FlashTool.
+
+    Usage:
+        - Address in packet doesn't matter
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x01][DATA][CHECKSUM]
+
+    Example Packet Structure:
+        >>> 40 00 00 01 [64 bytes...] [checksum]
+    """
+
+    UART_COMMAND_RUN_PROGRAM = 0x02
+    """int: Command to run main firmware FlashTool.
+
+    Usage:
+        - Data and address in packet doesn't matter
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x02][DUMMY_DATA][CHECKSUM]
+
+    Examples:
+        >>>  :0100000200fd
+    """
+
+    UART_COMMAND_CHECK_PROGRAM_CRC32 = 0x04
+    """int: Command to calculate CRC32 of main firmware FlashTool and set memory flag.
+
+    Usage:
+        - Data and address in packet doesn't matter
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x04][DUMMY_DATA][CHECKSUM]
+
+    Examples:
+        >>>  :0100000400fb
+    """
+
+    UART_COMMAND_WRITE_CURRENT_PAGE_CRC32 = 0x05
+    """int: Command to write current page CRC32.
+
+    Usage:
+        - When UART_COMMAND_RUN_PROGRAM is used
+        - Address in packet doesn't matter
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x05][CRC32_DATA][CHECKSUM]
+
+    Examples:
+        >>>  :040000058068B36CF0
+    """
+
+    UART_COMMAND_READ_MEMORYSTATE = 0x06
+    """int: Command to read memory state of FlashTool.
+
+    Response MEMORY_STATE_DATA:
+        - UART_MEMORYSTATE_IDLE = 0
+        - UART_MEMORYSTATE_FLASH_FW_CRC_OK = 2
+        - UART_MEMORYSTATE_FLASH_FW_CRC_FAULT = 3
+        - UART_MEMORYSTATE_FW_CHECK_CRC32_FAULT = 4
+        - UART_MEMORYSTATE_FW_CHECK_CRC32_OK = 5
+        - UART_MEMORYSTATE_FLASH_FW_NULL = 12
+        - UART_MEMORYSTATE_FLASH_BSY = 255
+
+    Usage:
+        - Data and address in packet doesn't matter
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x06][DUMMY_DATA][CHECKSUM]
+        Response: [DATA_SIZE][REG_ADDR][0x16][MEMORY_STATE_DATA][CHECKSUM]
+
+    Examples:
+        Request:
+            >>>  :0100000600f9
+        Response:
+            >>>  :0100001602e7
+    """
+
+
+class UartBootloaderSeq:
+    UART_SEQ_STAY_IN_BL = [0x05, 0x31, 0xF6, 0xB9]
+
+    UART_SEQ_ANSWER_TO_STAY_IN_BL = [0x06, 0xB1, 0x4E, 0xF9]
+
+
+class UartBootloaderMemoryStates(IntEnum):
+    UART_MEMORYSTATE_IDLE = 0x00
+
+    UART_MEMORYSTATE_FLASH_FW_CRC_OK = 2
+
+    UART_MEMORYSTATE_FLASH_FW_CRC_FAULT = 3
+
+    UART_MEMORYSTATE_FW_CHECK_CRC32_FAULT = 4
+
+    UART_MEMORYSTATE_FW_CHECK_CRC32_OK = 5
+
+    UART_MEMORYSTATE_FLASH_FW_NULL = 12
+
+    UART_MEMORYSTATE_FLASH_BSY = 255
