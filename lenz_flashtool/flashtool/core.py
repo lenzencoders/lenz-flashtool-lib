@@ -26,7 +26,7 @@ import serial
 import serial.tools.list_ports
 import numpy as np
 from ..biss import (
-    biss_commands, interpret_biss_commandstate, interpret_error_flags, 
+    biss_commands, interpret_biss_commandstate, interpret_error_flags,
     BiSSBank,
 )
 from .uart import UartCmd, UartBootloaderCmd, UartBootloaderMemoryStates, UartBootloaderSeq
@@ -40,7 +40,6 @@ from .hex_utils import (
 from ..utils.progress import percent_complete
 from ..utils.termcolors import TermColors
 from .hex_utils import HexBlockExtractor
-
 
 logger = logging.getLogger(__name__)
 

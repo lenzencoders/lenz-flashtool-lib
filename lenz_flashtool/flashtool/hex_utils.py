@@ -646,6 +646,34 @@ def _create_dummy_data_row(address: str, fill: str = FILL_BYTE) -> str:
 
 
 def dif2hex(DifTable: bytes, filename: str, start_page: int) -> None:
+    """
+    Convert a Diff table to Intel HEX format and save to a file.
+
+    This function takes a byte array representing a Diff table, converts it to Intel HEX format
+    with proper address handling and checksums, and writes the result to the specified file.
+    The output includes extended address records, data records, a CRC32 record, and an end-of-file record.
+
+    Args:
+        DifTable: The input byte array containing the data to be converted.
+        filename: The path of the output file where the HEX data will be written.
+        start_page: The starting page number used to calculate the initial address offset.
+                    Each page is 2048 bytes (0x800).
+
+    Returns:
+        None: The function writes the result to a file but doesn't return anything.
+
+    The function handles:
+    - 64KB address boundary crossing with extended address records
+    - Proper checksum calculation for all record types
+    - Generation of data records with 16 bytes per line (standard HEX format)
+    - Addition of a CRC32 record (type 0x03) at the end of the file
+    - Proper end-of-file marker
+
+    Example:
+        >>> data = bytes([0x01, 0x02, 0x03, 0x04])
+        >>> dif2hex(data, "output.hex", 24)
+        # Creates output.hex with the converted data
+    """
     CRC_RECORD_TYPE = '03'
     lower_addr = 0x800 * start_page  # (0x800 = 2048) bytes -- page size
     upper_addr = 0x0800  # Initial upper address
