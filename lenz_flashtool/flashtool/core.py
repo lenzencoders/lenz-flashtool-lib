@@ -2135,9 +2135,9 @@ class FlashTool:
             logger.error(f"Error reading encoder current: {str(e)}", exc_info=True)
             return False
 
-    def read_current_angle_enc_SPI(self) -> tuple[str, list[int]] | bool:
+    def read_instant_angle_enc_SPI(self) -> tuple[str, list[int]] | bool:
         """
-        Read current angle encoder via SPI over USB.
+        Read instant angle encoder via SPI over USB.
 
         Returns:
             tuple[str, list[int]]: If successful, returns:
@@ -2153,7 +2153,7 @@ class FlashTool:
         try:
             self.__port.reset_output_buffer()
             self.__port.reset_input_buffer()
-            self.__port.write(generate_byte_line(0, UartCmd.HEX_READ_CURRENT_ANGLE_ENC_SPI, list(range(RX_DATA_LENGTH))))
+            self.__port.write(generate_byte_line(0, UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI, list(range(RX_DATA_LENGTH))))
             self.__port.flush()
 
             enc_ans = self.__port.read(RX_DATA_LENGTH + PKG_INFO_LENGTH)
@@ -2166,7 +2166,7 @@ class FlashTool:
             enc_data_np = np.array(list(enc_ans), dtype='uint8')
 
             if (enc_data_np[0] != enc_data_np.size - PKG_INFO_LENGTH) or \
-                (enc_data_np[3] != UartCmd.HEX_READ_CURRENT_ANGLE_ENC_SPI + CMD_VAL_ADD):
+                (enc_data_np[3] != UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI + CMD_VAL_ADD):
                 logger.error("Invalid response structure from IRS encoder!")
                 return False
 

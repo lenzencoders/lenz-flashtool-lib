@@ -301,8 +301,8 @@ class UartCmd(IntEnum):
         >>>  :0100400D05AD
     """
 
-    HEX_READ_CURRENT_ANGLE_ENC_SPI = 0x10
-    """int: Command to read current angle data from encoder via SPI.
+    HEX_READ_INSTANT_ANGLE_ENC_SPI = 0x10
+    """int: Command to read instant angle data from encoder via SPI.
 
     Usage:
         - Single data frame for encoder reading
