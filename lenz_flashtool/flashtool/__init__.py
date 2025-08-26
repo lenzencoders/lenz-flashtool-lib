@@ -23,6 +23,7 @@ from .logging import init_logging
 from .hex_utils import get_nonce, generate_hex_line, calculate_checksum, _readhex, dif2hex, prep_hex
 from .errors import FlashToolError
 from .operations import biss_send_dif, biss_send_hex
+from .ft_bl_connection import connect_and_stay_in_bl, connect_and_enter_fw
 __all__ = [
     'UartCmd',
     'FlashTool',
@@ -34,6 +35,8 @@ __all__ = [
     '_readhex',
     'biss_send_dif',
     'biss_send_hex',
-    "dif2hex",
-    "prep_hex"
+    'dif2hex',
+    'prep_hex',
+    'connect_and_stay_in_bl',
+    'connect_and_enter_fw'
 ]

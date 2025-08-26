@@ -34,7 +34,9 @@ from .flashtool import (
     biss_send_dif,
     calculate_checksum,
     dif2hex,
-    prep_hex
+    prep_hex,
+    connect_and_enter_fw,
+    connect_and_stay_in_bl
 )
 from .testing import MockFlashTool
 from .encproc import LenzEncoderProcessor
@@ -67,8 +69,11 @@ __all__ = [
     'plot2',
     'TermColors',
     'dif2hex',
-    'prep_hex'
+    'prep_hex',
+
+    'connect_and_stay_in_bl',
+    'connect_and_enter_fw'
 ]
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __author__ = "LENZ ENCODERS"
