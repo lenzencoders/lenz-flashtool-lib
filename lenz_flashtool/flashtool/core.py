@@ -29,7 +29,7 @@ from ..biss import (
     biss_commands, interpret_biss_commandstate, interpret_error_flags,
     BiSSBank,
 )
-from .uart import UartCmd
+from .uart import UartCmd, UartBootloaderCmd, UartBootloaderMemoryStates, UartBootloaderSeq
 from .errors import FlashToolError
 from .hex_utils import (
     calculate_checksum,
@@ -38,6 +38,8 @@ from .hex_utils import (
     reverse_endian, bytes_to_hex_str
 )
 from ..utils.progress import percent_complete
+from ..utils.termcolors import TermColors
+from .hex_utils import HexBlockExtractor
 
 logger = logging.getLogger(__name__)
 
@@ -813,188 +815,451 @@ class FlashTool:
         self._write_to_port(tx_row)
         time.sleep(0.01)
 
-    def select_spi_channel(self, channel: np.uint8) -> None:
+    def reboot_to_bl(self) -> None:
+        """
+        Reboot to BOOTLOADER FlashTool device.
+
+        Sends a Reboot to Bootloader command to the FlashTool.
+
+        Returns:
+            None
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft.reboot_to_bl()
+        """
+        logger.info('Sending REBOOT to BOOTLOADER command to FlashTool')
+        tx_row = bytes.fromhex(generate_hex_line(
+            address=0x0000,
+            command=UartCmd.CMD_REBOOT_TO_BL,
+            data=[0x00]
+        )[1:])
+        self._write_to_port(tx_row)
+        time.sleep(0.01)
+
+    def reboot_to_fw(self):
+        """
+        Reboot to FIRMWARE FlashTool device.
+
+        Sends a Reboot to Firmware command to the FlashTool.
+
+        Returns:
+            None
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft.reboot_to_fw()
+        """
+        logger.info('Sending REBOOT to FIRMWARE command to FlashTool')
+        tx_row = bytes.fromhex(generate_hex_line(
+            address=0x0000,
+            command=UartBootloaderCmd.UART_COMMAND_RUN_PROGRAM,
+            data=[0x00]
+        )[1:])
+        logger.debug(f"Sent BiSS Data: {tx_row.hex()}")
+        self._write_to_port(tx_row)
+        time.sleep(0.01)
+
+    def read_memory_state_bl(self) -> UartBootloaderMemoryStates:
+        """
+        Read Memory State of FlashTool bootloader.
+
+        Sends a Read Memory State command to FlashTool.
+
+        Returns:
+            UartBootloaderMemoryStates
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft.read_memory_state_bl()
+        """
+        tx_row = bytes.fromhex(generate_hex_line(
+            address=0x0000,
+            command=UartBootloaderCmd.UART_COMMAND_READ_MEMORYSTATE,
+            data=[0x00]
+        )[1:])
+        logger.debug(f"Sent BiSS Data: {tx_row.hex()}")
+        self._write_to_port(tx_row)
+        response = self.port_read(len(tx_row) - 1)
+        state = self._decode_memory_state_bl(response)
+        time.sleep(0.01)
+        return state
+
+    def _decode_memory_state_bl(self, response: np.ndarray) -> UartBootloaderMemoryStates:
+        """
+        Decode Memory State of FlashTool bootloader.
+
+        Input:
+            response: value from read_memory_state_bl
+
+        Returns:
+            UartBootloaderMemoryStates
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft._decode_memory_state_bl(response)
+            UartBootloaderMemoryStates
+        """
+        response = response[0]
+        if response in {state.value for state in UartBootloaderMemoryStates}:
+            matched_state = UartBootloaderMemoryStates(response)
+            print(f"{TermColors.Blue}Response: {matched_state.name} (0x{response:02x}{TermColors.Default})")
+            if matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_OK:
+                logger.info('Firmware CRC check passed!')
+            elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_FAULT:
+                logger.error('Firmware CRC check failed!')
+            elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_IDLE:
+                logger.info('Uart state is IDLE!')
+            elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FW_CHECK_CRC32_FAULT:
+                logger.error('Firmware CRC check failed!')
+            elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FW_CHECK_CRC32_OK:
+                logger.info('Firmware CRC check passed!')
+        return matched_state
+
+    def check_main_fw_crc32(self) -> None:
+        """
+        Compare calculated main FlashTool firmware crc32 with ProgramCRC32 value in flash.
+
+        Input:
+            None
+
+        Returns:
+            None
+
+        Example:
+            >>> ft = FlashTool()
+            >>> ft.check_main_fw_crc32()
+            'Response: UART_MEMORYSTATE_FW_CHECK_CRC32_OK (0x05)'
+        """
+        logger.info('Sending check main firmware CRC32 command to FlashTool')
+        tx_row = bytes.fromhex(generate_hex_line(
+            address=0x0000,
+            command=UartBootloaderCmd.UART_COMMAND_CHECK_PROGRAM_CRC32,
+            data=[0x00]
+        )[1:])
+        logger.debug(f"Sent BiSS Data: {tx_row.hex()}")
+        self._write_to_port(tx_row)
+        self.read_memory_state_bl()
+
+    def download_fw_to_ft(self, hex_file_path: str, max_retries: int = 3, pbar: Optional[Any] = None):
+        """
+        Download main firmware from HEX file to FlashTool device using bootloader protocol.
+
+        Implements a robust flash programming routine with:
+        - Automatic CRC verification
+        - Retry mechanism for failed pages
+        - Progress tracking
+        - Error recovery
+
+        Protocol Flow:
+        1. For each 2KB block in HEX file:
+            a. Send block's CRC32 checksum first
+            b. Transfer data in 64-byte chunks
+            c. Verify flash operation success
+            d. Retry on failure (up to max_retries)
+        2. Handle both successful and error cases gracefully
+
+        Args:
+            hex_file_path (str): Path to Intel HEX format firmware file
+            max_retries (int): Maximum retry attempts per page (default: 3)
+
+        Raises:
+            RuntimeError: When exceeding max retries for a page
+            IOError: For file access problems
+            ValueError: For invalid HEX file format
+            Exception: For communication errors with device
+
+        Returns:
+            None: Success is implied by normal completion
+
+        Side Effects:
+            - Programs firmware to target device flash
+            - Modifies device memory state
+            - May reset communication interface
+
+        Example:
+            >>> tool = FlashTool()
+            >>> tool.download_fw_to_ft("firmware_v1.2.hex")
+
+        Notes:
+            - Requires active bootloader connection
+            - Uses 2KB page size (device-specific)
+            - 64-byte chunk size optimized for UART throughput
+            - Includes mandatory 1s delay after programming
+            - CRC verification is mandatory for each page
+        """
+        extractor = HexBlockExtractor()
+        retry_count = 0
+        total_pages = 12  # Default value
+        metadata_total_pages = 1
+
+        try:
+            first_block_start, first_block_data, _ = next(extractor.process_hex_file(hex_file_path))
+            first_lower_addr = first_block_start & 0xFFFF
+            first_page_number = first_lower_addr // 2048
+
+            # Extract ProgramLen from metadata (offset 0x0C, 4 bytes)
+            if len(first_block_data) >= 0x0C + 4:
+                program_len_bytes = first_block_data[0x0C:0x0C+4]
+                program_total_pages = int.from_bytes(program_len_bytes, byteorder='little')
+                logger.info(f"Extracted program total pages from metadata: {program_total_pages}")
+
+            # Extract BootloaderLen from metadata (offset 0x1C, 4 bytes)
+            if len(first_block_data) >= 0x1C + 4:
+                program_len_bytes = first_block_data[0x1C:0x1C+4]
+                bootloader_total_pages = int.from_bytes(program_len_bytes, byteorder='little')
+                logger.info(f"Extracted bootloader total pages from metadata: {bootloader_total_pages}")
+
+            total_pages = program_total_pages + bootloader_total_pages + metadata_total_pages
+            logger.info(f"Extracted total pages from metadata: {total_pages}")
+
+            for block_start, block_data, block_crc in extractor.process_hex_file(hex_file_path):
+                lower_addr = block_start & 0xFFFF
+                page_number = lower_addr // 2048
+                count_pages = page_number - first_page_number + 1
+                success = False
+
+                while not success and retry_count < max_retries:
+                    try:
+                        # 1. Send CRC Record
+                        crc_bytes = [
+                            (block_crc >> 24) & 0xFF,
+                            (block_crc >> 16) & 0xFF,
+                            (block_crc >> 8) & 0xFF,
+                            block_crc & 0xFF
+                        ]
+                        crc_line = generate_hex_line(
+                            address=0x0000,
+                            command=UartBootloaderCmd.UART_COMMAND_WRITE_CURRENT_PAGE_CRC32,
+                            data=crc_bytes
+                        )
+                        logger.info(f"Sent BiSS Data: {crc_line}")
+                        self.hex_line_send(crc_line)
+
+                        # 2. Send Data Records in 64-byte chunks
+                        for offset in range(0, len(block_data), 64):
+                            chunk = block_data[offset:offset+64]
+                            chunk_addr = (0x01 << 8) | ((page_number) & 0xFF)
+                            data_line = generate_hex_line(
+                                address=chunk_addr,
+                                command=UartBootloaderCmd.UART_COMMAND_LOAD_2K,
+                                data=list(chunk)
+                            )
+                            self.hex_line_send(data_line)
+
+                        if pbar:
+                            percent_complete(count_pages, total_pages, title=f"Sending Page {count_pages}")
+                        # 3. Wait for flash 2048 bytes operation to complete
+                        time.sleep(1)
+
+                        # 4. Verify CRC32 check
+                        matched_state = self.read_memory_state_bl()
+                        if matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_FAULT:
+                            retry_count += 1
+                            print(f"CRC Error on page {page_number}, retry {retry_count}/{max_retries}")
+                            if retry_count >= max_retries:
+                                raise RuntimeError(f"Max retries ({max_retries}) exceeded for page {page_number}")
+                            continue
+                        elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_OK:
+                            success = True
+                            retry_count = 0
+                        else:
+                            raise RuntimeError(f"Unexpected memory state: {matched_state.name}")
+
+                    except Exception as e:
+                        retry_count += 1
+                        print(f"Error on page {page_number}, retry {retry_count}/{max_retries}: {str(e)}")
+                        if retry_count >= max_retries:
+                            raise RuntimeError(f"Max retries ({max_retries}) exceeded for page {page_number}")
+                        time.sleep(1)
+                        continue
+
+        except Exception as e:
+            print(f"Fatal error during firmware upload: {str(e)}")
+            raise
+        self.check_main_fw_crc32()
+        time.sleep(0.05)
+
+    def select_spi_channel(self, channel: Literal["channel1", "channel2"]) -> None:
         """
         Select SPI communication channel.
 
         Sends a SELECT CHANNEL command to the FlashTool.
 
         There are two channels:
-            0 --> channel 1;
-            1 --> channel 2.
+            channel1;
+            channel2.
 
         Args:
-            channel (uint8): The channel number (must be 0 or 1).
+            channel: "channel1" or "channel2".
 
         Returns:
             None
 
         Raises:
-            ValueError: If the mode is not 0 or 1.
+            ValueError: If the mode is not channel1 or channel2.
 
         Example:
             >>> ft = FlashTool()
-            >>> ft.select_SPI_channel(0)
+            >>> ft.select_SPI_channel('channel1')
         """
-        channel = np.uint8(channel)
-        valid_channels = {np.uint8(0), np.uint8(1)}
-        if channel not in valid_channels:
-            raise ValueError(f"Invalid mode: {channel}. Must be one of the {valid_channels} (0: channel 1, 1: \
-                             channel 2).")
-
-        channel_descriptions = {
-            0: "CHANNEL 1",
-            1: "CHANNEL 2"
+        channel_mapping = {
+            "channel1": (0, "CHANNEL 1"),
+            "channel2": (1, "CHANNEL 2")
         }
-        logger.info(f"Selected Channel: {channel} - {channel_descriptions[channel]}")
 
-        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_SPI_CH, [channel])[1:])
-        # logger.debug(tx_row)
+        if channel not in channel_mapping:
+            raise ValueError(f'Invalid channel: "{channel}". Must be "channel1" or "channel2".')
+
+        channel_num, channel_desc = channel_mapping[channel]
+        logger.info(f"Selected Channel: {channel_num} - {channel_desc}")
+
+        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_SPI_CH, [channel_num])[1:])
         self.__port.reset_output_buffer()
         self.__port.write(tx_row)
         self.__port.flush()
 
-    def select_flashtool_mode(self, mode: np.uint8):
+    def select_flashtool_mode(self, mode: Literal["spi_spi", "ab_uart", "spi_uart_irs", "ab_spi", "default_spi"]) -> None:
         """
-        Select FlashTool mode.
+        Select FlashTool communication mode.
 
         Sends a SELECT FLASHTOOL MODE command to configure the communication protocol
         for both channels of the FlashTool.
 
         Available modes:
-            0 (BISS_MODE_SPI_SPI):
-                Channel 1: SPI, Channel 2: SPI
-            1 (BISS_MODE_AB_UART):
-                Channel 1: AB signal, Channel 2: UART
-            2 (BISS_MODE_SPI_UART_IRS):
-                Channel 1: SPI, Channel 2: UART for IRS encoders
-            3 (BISS_MODE_AB_SPI):
-                Channel 1: AB signal, Channel 2: SPI
-            4 (BISS_MODE_DEFAULT_SPI):
-                Default mode - Channel 1: Without communication, Channel 2: SPI
+            "spi_spi"      - Channel 1: SPI, Channel 2: SPI
+            "ab_uart"      - Channel 1: AB signal, Channel 2: UART
+            "spi_uart_irs" - Channel 1: SPI, Channel 2: UART for IRS encoders
+            "ab_spi"       - Channel 1: AB signal, Channel 2: SPI
+            "default_spi"  - Default mode: Channel 1: None, Channel 2: SPI
 
         Args:
-            mode (np.uint8): The communication mode number (0-4)
-                - 0: SPI on both channels
-                - 1: AB sginal + UART
-                - 2: SPI + UART for IRS encoders
-                - 3: AB signal + SPI
-                - 4: Without communication + SPI
+            mode: Communication mode as descriptive string:
+                - "spi_spi"      (0: BISS_MODE_SPI_SPI)
+                - "ab_uart"      (1: BISS_MODE_AB_UART)
+                - "spi_uart_irs" (2: BISS_MODE_SPI_UART_IRS)
+                - "ab_spi"       (3: BISS_MODE_AB_SPI)
+                - "default_spi"  (4: BISS_MODE_DEFAULT_SPI)
 
         Returns:
             None
 
         Raises:
-            ValueError: If the mode is not in range 0-4
-            TypeError: If the mode is not convertible to np.uint8
+            ValueError: If invalid mode string provided
 
         Example:
             >>> ft = FlashTool()
-            >>> ft.select_flashtool_mode(0)  # Sets SPI on both channels
-            >>> ft.select_flashtool_mode(2)  # Sets SPI + UART for IRS encoders
+            >>> ft.select_flashtool_mode("spi_spi")  # Sets SPI on both channels
+            >>> ft.select_flashtool_mode("spi_uart_irs")  # Sets SPI + UART for IRS
         """
-        mode = np.uint8(mode)
-        valid_modes = {np.uint8(0), np.uint8(1), np.uint8(2), np.uint8(3), np.uint8(4)}
-        if mode not in valid_modes:
-            raise ValueError(f"Invalid mode: {mode}. Must be one of the {valid_modes} (0: BISS_MODE_SPI_SPI, 1: \
-                             BISS_MODE_AB_UART, 2: BISS_MODE_SPI_UART_IRS, 3: BISS_MODE_AB_SPI, 4: BISS_MODE_DEFAULT_SPI).")
-
-        mode_descriptions = {
-            0: "BISS_MODE_SPI_SPI",
-            1: "BISS_MODE_AB_UART",
-            2: "BISS_MODE_SPI_UART_IRS",
-            3: "BISS_MODE_AB_SPI",
-            4: "BISS_MODE_DEFAULT_SPI"
+        mode_mapping = {
+            "spi_spi": (0, "BISS_MODE_SPI_SPI"),
+            "ab_uart": (1, "BISS_MODE_AB_UART"),
+            "spi_uart_irs": (2, "BISS_MODE_SPI_UART_IRS"),
+            "ab_spi": (3, "BISS_MODE_AB_SPI"),
+            "default_spi": (4, "BISS_MODE_DEFAULT_SPI")
         }
-        logger.info(f"Selected FlashTool mode: {mode} - {mode_descriptions[mode]}")
 
-        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_FLASHTOOL_MODE, [mode])[1:])
-        # logger.debug(tx_row)
+        if mode not in mode_mapping:
+            valid_modes = list(mode_mapping.keys())
+            raise ValueError(f'Invalid mode: "{mode}". Must be one of: {valid_modes}')
+
+        mode_num, mode_desc = mode_mapping[mode]
+        logger.info(f"Selected FlashTool mode: {mode_num} - {mode_desc}")
+
+        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_FLASHTOOL_MODE, [mode_num])[1:])
         self.__port.reset_output_buffer()
         self.__port.write(tx_row)
         self.__port.flush()
         time.sleep(0.05)
 
-    def select_FlashTool_current_sensor_mode(self, mode: np.uint8):
+    def select_FlashTool_current_sensor_mode(self, mode: Literal["disable", "enable"]) -> None:
         """
         Select FlashTool Current sensor mode.
 
         Sends a SELECT Current sensor mode command to the FlashTool.
 
-        There are two modes:
-            0 --> CURRENT_SENSOR_MODE_DISABLE.
-            1 --> CURRENT_SENSOR_MODE_ENABLE.
+        Available modes:
+            "disable" - CURRENT_SENSOR_MODE_DISABLE (0)
+            "enable"  - CURRENT_SENSOR_MODE_ENABLE (1)
 
         Args:
-            mode (uint8): The mode number (must be 0, 1).
+            mode: Current sensor mode as descriptive string:
+                - "disable" (0: CURRENT_SENSOR_MODE_DISABLE)
+                - "enable"  (1: CURRENT_SENSOR_MODE_ENABLE)
 
         Returns:
             None
 
         Raises:
-            ValueError: If the mode is not 0, 1.
+            ValueError: If invalid mode string provided
 
         Example:
             >>> ft = FlashTool()
-            >>> ft.select_FlashTool_current_sensor_mode(0)
+            >>> ft.select_FlashTool_current_sensor_mode("disable")
+            >>> ft.select_FlashTool_current_sensor_mode("enable")
         """
-        mode = np.uint8(mode)
-        valid_modes = {np.uint8(0), np.uint8(1)}
-        if mode not in valid_modes:
-            raise ValueError(f"Invalid mode: {mode}. Must be one of the {valid_modes} (0: CURRENT_SENSOR_MODE_DISABLE, 1: \
-                             CURRENT_SENSOR_MODE_ENABLE).")
-
-        mode_descriptions = {
-            0: "CURRENT_SENSOR_MODE_DISABLE",
-            1: "CURRENT_SENSOR_MODE_ENABLE"
+        mode_mapping = {
+            "disable": (0, "CURRENT_SENSOR_MODE_DISABLE"),
+            "enable": (1, "CURRENT_SENSOR_MODE_ENABLE")
         }
-        logger.info(f"Selected current sensor mode: {mode} - {mode_descriptions[mode]}")
 
-        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_FLASHTOOL_CURRENT_SENSOR_MODE, [mode])[1:])
-        logger.debug(tx_row.hex())
+        if mode not in mode_mapping:
+            valid_modes = list(mode_mapping.keys())
+            raise ValueError(f'Invalid mode: "{mode}". Must be one of: {valid_modes}')
+
+        mode_num, mode_desc = mode_mapping[mode]
+        logger.info(f"Selected current sensor mode: {mode_num} - {mode_desc}")
+
+        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_FLASHTOOL_CURRENT_SENSOR_MODE, [mode_num])[1:])
+        logger.debug(f"Current sensor mode command: {tx_row.hex()}")
         self.__port.reset_output_buffer()
         self.__port.write(tx_row)
         self.__port.flush()
 
-    def select_spi_ch1_mode(self, mode: np.uint8) -> None:
+    def select_spi_ch1_mode(self, mode: Literal["lenz_biss", "lir_ssi", "lir_biss_21b"]) -> None:
         """
         Select SPI channel 1 mode.
 
         Sends a SELECT channel 1 SPI mode command to the FlashTool.
 
-        There are three modes:
-            0 --> CH1_LENZ_BISS;
-            1 --> CH1_LIR_SSI;
-            2 --> CH1_LIR_BISS_21B
+        Available modes:
+            "lenz_biss"    - CH1_LENZ_BISS (0)
+            "lir_ssi"      - CH1_LIR_SSI (1)
+            "lir_biss_21b" - CH1_LIR_BISS_21B (2)
 
         Args:
-            mode (uint8): The mode number (must be 0 or 1 or 2).
+            mode: SPI channel 1 mode as descriptive string:
+                - "lenz_biss"    (0: CH1_LENZ_BISS)
+                - "lir_ssi"      (1: CH1_LIR_SSI)
+                - "lir_biss_21b" (2: CH1_LIR_BISS_21B)
 
         Returns:
             None
 
         Raises:
-            ValueError: If the mode is not 0 or 1 or 2.
+            ValueError: If invalid mode string provided
 
         Example:
             >>> ft = FlashTool()
-            >>> ft.select_spi_ch1_mode(0)
+            >>> ft.select_spi_ch1_mode("lenz_biss")
+            >>> ft.select_spi_ch1_mode("lir_ssi")
         """
-        mode = np.uint8(mode)
-        valid_channels = {np.uint8(0), np.uint8(1), np.uint8(2)}
-        if mode not in valid_channels:
-            raise ValueError(f"Invalid mode: {mode}. Must be one of the {valid_channels} (0: CH1_LENZ_BISS, 1: \
-                             CH1_LIR_SSI, 2: CH1_LIR_BISS_21B).")
-
-        channel_descriptions = {
-            0: "CH1_LENZ_BISS",
-            1: "CH1_LIR_SSI",
-            2: "CH1_LIR_BISS_21B"
+        mode_mapping = {
+            "lenz_biss": (0, "CH1_LENZ_BISS"),
+            "lir_ssi": (1, "CH1_LIR_SSI"),
+            "lir_biss_21b": (2, "CH1_LIR_BISS_21B")
         }
-        logger.info(f"Selected SPI channel 1 Mode: {mode} - {channel_descriptions[mode]}")
 
-        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_CH1_MODE, [mode])[1:])
-        # logger.debug(tx_row)
+        if mode not in mode_mapping:
+            valid_modes = list(mode_mapping.keys())
+            raise ValueError(f'Invalid mode: "{mode}". Must be one of: {valid_modes}')
+
+        mode_num, mode_desc = mode_mapping[mode]
+        logger.info(f"Selected SPI channel 1 Mode: {mode_num} - {mode_desc}")
+
+        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_CH1_MODE, [mode_num])[1:])
+        # logger.debug(f"ch1 mode: {tx_row.hex()}")
         self.__port.reset_output_buffer()
         self.__port.write(tx_row)
         self.__port.flush()
@@ -1868,9 +2133,9 @@ class FlashTool:
             logger.error(f"Error reading encoder current: {str(e)}", exc_info=True)
             return False
 
-    def read_current_angle_enc_SPI(self) -> tuple[str, list[int]] | bool:
+    def read_instant_angle_enc_SPI(self) -> tuple[str, list[int]] | bool:
         """
-        Read current angle encoder via SPI over USB.
+        Read instant angle encoder via SPI over USB.
 
         Returns:
             tuple[str, list[int]]: If successful, returns:
@@ -1886,7 +2151,7 @@ class FlashTool:
         try:
             self.__port.reset_output_buffer()
             self.__port.reset_input_buffer()
-            self.__port.write(generate_byte_line(0, UartCmd.HEX_READ_CURRENT_ANGLE_ENC_SPI, list(range(RX_DATA_LENGTH))))
+            self.__port.write(generate_byte_line(0, UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI, list(range(RX_DATA_LENGTH))))
             self.__port.flush()
 
             enc_ans = self.__port.read(RX_DATA_LENGTH + PKG_INFO_LENGTH)
@@ -1899,7 +2164,7 @@ class FlashTool:
             enc_data_np = np.array(list(enc_ans), dtype='uint8')
 
             if (enc_data_np[0] != enc_data_np.size - PKG_INFO_LENGTH) or \
-                (enc_data_np[3] != UartCmd.HEX_READ_CURRENT_ANGLE_ENC_SPI + CMD_VAL_ADD):
+                (enc_data_np[3] != UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI + CMD_VAL_ADD):
                 logger.error("Invalid response structure from IRS encoder!")
                 return False
 
