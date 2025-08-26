@@ -75,5 +75,5 @@ __all__ = [
     'connect_and_enter_fw'
 ]
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __author__ = "LENZ ENCODERS"
