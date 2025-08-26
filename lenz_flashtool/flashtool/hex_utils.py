@@ -645,79 +645,6 @@ def _create_dummy_data_row(address: str, fill: str = FILL_BYTE) -> str:
     return dummy_data_row + f"{checksum:02X}"
 
 
-def dif2hex(DifTable: bytes, filename: str, start_page: int) -> None:
-    """
-    Convert a Diff table to Intel HEX format and save to a file.
-
-    This function takes a byte array representing a Diff table, converts it to Intel HEX format
-    with proper address handling and checksums, and writes the result to the specified file.
-    The output includes extended address records, data records, a CRC32 record, and an end-of-file record.
-
-    Args:
-        DifTable: The input byte array containing the data to be converted.
-        filename: The path of the output file where the HEX data will be written.
-        start_page: The starting page number used to calculate the initial address offset.
-                    Each page is 2048 bytes (0x800).
-
-    Returns:
-        None: The function writes the result to a file but doesn't return anything.
-
-    The function handles:
-    - 64KB address boundary crossing with extended address records
-    - Proper checksum calculation for all record types
-    - Generation of data records with 16 bytes per line (standard HEX format)
-    - Addition of a CRC32 record (type 0x03) at the end of the file
-    - Proper end-of-file marker
-
-    Example:
-        >>> data = bytes([0x01, 0x02, 0x03, 0x04])
-        >>> dif2hex(data, "output.hex", 24)
-        # Creates output.hex with the converted data
-    """
-    CRC_RECORD_TYPE = '03'
-    lower_addr = 0x800 * start_page  # (0x800 = 2048) bytes -- page size
-    upper_addr = 0x0800  # Initial upper address
-    base_addr = (upper_addr << 16) | lower_addr
-    data = bytearray(DifTable)
-    hex_file_content = []
-    current_upper_addr = upper_addr
-
-    # Initial extended address record
-    extended_addr_record = f":02000004{current_upper_addr:04X}{((~(2 + 4 + (current_upper_addr >> 8) + (current_upper_addr & 0xFF)) + 1) & 0xFF):02X}"
-    hex_file_content.append(extended_addr_record)
-
-    for i in range(0, len(data), 16):
-        chunk = data[i:i+16]
-        byte_count = len(chunk)
-        addr = base_addr + i
-        new_upper_addr = (addr >> 16) & 0xFFFF
-
-        # Check 64 KB boundary
-        if new_upper_addr != current_upper_addr:
-            current_upper_addr = new_upper_addr
-            extended_addr_record = f":02000004{current_upper_addr:04X}{((~(2 + 4 + (current_upper_addr >> 8) + (current_upper_addr & 0xFF)) + 1) & 0xFF):02X}"
-            hex_file_content.append(extended_addr_record)
-
-        record_type = 0
-        address_field = addr & 0xFFFF  # Lower 16 bits of address
-        checksum = byte_count + (address_field >> 8) + (address_field & 0xFF) + record_type + sum(chunk)
-        data_record = f":{byte_count:02X}{address_field:04X}{record_type:02X}" + \
-                      ''.join(f"{b:02X}" for b in chunk) + \
-                      f"{(256 - checksum % 256) % 256:02X}"
-        hex_file_content.append(data_record)
-
-    # EOF records
-    # hex_file_content.append(":0400000508000000EF")
-    # print(data)
-    crc_record = f"040000{CRC_RECORD_TYPE}{binascii.crc32(data):08X}"
-    hex_file_content.append(f":{crc_record}{calculate_checksum(crc_record):02X}")
-    hex_file_content.append(":00000001FF")
-
-    with open(filename, "w") as output:
-        for row in hex_file_content:
-            output.write(str(row).upper() + '\n')
-
-
 def _prep_data_rows(df: List[str], section_id: int, base_offset: int,
                     prep_bytes: List[bytes]) -> List[str]:
     """
@@ -1181,7 +1108,7 @@ class HexFileProcessor:
         bootloader_version: int = 0x00000100,
         program_date: int = int('202507'),
         bootloader_date: int = int('202507'),
-        ) -> List[str]:
+    ) -> List[str]:
         """
         Process firmware data into page-aligned chunks with CRCs.
 

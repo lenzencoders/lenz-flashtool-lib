@@ -20,7 +20,7 @@ import os
 import sys
 import logging
 import signal
-from typing import Callable, Dict, Optional, List, Union, Any, Type, Tuple
+from typing import Callable, Dict, Optional, List, Union, Any, Type, Tuple, Literal
 from types import TracebackType
 import serial
 import serial.tools.list_ports
@@ -29,7 +29,7 @@ from ..biss import (
     biss_commands, interpret_biss_commandstate, interpret_error_flags,
     BiSSBank,
 )
-from .uart import UartCmd, UartBootloaderCmd, UartBootloaderMemoryStates, UartBootloaderSeq
+from .uart import UartCmd, UartBootloaderCmd, UartBootloaderMemoryStates
 from .errors import FlashToolError
 from .hex_utils import (
     calculate_checksum,
@@ -480,7 +480,7 @@ class FlashTool:
         """
         # logger.debug(f'Uploading {hex_line} to the FlashTool.')
         tx_row = bytes.fromhex(hex_line[1:])
-        logger.debug(tx_row.hex())
+        # logger.debug(tx_row.hex())
         self._write_to_port(tx_row)
         return tx_row
 
@@ -953,10 +953,10 @@ class FlashTool:
 
         Protocol Flow:
         1. For each 2KB block in HEX file:
-            a. Send block's CRC32 checksum first
-            b. Transfer data in 64-byte chunks
-            c. Verify flash operation success
-            d. Retry on failure (up to max_retries)
+        1.a. Send block's CRC32 checksum first
+        1.b. Transfer data in 64-byte chunks
+        1.c. Verify flash operation success
+        1.d. Retry on failure (up to max_retries)
         2. Handle both successful and error cases gracefully
 
         Args:
@@ -2110,7 +2110,7 @@ class FlashTool:
             enc_data_np = np.array(list(enc_ans), dtype='uint8')
 
             if (enc_data_np[0] != enc_data_np.size - UartCmd.PKG_INFO_LENGTH) or \
-                (enc_data_np[3] != UartCmd.HEX_READ_ENC2_CURRENT + UartCmd.CMD_VAL_ADD):
+               (enc_data_np[3] != UartCmd.HEX_READ_ENC2_CURRENT + UartCmd.CMD_VAL_ADD):
                 logger.error("Invalid response structure from encoder!")
                 return False
 
@@ -2164,7 +2164,7 @@ class FlashTool:
             enc_data_np = np.array(list(enc_ans), dtype='uint8')
 
             if (enc_data_np[0] != enc_data_np.size - PKG_INFO_LENGTH) or \
-                (enc_data_np[3] != UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI + CMD_VAL_ADD):
+               (enc_data_np[3] != UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI + CMD_VAL_ADD):
                 logger.error("Invalid response structure from IRS encoder!")
                 return False
 

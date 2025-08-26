@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FlashTool Module &#8212; lenz-flashtool 0.1.0 documentation</title>
+    <title>FlashTool Module &#8212; lenz-flashtool 0.1.3 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/documentation_options.js?v=360bc84d"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
@@ -1065,6 +1065,30 @@ issues the zeroing command, saves to flash, and power cycles again.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.flashtool.FlashTool.check_main_fw_crc32">
+<span class="sig-name descname"><span class="pre">check_main_fw_crc32</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.flashtool.FlashTool.check_main_fw_crc32" title="Link to this definition">#</a></dt>
+<dd><p>Compare calculated main FlashTool firmware crc32 with ProgramCRC32 value in flash.</p>
+<dl class="simple">
+<dt>Input:</dt><dd><p>None</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">check_main_fw_crc32</span><span class="p">()</span>
+<span class="go">&#39;Response: UART_MEMORYSTATE_FW_CHECK_CRC32_OK (0x05)&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.flashtool.FlashTool.close">
 <span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.flashtool.FlashTool.close" title="Link to this definition">#</a></dt>
 <dd><p>Closes the serial port connection and performs cleanup.</p>
@@ -1081,6 +1105,67 @@ and resets the singleton instance. Logs the closure of the connection.</p>
 <span class="go">INFO: FlashTool: COM3 closed.</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.flashtool.FlashTool.download_fw_to_ft">
+<span class="sig-name descname"><span class="pre">download_fw_to_ft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hex_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_retries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.flashtool.FlashTool.download_fw_to_ft" title="Link to this definition">#</a></dt>
+<dd><p>Download main firmware from HEX file to FlashTool device using bootloader protocol.</p>
+<p>Implements a robust flash programming routine with:
+- Automatic CRC verification
+- Retry mechanism for failed pages
+- Progress tracking
+- Error recovery</p>
+<p>Protocol Flow:
+1. For each 2KB block in HEX file:
+1.a. Send block’s CRC32 checksum first
+1.b. Transfer data in 64-byte chunks
+1.c. Verify flash operation success
+1.d. Retry on failure (up to max_retries)
+2. Handle both successful and error cases gracefully</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hex_file_path</strong> (<em>str</em>) – Path to Intel HEX format firmware file</p></li>
+<li><p><strong>max_retries</strong> (<em>int</em>) – Maximum retry attempts per page (default: 3)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>RuntimeError</strong> – When exceeding max retries for a page</p></li>
+<li><p><strong>IOError</strong> – For file access problems</p></li>
+<li><p><strong>ValueError</strong> – For invalid HEX file format</p></li>
+<li><p><strong>Exception</strong> – For communication errors with device</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Success is implied by normal completion</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><ul class="simple">
+<li><p>Programs firmware to target device flash</p></li>
+<li><p>Modifies device memory state</p></li>
+<li><p>May reset communication interface</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tool</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tool</span><span class="o">.</span><span class="n">download_fw_to_ft</span><span class="p">(</span><span class="s2">&quot;firmware_v1.2.hex&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Requires active bootloader connection</p></li>
+<li><p>Uses 2KB page size (device-specific)</p></li>
+<li><p>64-byte chunk size optimized for UART throughput</p></li>
+<li><p>Includes mandatory 1s delay after programming</p></li>
+<li><p>CRC verification is mandatory for each page</p></li>
+</ul>
 </dd></dl>
 
 <dl class="py method">
@@ -1300,28 +1385,6 @@ and verifies the checksum. Logs the received data and checksum status, returning
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="lenz_flashtool.flashtool.FlashTool.read_current_angle_enc_SPI">
-<span class="sig-name descname"><span class="pre">read_current_angle_enc_SPI</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.flashtool.FlashTool.read_current_angle_enc_SPI" title="Link to this definition">#</a></dt>
-<dd><p>Read current angle encoder via SPI over USB.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>If successful, returns:</dt><dd><ul class="simple">
-<li><p>str: Encoder angle in hexadecimal format</p></li>
-<li><p>list[int]: Angle parts [degrees, minutes, seconds]</p></li>
-</ul>
-</dd>
-</dl>
-<p>bool: False if operation fails (CRC error, no response, etc.)</p>
-</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>tuple[str, list[int]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.flashtool.FlashTool.read_data">
 <span class="sig-name descname"><span class="pre">read_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">read_time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.flashtool.FlashTool.read_data" title="Link to this definition">#</a></dt>
 <dd><p>Reads encoder data via SPI over USB for a specified duration.</p>
@@ -1439,6 +1502,85 @@ and extracts encoder values for both channels. Optionally prints progress indica
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.flashtool.FlashTool.read_instant_angle_enc_SPI">
+<span class="sig-name descname"><span class="pre">read_instant_angle_enc_SPI</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.flashtool.FlashTool.read_instant_angle_enc_SPI" title="Link to this definition">#</a></dt>
+<dd><p>Read instant angle encoder via SPI over USB.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>If successful, returns:</dt><dd><ul class="simple">
+<li><p>str: Encoder angle in hexadecimal format</p></li>
+<li><p>list[int]: Angle parts [degrees, minutes, seconds]</p></li>
+</ul>
+</dd>
+</dl>
+<p>bool: False if operation fails (CRC error, no response, etc.)</p>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[str, list[int]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.flashtool.FlashTool.read_memory_state_bl">
+<span class="sig-name descname"><span class="pre">read_memory_state_bl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.flashtool.FlashTool.read_memory_state_bl" title="Link to this definition">#</a></dt>
+<dd><p>Read Memory State of FlashTool bootloader.</p>
+<p>Sends a Read Memory State command to FlashTool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">UartBootloaderMemoryStates</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>UartBootloaderMemoryStates</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">read_memory_state_bl</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.flashtool.FlashTool.reboot_to_bl">
+<span class="sig-name descname"><span class="pre">reboot_to_bl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.flashtool.FlashTool.reboot_to_bl" title="Link to this definition">#</a></dt>
+<dd><p>Reboot to BOOTLOADER FlashTool device.</p>
+<p>Sends a Reboot to Bootloader command to the FlashTool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">reboot_to_bl</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.flashtool.FlashTool.reboot_to_fw">
+<span class="sig-name descname"><span class="pre">reboot_to_fw</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.flashtool.FlashTool.reboot_to_fw" title="Link to this definition">#</a></dt>
+<dd><p>Reboot to FIRMWARE FlashTool device.</p>
+<p>Sends a Reboot to Firmware command to the FlashTool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">reboot_to_fw</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.flashtool.FlashTool.register_cleanup">
 <span class="sig-name descname"><span class="pre">register_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.flashtool.FlashTool.register_cleanup" title="Link to this definition">#</a></dt>
 <dd><p>Registers a cleanup function to be executed during <cite>close</cite> or on SIGINT.</p>
@@ -1470,24 +1612,30 @@ or closing additional resources, which are called when the FlashTool connection 
 <dd><p>Select FlashTool Current sensor mode.</p>
 <p>Sends a SELECT Current sensor mode command to the FlashTool.</p>
 <dl class="simple">
-<dt>There are two modes:</dt><dd><p>0 –&gt; CURRENT_SENSOR_MODE_DISABLE.
-1 –&gt; CURRENT_SENSOR_MODE_ENABLE.</p>
+<dt>Available modes:</dt><dd><p>“disable” - CURRENT_SENSOR_MODE_DISABLE (0)
+“enable”  - CURRENT_SENSOR_MODE_ENABLE (1)</p>
 </dd>
 </dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>mode</strong> (<em>uint8</em>) – The mode number (must be 0, 1).</p>
+<dd class="field-odd"><p><strong>mode</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code>[<code class="docutils literal notranslate"><span class="pre">'disable'</span></code>, <code class="docutils literal notranslate"><span class="pre">'enable'</span></code>]</span>) – Current sensor mode as descriptive string:
+- “disable” (0: CURRENT_SENSOR_MODE_DISABLE)
+- “enable”  (1: CURRENT_SENSOR_MODE_ENABLE)</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
 </dd>
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ValueError</strong> – If the mode is not 0, 1.</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If invalid mode string provided</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_FlashTool_current_sensor_mode</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_FlashTool_current_sensor_mode</span><span class="p">(</span><span class="s2">&quot;disable&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_FlashTool_current_sensor_mode</span><span class="p">(</span><span class="s2">&quot;enable&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1495,47 +1643,40 @@ or closing additional resources, which are called when the FlashTool connection 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.flashtool.FlashTool.select_flashtool_mode">
 <span class="sig-name descname"><span class="pre">select_flashtool_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.flashtool.FlashTool.select_flashtool_mode" title="Link to this definition">#</a></dt>
-<dd><p>Select FlashTool mode.</p>
+<dd><p>Select FlashTool communication mode.</p>
 <p>Sends a SELECT FLASHTOOL MODE command to configure the communication protocol
 for both channels of the FlashTool.</p>
 <dl class="simple">
-<dt>Available modes:</dt><dd><dl class="simple">
-<dt>0 (BISS_MODE_SPI_SPI):</dt><dd><p>Channel 1: SPI, Channel 2: SPI</p>
-</dd>
-<dt>1 (BISS_MODE_AB_UART):</dt><dd><p>Channel 1: AB signal, Channel 2: UART</p>
-</dd>
-<dt>2 (BISS_MODE_SPI_UART_IRS):</dt><dd><p>Channel 1: SPI, Channel 2: UART for IRS encoders</p>
-</dd>
-<dt>3 (BISS_MODE_AB_SPI):</dt><dd><p>Channel 1: AB signal, Channel 2: SPI</p>
-</dd>
-<dt>4 (BISS_MODE_DEFAULT_SPI):</dt><dd><p>Default mode - Channel 1: Without communication, Channel 2: SPI</p>
-</dd>
-</dl>
+<dt>Available modes:</dt><dd><p>“spi_spi”      - Channel 1: SPI, Channel 2: SPI
+“ab_uart”      - Channel 1: AB signal, Channel 2: UART
+“spi_uart_irs” - Channel 1: SPI, Channel 2: UART for IRS encoders
+“ab_spi”       - Channel 1: AB signal, Channel 2: SPI
+“default_spi”  - Default mode: Channel 1: None, Channel 2: SPI</p>
 </dd>
 </dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>mode</strong> (<em>np.uint8</em>) – The communication mode number (0-4)
-- 0: SPI on both channels
-- 1: AB sginal + UART
-- 2: SPI + UART for IRS encoders
-- 3: AB signal + SPI
-- 4: Without communication + SPI</p>
+<dd class="field-odd"><p><strong>mode</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code>[<code class="docutils literal notranslate"><span class="pre">'spi_spi'</span></code>, <code class="docutils literal notranslate"><span class="pre">'ab_uart'</span></code>, <code class="docutils literal notranslate"><span class="pre">'spi_uart_irs'</span></code>, <code class="docutils literal notranslate"><span class="pre">'ab_spi'</span></code>, <code class="docutils literal notranslate"><span class="pre">'default_spi'</span></code>]</span>) – Communication mode as descriptive string:
+- “spi_spi”      (0: BISS_MODE_SPI_SPI)
+- “ab_uart”      (1: BISS_MODE_AB_UART)
+- “spi_uart_irs” (2: BISS_MODE_SPI_UART_IRS)
+- “ab_spi”       (3: BISS_MODE_AB_SPI)
+- “default_spi”  (4: BISS_MODE_DEFAULT_SPI)</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
 </dd>
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ValueError</strong> – If the mode is not in range 0-4</p></li>
-<li><p><strong>TypeError</strong> – If the mode is not convertible to np.uint8</p></li>
-</ul>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If invalid mode string provided</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_flashtool_mode</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Sets SPI on both channels</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_flashtool_mode</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Sets SPI + UART for IRS encoders</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_flashtool_mode</span><span class="p">(</span><span class="s2">&quot;spi_spi&quot;</span><span class="p">)</span>  <span class="c1"># Sets SPI on both channels</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_flashtool_mode</span><span class="p">(</span><span class="s2">&quot;spi_uart_irs&quot;</span><span class="p">)</span>  <span class="c1"># Sets SPI + UART for IRS</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1546,14 +1687,17 @@ for both channels of the FlashTool.</p>
 <dd><p>Select SPI channel 1 mode.</p>
 <p>Sends a SELECT channel 1 SPI mode command to the FlashTool.</p>
 <dl class="simple">
-<dt>There are three modes:</dt><dd><p>0 –&gt; CH1_LENZ_BISS;
-1 –&gt; CH1_LIR_SSI;
-2 –&gt; CH1_LIR_BISS_21B</p>
+<dt>Available modes:</dt><dd><p>“lenz_biss”    - CH1_LENZ_BISS (0)
+“lir_ssi”      - CH1_LIR_SSI (1)
+“lir_biss_21b” - CH1_LIR_BISS_21B (2)</p>
 </dd>
 </dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>mode</strong> (<em>uint8</em>) – The mode number (must be 0 or 1 or 2).</p>
+<dd class="field-odd"><p><strong>mode</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code>[<code class="docutils literal notranslate"><span class="pre">'lenz_biss'</span></code>, <code class="docutils literal notranslate"><span class="pre">'lir_ssi'</span></code>, <code class="docutils literal notranslate"><span class="pre">'lir_biss_21b'</span></code>]</span>) – SPI channel 1 mode as descriptive string:
+- “lenz_biss”    (0: CH1_LENZ_BISS)
+- “lir_ssi”      (1: CH1_LIR_SSI)
+- “lir_biss_21b” (2: CH1_LIR_BISS_21B)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
@@ -1562,12 +1706,13 @@ for both channels of the FlashTool.</p>
 <dd class="field-odd"><p>None</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If the mode is not 0 or 1 or 2.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If invalid mode string provided</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_spi_ch1_mode</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_spi_ch1_mode</span><span class="p">(</span><span class="s2">&quot;lenz_biss&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_spi_ch1_mode</span><span class="p">(</span><span class="s2">&quot;lir_ssi&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1578,13 +1723,13 @@ for both channels of the FlashTool.</p>
 <dd><p>Select SPI communication channel.</p>
 <p>Sends a SELECT CHANNEL command to the FlashTool.</p>
 <dl class="simple">
-<dt>There are two channels:</dt><dd><p>0 –&gt; channel 1;
-1 –&gt; channel 2.</p>
+<dt>There are two channels:</dt><dd><p>channel1;
+channel2.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>channel</strong> (<em>uint8</em>) – The channel number (must be 0 or 1).</p>
+<dd class="field-odd"><p><strong>channel</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code>[<code class="docutils literal notranslate"><span class="pre">'channel1'</span></code>, <code class="docutils literal notranslate"><span class="pre">'channel2'</span></code>]</span>) – “channel1” or “channel2”.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
@@ -1593,12 +1738,12 @@ for both channels of the FlashTool.</p>
 <dd class="field-odd"><p>None</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If the mode is not 0 or 1.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If the mode is not channel1 or channel2.</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_SPI_channel</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">select_SPI_channel</span><span class="p">(</span><span class="s1">&#39;channel1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1799,6 +1944,38 @@ Response: None</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.flashtool.UartCmd.CMD_REBOOT_TO_BL">
+<span class="sig-name descname"><span class="pre">CMD_REBOOT_TO_BL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">255</span></em><a class="headerlink" href="#lenz_flashtool.flashtool.UartCmd.CMD_REBOOT_TO_BL" title="Link to this definition">#</a></dt>
+<dd><p>Command to reboot to bootloader.</p>
+<dl class="simple">
+<dt>Usage:</dt><dd><ul class="simple">
+<li><p>Used for entering bootloader</p></li>
+<li><p>Address in packet doesn’t matter</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Need to use bootloader cmd to reboot to main fw.</p>
+</div>
+<dl class="simple">
+<dt>Packet Structure:</dt><dd><ul class="simple">
+<li><p>Request: [0x01][REG_ADDR][0xFF][DUMMY_DATA][CHECKSUM]</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">:</span><span class="mi">010000</span><span class="n">ff0000</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.flashtool.UartCmd.CMD_SELECT_CH1_MODE">
 <span class="sig-name descname"><span class="pre">CMD_SELECT_CH1_MODE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">14</span></em><a class="headerlink" href="#lenz_flashtool.flashtool.UartCmd.CMD_SELECT_CH1_MODE" title="Link to this definition">#</a></dt>
 <dd><p>Command to select FlashTool channel 1 SPI mode.
@@ -1829,7 +2006,7 @@ Where CHANNEL_BYTE is 0x00 or 0x01 or 0x02</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">:</span><span class="mf">0100000e02</span><span class="n">ef</span>  <span class="n">Select</span> <span class="n">channel</span> <span class="mi">1</span> <span class="n">SPI</span> <span class="n">mode</span> <span class="o">-</span> <span class="n">CH1_LENZ_BISS</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">:</span><span class="mf">0100000e01</span><span class="n">ed</span>  <span class="n">Select</span> <span class="n">channel</span> <span class="mi">1</span> <span class="n">SPI</span> <span class="n">mode</span> <span class="o">-</span> <span class="n">CH1_LENZ_BISS</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1953,11 +2130,11 @@ Where CHANNEL_BYTE is 0x00 or 0x01</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.flashtool.UartCmd.CMD_VAL_ADD">
 <span class="sig-name descname"><span class="pre">CMD_VAL_ADD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></em><a class="headerlink" href="#lenz_flashtool.flashtool.UartCmd.CMD_VAL_ADD" title="Link to this definition">#</a></dt>
-<dd><p>Value that added to CMD in Repsonse Packet
-Response:</p>
-<blockquote>
-<div><p>[DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]</p>
-</div></blockquote>
+<dd><p>Value added to CMD in the Response Packet</p>
+<dl class="simple">
+<dt>Response:</dt><dd><p>[DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]</p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>int</p>
@@ -2125,50 +2302,6 @@ channel 2 - SPI</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="lenz_flashtool.flashtool.UartCmd.HEX_READ_CURRENT_ANGLE_ENC_SPI">
-<span class="sig-name descname"><span class="pre">HEX_READ_CURRENT_ANGLE_ENC_SPI</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></em><a class="headerlink" href="#lenz_flashtool.flashtool.UartCmd.HEX_READ_CURRENT_ANGLE_ENC_SPI" title="Link to this definition">#</a></dt>
-<dd><p>Command to read current angle data from encoder via SPI.</p>
-<dl>
-<dt>Usage:</dt><dd><ul class="simple">
-<li><p>Single data frame for encoder reading</p></li>
-<li><p>Requires encoder to be powered on</p></li>
-<li><p>Returns one measurement frame in each response packet</p></li>
-</ul>
-</dd>
-<dt>Response Format:</dt><dd><p>Data frame contains:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">Header</span><span class="p">][</span><span class="n">DataFrame</span><span class="p">][</span><span class="n">Checksum</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>Where:</p>
-<ul class="simple">
-<li><p>Header: <cite>[0x04, 0x00, 0x00, 0x20]</cite> (fixed pattern)</p></li>
-<li><p>DataFrame: 1 measurement frame (8 bytes):</p></li>
-</ul>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">ENC2_LOW</span><span class="p">][</span><span class="n">ENC2_MID</span><span class="p">][</span><span class="n">ENC2_HIGH</span><span class="p">][</span><span class="n">ENC2_COUNTER</span><span class="p">]</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>Checksum: 1 byte (sum of first 12 bytes modulo …)</p></li>
-</ul>
-</dd>
-<dt>Data Interpretation:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Encoder</span> <span class="n">Angle</span> <span class="o">=</span> <span class="p">(</span><span class="n">HIGH</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">MID</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="n">LOW</span>
-</pre></div>
-</div>
-<p>Counter = Single byte turn counter</p>
-</dd>
-<dt>Example Packet Structure:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="mi">04</span> <span class="mi">00</span> <span class="mi">00</span> <span class="mi">20</span> <span class="p">[</span><span class="mi">1</span> <span class="n">frame</span><span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="n">checksum</span><span class="p">]</span>
-</pre></div>
-</div>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.flashtool.UartCmd.HEX_READ_ENC2_CURRENT">
 <span class="sig-name descname"><span class="pre">HEX_READ_ENC2_CURRENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">18</span></em><a class="headerlink" href="#lenz_flashtool.flashtool.UartCmd.HEX_READ_ENC2_CURRENT" title="Link to this definition">#</a></dt>
 <dd><p>Command to read current from encoder on channel 2.</p>
@@ -2219,6 +2352,50 @@ channel 2 - SPI</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.flashtool.UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI">
+<span class="sig-name descname"><span class="pre">HEX_READ_INSTANT_ANGLE_ENC_SPI</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></em><a class="headerlink" href="#lenz_flashtool.flashtool.UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI" title="Link to this definition">#</a></dt>
+<dd><p>Command to read instant angle data from encoder via SPI.</p>
+<dl>
+<dt>Usage:</dt><dd><ul class="simple">
+<li><p>Single data frame for encoder reading</p></li>
+<li><p>Requires encoder to be powered on</p></li>
+<li><p>Returns one measurement frame in each response packet</p></li>
+</ul>
+</dd>
+<dt>Response Format:</dt><dd><p>Data frame contains:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">Header</span><span class="p">][</span><span class="n">DataFrame</span><span class="p">][</span><span class="n">Checksum</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Where:</p>
+<ul class="simple">
+<li><p>Header: <cite>[0x04, 0x00, 0x00, 0x20]</cite> (fixed pattern)</p></li>
+<li><p>DataFrame: 1 measurement frame (8 bytes):</p></li>
+</ul>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">ENC2_LOW</span><span class="p">][</span><span class="n">ENC2_MID</span><span class="p">][</span><span class="n">ENC2_HIGH</span><span class="p">][</span><span class="n">ENC2_COUNTER</span><span class="p">]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Checksum: 1 byte (sum of first 12 bytes modulo …)</p></li>
+</ul>
+</dd>
+<dt>Data Interpretation:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Encoder</span> <span class="n">Angle</span> <span class="o">=</span> <span class="p">(</span><span class="n">HIGH</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">MID</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="n">LOW</span>
+</pre></div>
+</div>
+<p>Counter = Single byte turn counter</p>
+</dd>
+<dt>Example Packet Structure:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="mi">04</span> <span class="mi">00</span> <span class="mi">00</span> <span class="mi">20</span> <span class="p">[</span><span class="mi">1</span> <span class="n">frame</span><span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="n">checksum</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.flashtool.UartCmd.HEX_WRITE_CMD">
 <span class="sig-name descname"><span class="pre">HEX_WRITE_CMD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">13</span></em><a class="headerlink" href="#lenz_flashtool.flashtool.UartCmd.HEX_WRITE_CMD" title="Link to this definition">#</a></dt>
 <dd><p>Command to write data to encoder registers.</p>
@@ -2245,14 +2422,13 @@ Response: None</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.flashtool.UartCmd.PKG_INFO_LENGTH">
 <span class="sig-name descname"><span class="pre">PKG_INFO_LENGTH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#lenz_flashtool.flashtool.UartCmd.PKG_INFO_LENGTH" title="Link to this definition">#</a></dt>
-<dd><p>Packet INFO constant structure length of 5 bytes
-Request Packet:</p>
-<blockquote>
-<div><p>[DUMMY_DATA_SIZE][REG_ADDR][ CMD  ][DUMMY_DATA][CHECKSUM]
+<dd><p>Packet INFO constant structure length of 5 bytes</p>
+<dl>
+<dt>Packet Structure:</dt><dd><p>Request Packet:
+[DUMMY_DATA_SIZE][REG_ADDR][ CMD  ][DUMMY_DATA][CHECKSUM]
 [     1 byte    ][2 bytes ][1 byte][———-][ 1 byte ]</p>
-</div></blockquote>
-<dl class="simple">
-<dt>Response Packet:</dt><dd><p>[DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]
+<p>Response Packet:
+[DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]
 [     1 byte    ][2 bytes ][     1 byte    ][———-][ 1 byte ]</p>
 </dd>
 </dl>
@@ -2548,7 +2724,9 @@ If None, the root logger is configured.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.biss_write_command"><code class="docutils literal notranslate"><span class="pre">FlashTool.biss_write_command()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.biss_write_word"><code class="docutils literal notranslate"><span class="pre">FlashTool.biss_write_word()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.biss_zeroing"><code class="docutils literal notranslate"><span class="pre">FlashTool.biss_zeroing()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.check_main_fw_crc32"><code class="docutils literal notranslate"><span class="pre">FlashTool.check_main_fw_crc32()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.close"><code class="docutils literal notranslate"><span class="pre">FlashTool.close()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.download_fw_to_ft"><code class="docutils literal notranslate"><span class="pre">FlashTool.download_fw_to_ft()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.enable_signal_handling"><code class="docutils literal notranslate"><span class="pre">FlashTool.enable_signal_handling()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.encoder_ch1_power_cycle"><code class="docutils literal notranslate"><span class="pre">FlashTool.encoder_ch1_power_cycle()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.encoder_ch1_power_off"><code class="docutils literal notranslate"><span class="pre">FlashTool.encoder_ch1_power_off()</span></code></a></li>
@@ -2559,11 +2737,14 @@ If None, the root logger is configured.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.flashtool_rst"><code class="docutils literal notranslate"><span class="pre">FlashTool.flashtool_rst()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.hex_line_send"><code class="docutils literal notranslate"><span class="pre">FlashTool.hex_line_send()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.port_read"><code class="docutils literal notranslate"><span class="pre">FlashTool.port_read()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.read_current_angle_enc_SPI"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_current_angle_enc_SPI()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.read_data"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_data()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.read_data_enc1_AB_enc2_SPI"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_data_enc1_AB_enc2_SPI()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.read_data_enc1_enc2_SPI"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_data_enc1_enc2_SPI()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.read_enc2_current"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_enc2_current()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.read_instant_angle_enc_SPI"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_instant_angle_enc_SPI()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.read_memory_state_bl"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_memory_state_bl()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.reboot_to_bl"><code class="docutils literal notranslate"><span class="pre">FlashTool.reboot_to_bl()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.reboot_to_fw"><code class="docutils literal notranslate"><span class="pre">FlashTool.reboot_to_fw()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.register_cleanup"><code class="docutils literal notranslate"><span class="pre">FlashTool.register_cleanup()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.select_FlashTool_current_sensor_mode"><code class="docutils literal notranslate"><span class="pre">FlashTool.select_FlashTool_current_sensor_mode()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.FlashTool.select_flashtool_mode"><code class="docutils literal notranslate"><span class="pre">FlashTool.select_flashtool_mode()</span></code></a></li>
@@ -2579,6 +2760,7 @@ If None, the root logger is configured.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.CMD_NVRST"><code class="docutils literal notranslate"><span class="pre">UartCmd.CMD_NVRST</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.CMD_POWER_OFF"><code class="docutils literal notranslate"><span class="pre">UartCmd.CMD_POWER_OFF</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.CMD_POWER_ON"><code class="docutils literal notranslate"><span class="pre">UartCmd.CMD_POWER_ON</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.CMD_REBOOT_TO_BL"><code class="docutils literal notranslate"><span class="pre">UartCmd.CMD_REBOOT_TO_BL</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.CMD_SELECT_CH1_MODE"><code class="docutils literal notranslate"><span class="pre">UartCmd.CMD_SELECT_CH1_MODE</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.CMD_SELECT_FLASHTOOL_CURRENT_SENSOR_MODE"><code class="docutils literal notranslate"><span class="pre">UartCmd.CMD_SELECT_FLASHTOOL_CURRENT_SENSOR_MODE</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.CMD_SELECT_FLASHTOOL_MODE"><code class="docutils literal notranslate"><span class="pre">UartCmd.CMD_SELECT_FLASHTOOL_MODE</span></code></a></li>
@@ -2589,8 +2771,8 @@ If None, the root logger is configured.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.HEX_READ_ANGLE_TWO_ENC_AB_UART"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_READ_ANGLE_TWO_ENC_AB_UART</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.HEX_READ_ANGLE_TWO_ENC_SPI"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_READ_ANGLE_TWO_ENC_SPI</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.HEX_READ_CMD"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_READ_CMD</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.HEX_READ_CURRENT_ANGLE_ENC_SPI"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_READ_CURRENT_ANGLE_ENC_SPI</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.HEX_READ_ENC2_CURRENT"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_READ_ENC2_CURRENT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.HEX_WRITE_CMD"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_WRITE_CMD</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.PKG_INFO_LENGTH"><code class="docutils literal notranslate"><span class="pre">UartCmd.PKG_INFO_LENGTH</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.flashtool.UartCmd.RX_DATA_LENGTH_CURRENT"><code class="docutils literal notranslate"><span class="pre">UartCmd.RX_DATA_LENGTH_CURRENT</span></code></a></li>

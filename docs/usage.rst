@@ -51,6 +51,70 @@ The following example performs amplitude calibration on a LENZ encoder. The enco
          time.sleep(0.2)
       logging.info("Signal Amplitude Calibration Finished")
 
+Zeroing
+-----------
+
+The following example performs zeroing on a LENZ encoder. Resets position counter to zero at current mechanical position.
+
+.. code-block:: python
+
+   import logging
+   import time
+   import lenz_flashtool as lenz
+
+   lenz.init_logging('flashtool.log', logging.INFO, logging.DEBUG)
+   with lenz.FlashTool(port_description_prefixes=('XR21V')) as ft:
+      ft.encoder_power_cycle()
+      ft.biss_write_command('unlocksetup')
+      ft.biss_write_command('unlockflash')
+      ft.biss_write_command('zeroing')
+      ft.biss_write_command('saveflash')
+      time.sleep(0.2)
+      ft.encoder_power_cycle()
+
+Change the encoder direction sensing
+------------------------------------
+
+The following example configure encoder direction sensing for clockwise or counterclockwise rotation.
+
+.. code-block:: python
+
+   import logging
+   import time
+   import lenz_flashtool as lenz
+
+   lenz.init_logging('flashtool.log', logging.INFO, logging.DEBUG)
+   with lenz.FlashTool(port_description_prefixes=('XR21V')) as ft:
+      ft.encoder_power_cycle()
+      ft.biss_write_command('unlocksetup')
+      ft.biss_write_command('unlockflash')
+      ft.biss_write_command('set_dir_cw')  
+      # ft.biss_write_command('set_dir_ccw')
+      ft.biss_write_command('saveflash')
+      time.sleep(0.2)
+      ft.encoder_power_cycle()
+
+Set the encoder resolution to 24 bits
+------------------------------------
+
+The following example configure encoder direction sensing for clockwise or counterclockwise rotation.
+
+.. code-block:: python
+
+   import logging
+   import time
+   import lenz_flashtool as lenz
+
+   lenz.init_logging('flashtool.log', logging.INFO, logging.DEBUG)
+   with lenz.FlashTool(port_description_prefixes=('XR21V')) as ft:
+      ft.encoder_power_cycle()
+      ft.biss_write_command('unlocksetup')
+      ft.biss_write_command('unlockflash')
+      ft.biss_write_word(lenz.BiSSBank.REV_RES_REG_INDEX, 0xE)  # Set resolution to 24 bits
+      # ft.biss_write_command('set_dir_ccw')
+      ft.biss_write_command('saveflash')
+      time.sleep(0.2)
+      ft.encoder_power_cycle()
 
 .. Calibrate an encoder using :mod:`lenz_flashtool.encproc`:
 

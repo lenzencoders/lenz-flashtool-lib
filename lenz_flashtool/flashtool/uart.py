@@ -24,12 +24,16 @@ class UartCmd(IntEnum):
 
     PKG_INFO_LENGTH = 0x05
     """int: Packet INFO constant structure length of 5 bytes
-    Request Packet:
+
+    Packet Structure:
+        Request Packet:
         [DUMMY_DATA_SIZE][REG_ADDR][ CMD  ][DUMMY_DATA][CHECKSUM]
         [     1 byte    ][2 bytes ][1 byte][----------][ 1 byte ]
-    Response Packet:
+
+        Response Packet:
         [DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]
         [     1 byte    ][2 bytes ][     1 byte    ][----------][ 1 byte ]
+
     """
 
     RX_DATA_LENGTH_IRS = 0xFC
@@ -43,9 +47,11 @@ class UartCmd(IntEnum):
     """
 
     CMD_VAL_ADD = 0x10
-    """int: Value that added to CMD in Repsonse Packet
+    """int: Value added to CMD in the Response Packet
+
     Response:
         [DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]
+
     """
 
     CMD_POWER_OFF = 0x0B
