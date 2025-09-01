@@ -77,7 +77,7 @@ def biss_send_hex(file_path: str, nonce: Optional[int] = None, pbar: Optional[An
     filename, _ = path.splitext(file_path)
     logger.info("Input enchexfile: %s", file_path)
     ft.biss_write_command("reboot2bl")
-    sleep(0.2)
+    sleep(0.5)
 
     crc_values, page_numbers, data_records = parse_hex_file(file_path)
     pages = organize_data_into_pages(data_records)

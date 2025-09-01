@@ -2042,7 +2042,7 @@ class FlashTool:
                     self.biss_set_bank(BiSSBank.BISS_BANK_SERV)
                     self.biss_write_word(BiSSBank.CRC32_REG_INDEX, crc)
                     self.biss_write_word(BiSSBank.PAGENUM_REG_INDEX, page_num)
-                    time.sleep(0.02)
+                    time.sleep(0.01)
                     # self.biss_read_registers(BISS_BANK_SERV)
 
                 # Send each bank in the page
@@ -2050,7 +2050,7 @@ class FlashTool:
                     bank_num = bank_idx + BiSSBank.BISS_USERBANK_START
                     if bank_num == 5:  # Set bank 5 explicitly
                         self.biss_set_bank(bank_num)
-                    time.sleep(0.02)
+                    time.sleep(0.05)
 
                     if pbar:
                         percent_complete(bank_idx, BiSSBank.BANKS_PER_PAGE - 1, title=f"Sending Page {page_idx}")
