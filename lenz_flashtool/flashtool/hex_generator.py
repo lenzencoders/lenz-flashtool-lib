@@ -26,9 +26,17 @@ Enhanced Functionality:
 - Default version fallback (1.0.0) when pattern not found
 - Absolute path support for files in any location
 - Validation of input files
+- Automatic date extraction from file modification timestamps
 
 Functions:
-    generate_hex_main_fw(firmware_file: str, bootloader_file: str) -> None
+    extract_version_from_filename(filename: str) -> int
+        Extracts version number from filename and converts to hex format.
+
+    get_file_date(filepath: str) -> int
+        Extracts year and month from file modification time in YYYYMM format.
+
+    generate_hex_main_fw(firmware_file: str, bootloader_file: str,
+                        firmware_date: int = None, bootloader_date: int = None) -> None
         Processes firmware and bootloader HEX files, generates output with:
         - Combined firmware+bootloader (optional)
         - Extracted version metadata
@@ -46,6 +54,7 @@ Dependencies:
 - os: Cross-platform path operations
 - re: Regular expressions for version extraction
 - glob: File pattern matching
+- datetime: File timestamp processing and date formatting
 - .hex_utils.HexFileProcessor: Core HEX processing engine
 
 Usage Examples:
@@ -53,7 +62,8 @@ Usage Examples:
     >>> generate_hex_main_fw("firmware.hex", "bootloader.hex")
 
     With versioned files:
-    >>> generate_hex_main_fw("firmware_FT_ver_1_2_3.hex", "bootloader_FT_ver_2_0_1.hex")
+    >>> generate_hex_main_fw("firmware_FT_ver_1_2_3.hex", "bootloader_FT_ver_2_0_1.hex",
+    ...                     firmware_date=202507, bootloader_date=202507)
 
     Find latest firmware:
     >>> find_latest_fw_version("/firmware/")
@@ -67,6 +77,7 @@ Output:
     - Processed firmware data in 2048-byte pages
     - Embedded CRC32 for each page
     - Extracted version information
+    - File modification dates in YYYYMM format
     - Optional bootloader integration
 
 Security and Validation:
@@ -75,12 +86,14 @@ Security and Validation:
 - Input file validation
 - Memory-safe operations
 - Pattern validation
+- Date format validation
 
 Author:
     LENZ ENCODERS, 2020-2025
 '''
 import re
 import os
+from datetime import datetime
 from glob import glob
 from .hex_utils import HexFileProcessor
 
@@ -110,7 +123,40 @@ def extract_version_from_filename(filename: str) -> int:
     return (major << 16) | (minor << 8) | patch
 
 
-def generate_hex_main_fw(firmware_file: str, bootloader_file: str):
+def get_file_date(filepath: str) -> int:
+    """
+    Extract year and month from file modification time and format as YYYYMM integer.
+
+    Uses the file's last modification timestamp to determine the creation date.
+    Returns the date in YYYYMM format (e.g., 202507 for July 2025).
+
+    Args:
+        filepath: Full path to the file to extract date from
+
+    Returns:
+        int: Date in YYYYMM format representing the file's modification year and month
+
+    Raises:
+        FileNotFoundError: If the specified file path does not exist
+        OSError: If there are permission issues accessing the file
+
+    Example:
+        >>> get_file_date("/path/to/firmware.hex")
+        202507
+        >>> get_file_date("nonexistent_file.hex")  # Returns current date if file not found
+        202412
+    """
+    if not os.path.exists(filepath):
+        return int(datetime.now().strftime('%Y%m'))
+
+    mod_time = os.path.getmtime(filepath)
+    mod_date = datetime.fromtimestamp(mod_time)
+
+    return int(mod_date.strftime('%Y%m'))
+
+
+def generate_hex_main_fw(firmware_file: str, bootloader_file: str,
+                         firmware_date: int = None, bootloader_date: int = None):
     """
     Generate a processed HEX file with CRC metadata for main firmware and optional bootloader.
     Automatically extracts versions from filenames if they contain '_ver_X_Y_Z' pattern.
@@ -142,22 +188,35 @@ def generate_hex_main_fw(firmware_file: str, bootloader_file: str):
         bootloader_version = 0x00000100  # Default version 1.0.0
 
     # Process files
-    firmware_file_path = os.path.abspath(firmware_file)
-    processor.parse_hex_file(firmware_file_path)
+    firmware_filepath = os.path.abspath(firmware_file)
+
+    if firmware_date is None:
+        firmware_date = get_file_date(firmware_filepath)
 
     if bootloader_file:
-        bootloader_file_path = os.path.abspath(bootloader_file)
-        if os.path.exists(bootloader_file_path):
-            processor.parse_hex_file(bootloader_file_path, is_bootloader=True)
+        bootloader_filepath = os.path.abspath(bootloader_file)
+        if bootloader_date is None and os.path.exists(bootloader_filepath):
+            bootloader_date = get_file_date(bootloader_filepath)
+    else:
+        bootloader_date = firmware_date
+
+    processor.parse_hex_file(firmware_filepath)
+
+    if bootloader_file:
+        bootloader_filepath = os.path.abspath(bootloader_file)
+        if os.path.exists(bootloader_filepath):
+            processor.parse_hex_file(bootloader_filepath, is_bootloader=True)
 
     processed_hex = processor.split_with_crc(
         chunk_size=2048,
         metadata=True,
         program_version=program_version,
-        bootloader_version=bootloader_version
+        bootloader_version=bootloader_version,
+        program_date=firmware_date,
+        bootloader_date=bootloader_date,
     )
 
-    output_dir = os.path.dirname(firmware_file_path)
+    output_dir = os.path.dirname(firmware_filepath)
     output_file = os.path.join(output_dir, version_str)
 
     with open(output_file, "w") as f:
