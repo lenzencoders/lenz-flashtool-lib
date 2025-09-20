@@ -55,12 +55,12 @@ from lenz_flashtool import FlashTool, init_logging
 init_logging(logfilename="flashtool.log", stdout_level=20, file_level=10)
 
 # Initialize FlashTool
-with FlashTool(port_description_prefixes=('XR21V')) as lenz:
+with FlashTool(port_description_prefixes=('XR21V')) as ft:
     # Power cycle the encoder
-    lenz.encoder_power_cycle()
+    ft.encoder_power_cycle()
 
     # Read serial number
-    bootloader_ver, serial_num, mfg_date, program_ver = lenz.biss_read_snum()
+    bootloader_ver, serial_num, mfg_date, program_ver = ft.biss_read_snum()
     print(f"Encoder Serial Number: {serial_num}")
 # The connection is automatically closed when exiting the 'with' block
 ```

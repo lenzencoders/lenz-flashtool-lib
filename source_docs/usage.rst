@@ -97,7 +97,7 @@ The following example configure encoder direction sensing for clockwise or count
 Set the encoder resolution to 24 bits
 ------------------------------------
 
-The following example configure encoder direction sensing for clockwise or counterclockwise rotation.
+The following example configure encoder resolution to 24 bits.
 
 .. code-block:: python
 
@@ -111,7 +111,6 @@ The following example configure encoder direction sensing for clockwise or count
       ft.biss_write_command('unlocksetup')
       ft.biss_write_command('unlockflash')
       ft.biss_write_word(lenz.BiSSBank.REV_RES_REG_INDEX, 0xE)  # Set resolution to 24 bits
-      # ft.biss_write_command('set_dir_ccw')
       ft.biss_write_command('saveflash')
       time.sleep(0.2)
       ft.encoder_power_cycle()

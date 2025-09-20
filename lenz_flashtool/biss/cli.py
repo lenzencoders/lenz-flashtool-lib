@@ -39,8 +39,7 @@ import sys
 import logging
 import time
 from typing import List
-from ..flashtool import FlashTool, biss_send_hex
-from ..flashtool import generate_hex_line
+from ..flashtool import FlashTool, biss_send_hex, generate_hex_line
 from ..utils.termcolors import TermColors
 from . import (
     BiSSBank,

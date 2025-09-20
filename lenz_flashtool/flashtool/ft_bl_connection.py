@@ -50,12 +50,11 @@ Author:
     LENZ ENCODERS, 2020-2025
 """
 import time
-import numpy as np
 import logging
 import serial.tools.list_ports
 from ..utils.termcolors import TermColors
+from ..flashtool import generate_hex_line
 from .uart import UartBootloaderCmd, UartBootloaderSeq
-import lenz_flashtool as ft
 from .core import FlashTool
 
 logger = logging.getLogger(__name__)
@@ -98,7 +97,7 @@ def connect_and_stay_in_bl(timeout_s: int = 20, retry_delay: float = 0.5) -> boo
 
     print(f"{TermColors.Yellow}Waiting for COM port with prefix {port_prefix} (timeout: {timeout_s}s)...{TermColors.Default}")
 
-    tx_row = bytes.fromhex(ft.generate_hex_line(
+    tx_row = bytes.fromhex(generate_hex_line(
         address=0x0000,
         command=UartBootloaderCmd.UART_COMMAND_STATE_STAY_BL,
         data=UartBootloaderSeq.UART_SEQ_STAY_IN_BL
@@ -123,13 +122,13 @@ def connect_and_stay_in_bl(timeout_s: int = 20, retry_delay: float = 0.5) -> boo
             last_port = port.device
 
         try:
-            with FlashTool(port_description_prefixes=(port_prefix,)) as lenz:
+            with FlashTool(port_description_prefixes=(port_prefix,)) as ft:
                 for attempt in range(3):
                     try:
-                        lenz._write_to_port(tx_row)
-                        response = lenz.port_read(len(tx_row) - 1)
+                        ft._write_to_port(tx_row)
+                        response = ft.port_read(len(tx_row) - 1)
 
-                        if np.array_equal(response, UartBootloaderSeq.UART_SEQ_ANSWER_TO_STAY_IN_BL):
+                        if list(response) == list(UartBootloaderSeq.UART_SEQ_ANSWER_TO_STAY_IN_BL):
                             logger.info(f"{TermColors.Green}Answer sequence to stay in bl is correct{TermColors.Default}")
                             return True
 
@@ -170,7 +169,7 @@ def connect_and_enter_fw(timeout_s: int = 20, retry_delay: float = 0.5) -> bool:
     print(f"{TermColors.Yellow}Waiting for COM port with prefix {port_prefix} "
           f"(timeout: {timeout_s}s)...{TermColors.Default}")
 
-    tx_data = bytes.fromhex(ft.generate_hex_line(
+    tx_data = bytes.fromhex(generate_hex_line(
         address=0x0000,
         command=UartBootloaderCmd.UART_COMMAND_RUN_PROGRAM,
         data=[0x00]
