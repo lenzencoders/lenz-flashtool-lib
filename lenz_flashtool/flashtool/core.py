@@ -2203,3 +2203,39 @@ class FlashTool:
         except Exception as e:
             logger.error(f"Error reading encoder angle: {str(e)}", exc_info=True)
             return False
+
+    def enter_bl_biss_encoder(self) -> bool:
+        """
+        Reset the BISS encoder to bootloader mode by power cycling.
+
+        This method performs multiple power cycles to force the encoder
+        into bootloader mode. The bootloader mode is indicated by specific
+        error flags being set in the encoder's status register.
+
+        Bootloader Mode Indicators:
+        - The presence of ['FLAGS_STARTUP_ERROR'] flags typically indicates
+        successful entry into bootloader mode.
+
+        Returns:
+            bool: True if encoder entered bootloader mode (startup error flags detected),
+                False otherwise.
+        """
+        RESET_ATTEMPTS = 12
+        POWER_CYCLE_DELAY = 0.01
+
+        initial_flags, initial_cmd_state = self.biss_read_flags()
+        # logger.debug("Initial flags: %s, Command state: %s", initial_flags, initial_cmd_state)
+
+        for attempt in range(RESET_ATTEMPTS):
+            self.encoder_power_off()
+            time.sleep(POWER_CYCLE_DELAY)
+            self.encoder_power_on()
+            time.sleep(POWER_CYCLE_DELAY)
+
+        final_flags, final_cmd_state = self.biss_read_flags()
+        # logger.debug("Final flags after reset: %s, Command state: %s", final_flags, final_cmd_state)
+
+        bootloader_entered = 'FLAGS_STARTUP_ERROR' in final_flags
+
+        logger.info("Encoder enter bootloader %s", "successful" if bootloader_entered else "failed")
+        return bootloader_entered
