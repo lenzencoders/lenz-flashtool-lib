@@ -43,7 +43,6 @@ The following example performs amplitude calibration on a LENZ encoder. The enco
    with lenz.FlashTool(port_description_prefixes=('XR21V')) as ft:
       ft.encoder_power_cycle()
       ft.biss_write_command('unlocksetup')
-      ft.biss_write_command('cleardiflut')
       ft.biss_write_command('unlockflash')
       ft.biss_write_command('ampcalibrate')
       logging.info("Waiting Signal Amplitude Calibration...")

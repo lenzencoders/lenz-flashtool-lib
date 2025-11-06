@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Usage &#8212; lenz-flashtool 0.1.4 documentation</title>
+    <title>Usage &#8212; lenz-flashtool 0.1.5 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=fd825880"></script>
+    <script src="_static/documentation_options.js?v=59fadc99"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
@@ -492,7 +492,6 @@
 <span class="k">with</span> <span class="n">lenz</span><span class="o">.</span><span class="n">FlashTool</span><span class="p">(</span><span class="n">port_description_prefixes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;XR21V&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">ft</span><span class="p">:</span>
    <span class="n">ft</span><span class="o">.</span><span class="n">encoder_power_cycle</span><span class="p">()</span>
    <span class="n">ft</span><span class="o">.</span><span class="n">biss_write_command</span><span class="p">(</span><span class="s1">&#39;unlocksetup&#39;</span><span class="p">)</span>
-   <span class="n">ft</span><span class="o">.</span><span class="n">biss_write_command</span><span class="p">(</span><span class="s1">&#39;cleardiflut&#39;</span><span class="p">)</span>
    <span class="n">ft</span><span class="o">.</span><span class="n">biss_write_command</span><span class="p">(</span><span class="s1">&#39;unlockflash&#39;</span><span class="p">)</span>
    <span class="n">ft</span><span class="o">.</span><span class="n">biss_write_command</span><span class="p">(</span><span class="s1">&#39;ampcalibrate&#39;</span><span class="p">)</span>
    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Waiting Signal Amplitude Calibration...&quot;</span><span class="p">)</span>
