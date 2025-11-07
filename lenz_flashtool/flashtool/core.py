@@ -860,6 +860,44 @@ class FlashTool:
         self._write_to_port(tx_row)
         time.sleep(0.01)
 
+    def read_fw_bl_ver(self) -> tuple[str, str]:
+        """
+        Read firmware and bootloader version from FlashTool device.
+
+        Sends a command to read both firmware and bootloader versions from the device.
+        The response contains 8 bytes where:
+            - First 4 bytes represent firmware version
+            - Last 4 bytes represent bootloader version
+
+        Returns:
+            tuple[str, str]: A tuple containing:
+                - Firmware version as hexadecimal string (4 characters)
+                - Bootloader version as hexadecimal string (4 characters)
+
+        Example:
+            >>> ft = FlashTool()
+            >>> fw_ver, bl_ver = ft.read_fw_bl_ver()
+            >>> print(f"Firmware: {fw_ver}, Bootloader: {bl_ver}")
+            Firmware: 00010007, Bootloader: 00010002
+
+        Note:
+            - Each version is represented as 4-byte value in big-endian format
+            - The function converts individual bytes to concatenated hexadecimal string
+            - Requires device to be in bootloader mode
+        """
+        tx_row = bytes.fromhex(generate_hex_line(
+            address=0x0000,
+            command=UartBootloaderCmd.UART_COMMAND_READ_PROGRAM_BOOTLOADER_VER,
+            data=[0x00]*8
+        )[1:])
+        logger.debug(f"Sent BiSS Data: {tx_row.hex()}")
+        self._write_to_port(tx_row)
+        response = self.port_read(len(tx_row) - 1)
+        fw_ver = f"{response[0]:02X}{response[1]:02X}{response[2]:02X}{response[3]:02X}"
+        bl_ver = f"{response[4]:02X}{response[5]:02X}{response[6]:02X}{response[7]:02X}"
+        logger.info(f"Firmware version: {fw_ver}, Bootloader version: {bl_ver}")
+        return fw_ver, bl_ver
+
     def read_memory_state_bl(self) -> UartBootloaderMemoryStates:
         """
         Read Memory State of FlashTool bootloader.
