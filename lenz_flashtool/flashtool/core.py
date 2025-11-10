@@ -302,6 +302,7 @@ class FlashTool:
             >>> ft._write_to_port(b'\\x01\\x00@\\x0b\\xff\\xb5')  # Power off encoder on channel 2
         """
         try:
+            self.__port.reset_input_buffer()
             self.__port.reset_output_buffer()
             self.__port.write(data)
             self.__port.flush()
@@ -350,19 +351,32 @@ class FlashTool:
 
     def port_read(self, length: int) -> np.ndarray:
         """
-        Reads data from the serial port and validates it with a checksum check.
+        Reads a BiSS frame from the serial port, validates its checksum, and returns the payload.
 
-        Waits for the specified number of data bytes plus a checksum byte, reads the data,
-        and verifies the checksum. Logs the received data and checksum status, returning the data as a NumPy array.
+        The method blocks until the expected number of bytes arrives (or a timeout occurs).
+        A complete BiSS frame consists of:
+
+        * 1 byte  - length
+        * 2 bytes - address (repeated)
+        * 1 byte  - command
+        * ``length`` bytes - payload data
+        * 1 byte  - checksum
+
+        The checksum is verified with :func:`calculate_checksum` over **all bytes except the
+        checksum itself**.  If verification succeeds the payload (the ``length`` data bytes)
+        is returned as a ``uint8`` NumPy array.  On failure a ``FlashToolError`` is raised.
 
         Args:
-            length: The number of data bytes to read (excluding the checksum byte).
+            length: Number of **payload** bytes expected (excludes the 5 technical bytes:
+                    length, address*2, command, checksum).
 
         Returns:
-            np.ndarray: A NumPy array of uint8 values containing the received data (excluding header and checksum).
+            np.ndarray: 1-D array of ``dtype=uint8`` containing only the payload data.
 
         Raises:
-            FlashToolError: If the data is not received within the timeout period or if checksum validation fails.
+            FlashToolError:
+                * If no data arrives within the internal timeout (currently 1 s).
+                * If the received checksum does not match the calculated one.
 
         Example:
             >>> ft = FlashTool()
@@ -382,9 +396,9 @@ class FlashTool:
                 crc_res = "FALSE"
                 logger.error(f"Received BiSS Data: {biss_value:#010x}, checksum calculated {calculated_crc}, \
                             in data {biss_data[-1]}, res = {crc_res}")
-            logger.info("BiSS received data:")
+            logger.debug("BiSS received data:")
             data_array = np.array(list(biss_data[4:-1]), 'uint8')
-            logger.info(data_array)
+            logger.debug(data_array)
             return data_array
             # logger.info(np.array(list(biss_data[0:64]), 'uint8'))
             # logger.info(np.array(list(biss_data[64:-1]), 'uint8'))
@@ -892,7 +906,7 @@ class FlashTool:
         )[1:])
         logger.debug(f"Sent BiSS Data: {tx_row.hex()}")
         self._write_to_port(tx_row)
-        response = self.port_read(len(tx_row) - 1)
+        response = self.port_read(len(tx_row) - 5)
         fw_ver = f"{response[0]:02X}{response[1]:02X}{response[2]:02X}{response[3]:02X}"
         bl_ver = f"{response[4]:02X}{response[5]:02X}{response[6]:02X}{response[7]:02X}"
         logger.info(f"Firmware version: {fw_ver}, Bootloader version: {bl_ver}")
@@ -918,7 +932,7 @@ class FlashTool:
         )[1:])
         logger.debug(f"Sent BiSS Data: {tx_row.hex()}")
         self._write_to_port(tx_row)
-        response = self.port_read(len(tx_row) - 1)
+        response = self.port_read(len(tx_row) - 5)
         state = self._decode_memory_state_bl(response)
         time.sleep(0.01)
         return state
@@ -941,17 +955,17 @@ class FlashTool:
         response = response[0]
         if response in {state.value for state in UartBootloaderMemoryStates}:
             matched_state = UartBootloaderMemoryStates(response)
-            print(f"{TermColors.Blue}Response: {matched_state.name} (0x{response:02x}{TermColors.Default})")
+            logger.debug(f"Response: {matched_state.name} (0x{response:02x})")
             if matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_OK:
-                logger.info('Firmware CRC check passed!')
+                logger.debug('Firmware CRC check passed!')
             elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_FAULT:
                 logger.error('Firmware CRC check failed!')
             elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_IDLE:
-                logger.info('Uart state is IDLE!')
+                logger.debug('Uart state is IDLE!')
             elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FW_CHECK_CRC32_FAULT:
                 logger.error('Firmware CRC check failed!')
             elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FW_CHECK_CRC32_OK:
-                logger.info('Firmware CRC check passed!')
+                logger.debug('Firmware CRC check passed!')
         return matched_state
 
     def check_main_fw_crc32(self) -> None:
@@ -1071,7 +1085,7 @@ class FlashTool:
                             command=UartBootloaderCmd.UART_COMMAND_WRITE_CURRENT_PAGE_CRC32,
                             data=crc_bytes
                         )
-                        logger.info(f"Sent BiSS Data: {crc_line}")
+                        # logger.debug(f"Sent BiSS Data: {crc_line}")
                         self.hex_line_send(crc_line)
 
                         # 2. Send Data Records in 64-byte chunks
@@ -1094,9 +1108,9 @@ class FlashTool:
                         matched_state = self.read_memory_state_bl()
                         if matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_FAULT:
                             retry_count += 1
-                            print(f"CRC Error on page {page_number}, retry {retry_count}/{max_retries}")
+                            logger.error(f"CRC Error on page {count_pages}, retry {retry_count}/{max_retries}")
                             if retry_count >= max_retries:
-                                raise RuntimeError(f"Max retries ({max_retries}) exceeded for page {page_number}")
+                                raise RuntimeError(f"Max retries ({max_retries}) exceeded for page {count_pages}")
                             continue
                         elif matched_state == UartBootloaderMemoryStates.UART_MEMORYSTATE_FLASH_FW_CRC_OK:
                             success = True
@@ -1106,15 +1120,16 @@ class FlashTool:
 
                     except Exception as e:
                         retry_count += 1
-                        print(f"Error on page {page_number}, retry {retry_count}/{max_retries}: {str(e)}")
+                        logger.error(f"Error on page {count_pages}, retry {retry_count}/{max_retries}: {str(e)}")
                         if retry_count >= max_retries:
-                            raise RuntimeError(f"Max retries ({max_retries}) exceeded for page {page_number}")
+                            raise RuntimeError(f"Max retries ({max_retries}) exceeded for page {count_pages}")
                         time.sleep(1)
                         continue
 
         except Exception as e:
             print(f"Fatal error during firmware upload: {str(e)}")
             raise
+        print(end="\n")
         self.check_main_fw_crc32()
         time.sleep(0.05)
 
