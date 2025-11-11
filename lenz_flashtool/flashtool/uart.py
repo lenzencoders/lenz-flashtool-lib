@@ -539,6 +539,38 @@ class UartBootloaderCmd(IntEnum):
             >>>  :0100001602e7
     """
 
+    UART_COMMAND_READ_PROGRAM_BOOTLOADER_VER = 0x07
+    """int: Command to read fw and bootloader version of FlashTool.
+
+    Response VERSION_DATA:
+        - Bytes 0-3: Firmware version (4 bytes, big-endian format)
+        - Bytes 4-7: Bootloader version (4 bytes, big-endian format)
+
+    Each version is represented as 4-byte value in format:
+        - Major version: byte 0
+        - Minor version: byte 1
+        - Patch version: byte 2
+        - Build number: byte 3
+
+    Usage:
+        - Data and address in packet doesn't matter
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x07][DUMMY_DATA][CHECKSUM]
+        Response: [DATA_SIZE][REG_ADDR][0x17][VERSION_DATA][CHECKSUM]
+
+    Examples:
+        Request:
+            >>>  :080000070000000000000000f1
+        Response:
+            >>>  :80000170001000700010002d6
+            Firmware: 0x00010007, Bootloader: 0x00010002
+
+    Note:
+        - Version data is returned in big-endian byte order
+        - Actual version interpretation depends on device-specific format
+    """
+
 
 class UartBootloaderSeq:
     UART_SEQ_STAY_IN_BL = [0x05, 0x31, 0xF6, 0xB9]
