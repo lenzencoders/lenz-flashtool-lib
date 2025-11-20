@@ -574,8 +574,96 @@ class UartBootloaderCmd(IntEnum):
 
 class UartBootloaderSeq:
     UART_SEQ_STAY_IN_BL = [0x05, 0x31, 0xF6, 0xB9]
+    """list: Request sequence to keep device in bootloader mode and prevent firmware execution.
 
-    UART_SEQ_ANSWER_TO_STAY_IN_BL = [0x06, 0xB1, 0x4E, 0xF9]
+    Response:
+        - 4-byte acknowledgment sequence confirming bootloader mode entry
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x0F][UART_SEQ_STAY_IN_BL][CHECKSUM]
+        Response: [DATA_SIZE][REG_ADDR][0x1F][UART_SEQ_ANSWER_TO_STAY_IN_BL][CHECKSUM]
+
+    Command Sequence:
+        Request:
+            >>> :0400000f0531f6b9df  # [0x05, 0x31, 0xF6, 0xB9] + checksum
+        Response:
+            >>> :0400001ff94eb106df  # [0xF9, 0x4E, 0xB1, 0x06] + checksum
+
+    Usage:
+        - Typically sent immediately after device reset/power cycle
+        - Must be acknowledged before proceeding with firmware operations
+        - Data and address fields may contain specific handshake parameters
+    """
+
+    UART_SEQ_ANSWER_TO_STAY_IN_BL = [0xF9, 0x4E, 0xB1, 0x06]
+    """list: Response sequence to keep device in bootloader mode and prevent firmware execution.
+
+    Response:
+        - 4-byte acknowledgment sequence confirming bootloader mode entry
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x0F][UART_SEQ_STAY_IN_BL][CHECKSUM]
+        Response: [DATA_SIZE][REG_ADDR][0x1F][UART_SEQ_ANSWER_TO_STAY_IN_BL][CHECKSUM]
+
+    Command Sequence:
+        Request:
+            >>> :0400000f0531f6b9XX  # [0x05, 0x31, 0xF6, 0xB9] + checksum
+        Response:
+            >>> :0400001ff94eb106XX  # [0xF9, 0x4E, 0xB1, 0x06] + checksum
+
+    Usage:
+        - Typically sent immediately after device reset/power cycle
+        - Must be acknowledged before proceeding with firmware operations
+        - Data and address fields may contain specific handshake parameters
+    """
+
+    UART_SEQ_EXIT_BL = [0x00, 0x00, 0x00, 0x01, 0xFF]
+    """list: Request sequence to exit bootloader mode and jump to main firmware.
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x0F][UART_SEQ_EXIT_BL][CHECKSUM]
+        Response: [DATA_SIZE][REG_ADDR][0x1F][UART_SEQ_ANSWER_TO_EXIT_BL][CHECKSUM]
+
+    Command Sequence:
+        Request:
+            >>> :0500000f00000001ffXX  # [0x00, 0x00, 0x00, 0x01, 0xFF] + checksum
+        Response:
+            >>> :0500001f0000000000XX  # [0x00, 0x00, 0x00, 0x00, 0x00] + checksum
+
+    Usage:
+        - Sent after successful firmware upload and verification
+        - Device will reset and begin executing main firmware after acknowledgment
+        - The 0xFF byte typically triggers the actual reset or jump operation
+
+    Note:
+        - Ensure all firmware operations are complete before sending this command
+        - Device may perform immediate reset after sending the response
+        - The all-zero response indicates command acceptance before reset
+    """
+
+    UART_SEQ_ANSWER_TO_EXIT_BL = [0x00, 0x00, 0x00, 0x00, 0x00]
+    """list: Response sequence acknowledging successful bootloader exit.
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x0F][UART_SEQ_EXIT_BL][CHECKSUM]
+        Response: [DATA_SIZE][REG_ADDR][0x1F][UART_SEQ_ANSWER_TO_EXIT_BL][CHECKSUM]
+
+    Command Sequence:
+        Request:
+            >>> :0500000f00000001ffXX  # [0x00, 0x00, 0x00, 0x01, 0xFF] + checksum
+        Response:
+            >>> :0500001f0000000000XX  # [0x00, 0x00, 0x00, 0x00, 0x00] + checksum
+
+    Usage:
+        - Validated in reboot_to_fw_irs() to confirm bootloader exit
+        - All-zero pattern is expected for successful operation
+        - Non-zero response indicates bootloader exit failure
+
+    Note:
+        - The device typically resets immediately after sending this response
+        - Communication should be re-established in normal firmware mode after reset
+        - Timeout may occur if waiting for further responses after this sequence
+    """
 
 
 class UartBootloaderMemoryStates(IntEnum):

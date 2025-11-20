@@ -17,15 +17,16 @@ Author:
 # |_____|_____|_| \_/____|  |_____|_| \_|\____\___/|____/|_____|_| \_|____/
 # '''
 
-from .uart import UartCmd
+from .uart import UartCmd, UartBootloaderSeq
 from .core import FlashTool
 from .logging import init_logging
-from .hex_utils import get_nonce, generate_hex_line, calculate_checksum, _readhex, dif2hex, prep_hex
+from .hex_utils import get_nonce, generate_hex_line, calculate_checksum, _readhex, dif2hex, prep_hex, read_hex_file_irs
 from .errors import FlashToolError
-from .operations import biss_send_dif, biss_send_hex
+from .operations import biss_send_dif, biss_send_hex, send_hex_irs_enc
 from .ft_bl_connection import connect_and_stay_in_bl, connect_and_enter_fw
 __all__ = [
     'UartCmd',
+    'UartBootloaderSeq',
     'FlashTool',
     'init_logging',
     'generate_hex_line',
@@ -35,8 +36,10 @@ __all__ = [
     '_readhex',
     'biss_send_dif',
     'biss_send_hex',
+    'send_hex_irs_enc',
     'dif2hex',
     'prep_hex',
+    'read_hex_file_irs',
     'connect_and_stay_in_bl',
     'connect_and_enter_fw'
 ]

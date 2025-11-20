@@ -1343,3 +1343,39 @@ class HexBlockExtractor:
         self.current_block_data = bytearray()
 
         return (self.current_block_start, block_data, block_crc)
+
+
+def read_hex_file_irs(filepath: str) -> list[str]:
+    """
+    Reads an Intel HEX file and returns a list of hex record strings.
+
+    Opens the specified HEX file, reads its contents, and extracts the hex record strings
+    (excluding the initial colon ':' in each line). Each line is expected to be an Intel HEX
+    record starting with ':'.
+
+    Args:
+        filepath (str): The path to the HEX file.
+
+    Returns:
+        List[str]: A list of hex record strings from the file.
+
+    Raises:
+        SystemExit: If the file does not exist or cannot be opened.
+
+    Example:
+        >>> records = readhex('firmware.hex')
+        >>> print(records[0])
+        '10010000214601360121470136007EFE09D2190140'
+    """
+    try:
+        if not path.exists(filepath):
+            print("File not found!")
+            sys.exit(1)
+    except OSError as err:
+        print(err.reason)
+        sys.exit(1)
+
+    with open(filepath, mode='r') as file:
+        read = reader(file, delimiter=':')
+        dataframe = [row[1] for row in read if len(row) > 1]
+    return dataframe

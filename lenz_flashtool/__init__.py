@@ -24,6 +24,7 @@ from .biss import (
     )
 from .flashtool import (
     UartCmd,
+    UartBootloaderSeq,
     FlashTool,
     FlashToolError,
     generate_hex_line,
@@ -32,9 +33,11 @@ from .flashtool import (
     _readhex,
     biss_send_hex,
     biss_send_dif,
+    send_hex_irs_enc,
     calculate_checksum,
     dif2hex,
     prep_hex,
+    read_hex_file_irs,
     connect_and_enter_fw,
     connect_and_stay_in_bl
 )
@@ -50,6 +53,7 @@ __all__ = [
 
     # Command constants
     'UartCmd',
+    'UartBootloaderSeq',
 
     # Core classes
     'FlashTool',
@@ -65,11 +69,13 @@ __all__ = [
     '_readhex',
     'biss_send_dif',
     'biss_send_hex',
+    'send_hex_irs_enc',
     'plot',
     'plot2',
     'TermColors',
     'dif2hex',
     'prep_hex',
+    'read_hex_file_irs',
 
     'connect_and_stay_in_bl',
     'connect_and_enter_fw'

@@ -29,7 +29,7 @@ from ..biss import (
     biss_commands, interpret_biss_commandstate, interpret_error_flags,
     BiSSBank,
 )
-from .uart import UartCmd, UartBootloaderCmd, UartBootloaderMemoryStates
+from .uart import UartCmd, UartBootloaderCmd, UartBootloaderMemoryStates, UartBootloaderSeq
 from .errors import FlashToolError
 from .hex_utils import (
     calculate_checksum,
@@ -2292,3 +2292,120 @@ class FlashTool:
 
         logger.info("Encoder enter bootloader %s", "successful" if bootloader_entered else "failed")
         return bootloader_entered
+
+    def enter_bl_irs(self) -> bool:
+        """
+        Enter bootloader of IRS encoder and verify successful connection.
+
+        Workflow:
+        - Selects SPI channel 2 for IRS encoder communication
+        - Sets flashtool mode to 'spi_uart_irs' for proper protocol configuration
+        - Powers off the encoder briefly (100ms) then powers it back on
+        - Sends the bootloader stay command sequence
+        - Validates the encoder's response against expected bootloader acknowledgment
+
+        Args:
+            None
+
+        Returns:
+            bool: True if the encoder successfully enters bootloader mode and responds
+              correctly, False otherwise.
+
+        Example:
+            >>> encoder_handler.reboot_to_bl_irs()
+            True  # Encoder successfully entered bootloader mode
+        """
+        try:
+            self.select_spi_channel('channel2')
+            self.select_flashtool_mode('spi_uart_irs')
+            self.encoder_power_off()
+            time.sleep(0.1)
+            self.encoder_power_on()
+            time.sleep(0.01)
+
+            tx_row = bytes.fromhex(generate_hex_line(
+                address=0x0000,
+                command=UartCmd.HEX_IRS_ENC_WRITE_READ_CMD,
+                data=UartBootloaderSeq.UART_SEQ_STAY_IN_BL,
+            )[1:])
+            self._write_to_port(tx_row)
+
+            enc_ans = self.port_read(len(tx_row)-1)
+            if enc_ans is None or len(enc_ans) == 0:
+                logger.error("No response from IRS encoder!")
+                return False
+
+            expected_ans = np.array(UartBootloaderSeq.UART_SEQ_ANSWER_TO_STAY_IN_BL, dtype=np.uint8)
+
+            if np.array_equal(expected_ans, enc_ans):
+                logger.info("IRS Encoder enter bootloader successfully!")
+                return True
+            else:
+                logger.error("Failed to enter IRS bootloader! Unexpected response.")
+                logger.debug(f"Expected: {expected_ans.tobytes().hex()}")
+                logger.debug(f"Received: {enc_ans.tobytes().hex()}")
+                return False
+
+        except Exception as e:
+            logger.error(f"An exception occurred while connecting to encoder: {e}")
+            return False
+
+    def enter_fw_irs(self) -> bool:
+        """
+        Exit bootloader and reboot the IRS encoder into normal firmware operation.
+
+        Workflow:
+        - Selects SPI channel 2 and configures 'spi_uart_irs' communication mode
+        - Cycles encoder power to ensure clean state transition
+        - Sends the bootloader exit command sequence
+        - Validates the encoder's acknowledgment of bootloader exit
+        - Always restores the flashtool to default SPI mode as cleanup
+
+        Returns:
+            bool: True if the encoder successfully exits bootloader mode and responds
+              correctly, False otherwise. The system is always returned to default
+              SPI mode regardless of the result.
+
+        Example:
+            >>> encoder_handler.reboot_to_fw_irs()
+            True  # Encoder successfully exited bootloader and returned to firmware mode
+        """
+        def _cleanup_and_return(success: bool) -> bool:
+            self.select_flashtool_mode('default_spi')
+            return success
+
+        try:
+            self.select_spi_channel('channel2')
+            self.select_flashtool_mode('spi_uart_irs')
+            self.encoder_power_off()
+            time.sleep(0.1)
+            self.encoder_power_on()
+            time.sleep(0.01)
+            tx_row = bytes.fromhex(generate_hex_line(
+                address=0x0000,
+                command=UartCmd.HEX_IRS_ENC_WRITE_READ_CMD,
+                data=UartBootloaderSeq.UART_SEQ_EXIT_BL,
+            )[1:])
+            self._write_to_port(tx_row)
+
+            enc_ans = self.port_read(len(tx_row)-1)
+
+            if enc_ans is None or len(enc_ans) == 0:
+                logger.error("No response from IRS encoder!")
+                return _cleanup_and_return(False)
+
+            expected_ans = np.array(UartBootloaderSeq.UART_SEQ_ANSWER_TO_EXIT_BL, dtype=np.uint8)
+
+            if np.array_equal(expected_ans, enc_ans):
+                logger.info("IRS Encoder disconnect from bootloader successfully!")
+                return _cleanup_and_return(True)
+            else:
+                logger.error("Failed to disconnect bootloader! Unexpected response.")
+                logger.debug(f"Expected: {expected_ans.hex()}")
+                logger.debug(f"Received: {enc_ans.hex()}")
+                return _cleanup_and_return(False)
+
+        except Exception as e:
+            logger.error(f"An exception occurred while disconnecting from bootloader: {e}")
+            return _cleanup_and_return(False)
+
