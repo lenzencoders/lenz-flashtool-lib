@@ -1598,6 +1598,16 @@ class FlashTool:
                             + "(UTC)")
             except UnicodeDecodeError:
                 pass
+            program_val = endict['Program   ']
+            program_bytes = [f"{int(program_val[i:i+2], 16):02d}" for i in range(0, 8, 2)]
+            program_bytes_reversed = program_bytes[::-1]
+            program_formatted = '.'.join(program_bytes_reversed)
+            bootloader_val = endict['Bootloader']
+            bootloader_bytes = [f"{int(bootloader_val[i:i+2], 16):02d}" for i in range(0, 8, 2)]
+            bootloader_bytes_reversed = bootloader_bytes[::-1]
+            bootloader_formatted = '.'.join(bootloader_bytes_reversed)
+            logger.info(f"Program: {program_formatted}, " +
+                        f"Bootloader: {bootloader_formatted}")
             logger.debug('Raw encoder answer: %s', ans)
             return (
                 endict["Bootloader"],
