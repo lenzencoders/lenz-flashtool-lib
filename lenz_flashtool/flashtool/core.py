@@ -95,6 +95,11 @@ class FlashTool:
         Configures the serial port with the specified baud rate and buffer sizes.
         Implements singleton behavior by skipping reinitialization if already initialized.
 
+        Platform-specific behavior:
+        - Windows: Uses exact prefix matching on port descriptions and configures buffer sizes
+        - Linux: Uses enhanced detection including VID:PID matching and configures basic serial parameters
+        - Other OS: Raises FlashToolError for unsupported operating systems
+
         Args:
             port_description_prefixes: Tuple of strings representing prefixes for port descriptions
             to match (e.g., 'XR21V'). Defaults to ('XR21V',).
@@ -130,7 +135,86 @@ class FlashTool:
                 logger.error('Error: LENZ FlashTool not found!')
                 logger.debug('Program expectedly closed.')
                 raise FlashToolError('LENZ FlashTool not found!')
+        elif os.name == 'posix':
+            found_port = self._find_linux_port_enhanced(ports, port_description_prefixes)
+            if found_port:
+                self.__port_name = found_port
+                try:
+                    self.__port = serial.Serial(self.__port_name, baud_rate, timeout=1)
+
+                    self.__port.bytesize = serial.EIGHTBITS
+                    self.__port.parity = serial.PARITY_NONE
+                    self.__port.stopbits = serial.STOPBITS_ONE
+
+                    self.__port.timeout = 1
+                    self.__port.write_timeout = 1
+                    self.__port.xonxoff = False
+                    self.__port.rtscts = False
+                    try:
+                        if hasattr(self.__port, 'set_buffer_sizes'):
+                            logger.debug("Has atribute")
+                            self.__port.set_buffer_sizes(rx_size=4096, tx_size=4096)
+                    except Exception as e:
+                        logger.debug(f"Buffer size adjustment not supported: {e}")
+                        logger.debug('LENZ FlashTool %s - Connected!', self.__port_name)
+                except serial.SerialException as e:
+                    raise FlashToolError(f'LENZ FlashTool: {self.__port_name} is being used!') from e
+            else:
+                logger.error('Error: LENZ FlashTool not found!')
+                logger.debug('Available ports: %s', [f"{p.device}: {p.description} (HWID: {p.hwid})" for p in ports])
+                raise FlashToolError('LENZ FlashTool not found!')
+        else:
+            logger.error('Error: Unsupported operating system!')
+            raise FlashToolError('Unsupported operating system!')
         self.__port.flushInput()
+
+    def _find_linux_port_enhanced(self, ports, port_description_prefixes):
+        """
+        Enhanced Linux port detection for FlashTool devices.
+
+        Searches for available serial ports that match the specified criteria,
+        with priority given to XR21V1410 devices.
+
+        Args:
+            ports: List of serial port objects obtained from serial.tools.list_ports.comports()
+            port_description_prefixes: Tuple of string prefixes to match against port descriptions
+                                    (e.g., ('XR21V',) for XR21V1410 devices)
+
+        Returns:
+            str or None: Device path (e.g., '/dev/ttyUSB0') if a matching port is found,
+                        None if no compatible device is detected.
+
+        Search Patterns (in order of priority):
+            1. VID:PID matching - Looks for '04e2:1410' in hardware ID (most reliable)
+            2. Description matching - Checks if port description contains any of the prefixes
+            3. Manufacturer matching - Checks if manufacturer field contains any of the prefixes  
+            4. Product matching - Checks if product field contains any of the prefixes
+
+        Example:
+            >>> ports = serial.tools.list_ports.comports()
+            >>> device = self._find_linux_port_enhanced(ports, ('XR21V',))
+            >>> print(device)
+            '/dev/ttyUSB0'
+        """
+
+        search_patterns = [
+            # VID:PID (04e2:1410 for XR21V1410)
+            lambda p: '04e2:1410' in p.hwid.lower(),
+            lambda p: p.description and any(prefix in p.description for prefix in port_description_prefixes),
+            lambda p: p.manufacturer and any(prefix in p.manufacturer for prefix in port_description_prefixes),
+            lambda p: p.product and any(prefix in p.product for prefix in port_description_prefixes),
+        ]
+
+        for port in ports:
+            for pattern in search_patterns:
+                try:
+                    if pattern(port):
+                        logger.debug(f"Found port: {port.device} - {port.description} (HWID: {port.hwid})")
+                        return port.device
+                except Exception as e:
+                    logger.debug(f"Error checking pattern on port {port.device}: {e}")
+                    continue
+        return None
 
     def __enter__(self) -> 'FlashTool':
         """
