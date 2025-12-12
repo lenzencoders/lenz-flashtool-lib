@@ -26,7 +26,7 @@ import serial
 import serial.tools.list_ports
 import numpy as np
 from ..biss import (
-    biss_commands, interpret_biss_commandstate, interpret_error_flags,
+    biss_commands, interpret_biss_commandstate, interpret_error_flags, biss_crc6_calc,
     BiSSBank,
 )
 from .uart import UartCmd, UartBootloaderCmd, UartBootloaderMemoryStates, UartBootloaderSeq
@@ -1583,9 +1583,7 @@ class FlashTool:
         addr = int.from_bytes(address, 'big')
         tx_row = bytes.fromhex(generate_hex_line(addr, UartCmd.HEX_READ_ANGLE_TWO_ENC_AB_SPI, [0])[1:])
 
-        self.__port.reset_output_buffer()
-        self.__port.write(tx_row)
-        self.__port.flush()
+        self._write_to_port(tx_row)
 
         Encoder2 = []
         Encoder1 = []
@@ -2286,34 +2284,45 @@ class FlashTool:
         Read instant angle encoder via SPI over USB.
 
         Returns:
-            tuple[str, list[int]]: If successful, returns:
-                - str: Encoder angle in hexadecimal format
-                - list[int]: Angle parts [degrees, minutes, seconds]
-            bool: False if operation fails (CRC error, no response, etc.)
+            tuple[str, list[int]] | bool:
+                If successful, returns a tuple containing:
+                    - str: Encoder angle in hexadecimal format (24-bit value)
+                    - list[int]: Angle parts [degrees, minutes, seconds]
+                bool: False if operation fails
+                    - No response from encoder
+                    - Invalid response structure
+                    - CRC mismatch in packet checksum
+                    - Communication errors
+
+        Example:
+            >>> ft = FlashTool()
+            >>> result = ft.read_instant_angle_enc_SPI()
+            [16733568]:    359° 03' 48"
         """
-        CMD_VAL_ADD = 16
         RX_DATA_LENGTH = 4
-        PKG_INFO_LENGTH = 5  # 5 bytes: length | address_l | address_h | cmd+0x10 | crc [-1]
         DEGREE_SIGN = "\N{DEGREE SIGN}"
 
         try:
             self.__port.reset_output_buffer()
             self.__port.reset_input_buffer()
-            self.__port.write(generate_byte_line(0, UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI, list(range(RX_DATA_LENGTH))))
+            self.__port.write(generate_byte_line(
+                address=0x0000,
+                command=UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI,
+                data=list(range(RX_DATA_LENGTH))
+            ))
             self.__port.flush()
 
-            enc_ans = self.__port.read(RX_DATA_LENGTH + PKG_INFO_LENGTH)
-            # print(f"{enc_ans.hex()}")
+            enc_ans = self.__port.read(RX_DATA_LENGTH + UartCmd.PKG_INFO_LENGTH)
 
             if not enc_ans:
-                logger.error("No response from IRS encoder!")
+                logger.error("No response from encoder!")
                 return False
 
             enc_data_np = np.array(list(enc_ans), dtype='uint8')
 
-            if (enc_data_np[0] != enc_data_np.size - PKG_INFO_LENGTH) or \
-               (enc_data_np[3] != UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI + CMD_VAL_ADD):
-                logger.error("Invalid response structure from IRS encoder!")
+            if (enc_data_np[0] != enc_data_np.size - UartCmd.PKG_INFO_LENGTH) or \
+               (enc_data_np[3] != UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI + UartCmd.CMD_VAL_ADD):
+                logger.error("Invalid response structure from encoder!")
                 return False
 
             calculated_crc = calculate_checksum(enc_ans[0:-1].hex())
@@ -2347,6 +2356,107 @@ class FlashTool:
             )
 
             return ans_angle, [degrees, minutes, seconds]
+
+        except Exception as e:
+            logger.error(f"Error reading encoder angle: {str(e)}", exc_info=True)
+            return False
+
+    def read_instant_angle_packet_enc_SPI(self) -> tuple[str, list[int]] | bool:
+        """
+        Read instant extended angle packet from encoder via SPI over USB.
+
+        This method reads not only the angle value but also additional status
+        information including error/warning flags and CRC for data integrity
+        verification.
+
+        Returns:
+            tuple[str, list[int]] | bool:
+                If successful, returns a tuple containing:
+                    - str: Encoder angle in hexadecimal format (24-bit value)
+                    - list[int]: Extended angle information:
+                        [degrees, minutes, seconds, nE_flag, nW_flag, received_crc, status]
+                        where:
+                        - degrees: Integer degrees (0-359)
+                        - minutes: Integer minutes (0-59)
+                        - seconds: Integer seconds (0-59)
+                        - nE_flag: Error flag (0=no error, 1=error detected)
+                        - nW_flag: Warning flag (0=no warning, 1=warning present)
+                        - received_crc: Received 6-bit CRC value from encoder
+                        - status: "OK" if CRC matches, "ERR" if CRC mismatch
+                bool: False if operation fails due to:
+                    - No response from encoder
+                    - Invalid response structure
+                    - CRC mismatch in packet checksum
+                    - Communication errors
+
+        Example:
+            >>> ft = FlashTool()
+            >>> result = ft.read_instant_angle_packet_enc_SPI()
+            [16733568]:    359° 03' 48"
+            nE:1 nW:1 CRC:0F (OK)
+        """
+        RX_DATA_LENGTH = 6
+        DEGREE_SIGN = "\N{DEGREE SIGN}"
+
+        try:
+            self.__port.reset_input_buffer()
+            self.__port.reset_output_buffer()
+            self.__port.write(generate_byte_line(
+                address=0x0000,
+                command=UartCmd.HEX_READ_INSTANT_ANGLE_PACKET_ENC_SPI,
+                data=list(range(RX_DATA_LENGTH))
+            ))
+            self.__port.flush()
+
+            enc_ans = self.__port.read(RX_DATA_LENGTH + UartCmd.PKG_INFO_LENGTH)
+
+            if not enc_ans:
+                logger.error("No response from encoder!")
+                return False
+
+            enc_data_np = np.array(list(enc_ans), dtype='uint8')
+
+            if (enc_data_np[0] != enc_data_np.size - UartCmd.PKG_INFO_LENGTH) or \
+               (enc_data_np[3] != UartCmd.HEX_READ_INSTANT_ANGLE_PACKET_ENC_SPI + UartCmd.CMD_VAL_ADD):
+                logger.error("Invalid response structure from encoder!")
+                return False
+
+            calculated_crc = calculate_checksum(enc_ans[0:-1].hex())
+            if calculated_crc != enc_data_np[-1]:
+                logger.error(f"CRC mismatch: calculated {calculated_crc}, expected {enc_data_np[-1]}")
+                return False
+
+            logger.debug("CRC check passed.")
+
+            angle_data = enc_ans[4:4+RX_DATA_LENGTH]
+
+            angle_bytes = angle_data[:3]
+            nE_nW_bits = angle_data[4] & 0x03
+            nE = (nE_nW_bits >> 1) & 0x01
+            nW = nE_nW_bits & 0x01
+            received_crc = angle_data[5]
+
+            angle_value = int.from_bytes(angle_bytes, byteorder='little', signed=False)
+            data_for_crc = np.uint32(angle_value << 2) | np.uint32(nE_nW_bits)
+            expected_crc = biss_crc6_calc(data_for_crc)
+
+            angle_deg = angle_value * 360 / 2**24
+            degrees = int(angle_deg)
+            remaining = angle_deg - degrees
+            minutes = int(remaining * 60)
+            seconds = int((remaining * 60 - minutes) * 60)
+
+            crc_ok = (expected_crc == received_crc)
+            status = "OK" if crc_ok else "ERR"
+
+            logger.info(
+                f"[{angle_value}]: {degrees:>3}{DEGREE_SIGN} "
+                f"{minutes:02d}' {seconds:02d}\"\n"
+                f"nE:{nE:01X} nW:{nW:01X} CRC:{received_crc:02X} "
+                f"({status})"
+            )
+
+            return angle_value, [degrees, minutes, seconds, nE, nW, received_crc, status]
 
         except Exception as e:
             logger.error(f"Error reading encoder angle: {str(e)}", exc_info=True)

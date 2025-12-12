@@ -338,6 +338,49 @@ class UartCmd(IntEnum):
         >>> 04 00 00 20 [1 frame...] [checksum]
     """
 
+    HEX_READ_INSTANT_ANGLE_PACKET_ENC_SPI = 0x13
+    """int: Command to read instant extended angle packet from encoder via SPI.
+
+    Usage:
+        - Single data frame for encoder reading with extended status information
+        - Requires encoder to be powered on
+        - Returns one measurement packet in each response packet
+        - Includes additional status flags and CRC for data integrity verification
+
+    Response Format:
+        Data frame contains:
+
+        >>> [Header][DataPacket][Checksum]
+
+        Where:
+
+        - Header: `[0x06, 0x00, 0x00, 0x23]` (fixed pattern)
+        - DataPacket: 1 measurement packet (6 bytes):
+
+        >>> [ENC2_LOW][ENC2_MID][ENC2_HIGH][ENC2_COUNTER][ENC2_STATUS][ENC2_CRC]
+
+        - Checksum: 1 byte (sum of first 10 bytes modulo ...)
+
+    Data Interpretation:
+        >>> Encoder Angle = (HIGH << 16) | (MID << 8) | LOW
+
+        Counter = Single byte time-of-life counter (8-bit)
+        Status = Single byte status flags including:
+            - Bit 0: Warning flag (nW)
+            - Bit 1: Error flag (nE)
+            - Bits 2-7: Reserved/encoder-specific status bits
+        CRC = 6-bit CRC checksum for data validation (stored in low 6 bits)
+
+    Example Packet Structure:
+        >>> 06 00 00 23 [1 packet...] [checksum]
+
+    Notes:
+        - Extended format compared to basic angle reading
+        - Provides additional diagnostic information (nW/nE flags)
+        - Includes CRC for enhanced data integrity checking
+        - Maintains backward compatibility with angle calculation
+    """
+
     HEX_READ_ANGLE_TWO_ENC_SPI = 0x80
     """int: Command to read angle data from two encoders via SPI.
 
@@ -587,7 +630,7 @@ class UartBootloaderSeq:
         Request:
             >>> :0400000f0531f6b9df  # [0x05, 0x31, 0xF6, 0xB9] + checksum
         Response:
-            >>> :0400001ff94eb106df  # [0xF9, 0x4E, 0xB1, 0x06] + checksum
+            >>> :0400001ff94eb106df  # [0x06, 0xB1, 0x4E, 0xF9] + checksum
 
     Usage:
         - Typically sent immediately after device reset/power cycle
@@ -595,7 +638,7 @@ class UartBootloaderSeq:
         - Data and address fields may contain specific handshake parameters
     """
 
-    UART_SEQ_ANSWER_TO_STAY_IN_BL = [0xF9, 0x4E, 0xB1, 0x06]
+    UART_SEQ_ANSWER_TO_STAY_IN_BL = [0x06, 0xB1, 0x4E, 0xF9]  # [0xF9, 0x4E, 0xB1, 0x06]
     """list: Response sequence to keep device in bootloader mode and prevent firmware execution.
 
     Response:
@@ -609,7 +652,7 @@ class UartBootloaderSeq:
         Request:
             >>> :0400000f0531f6b9XX  # [0x05, 0x31, 0xF6, 0xB9] + checksum
         Response:
-            >>> :0400001ff94eb106XX  # [0xF9, 0x4E, 0xB1, 0x06] + checksum
+            >>> :0400001ff94eb106XX  # [0x06, 0xB1, 0x4E, 0xF9] + checksum
 
     Usage:
         - Typically sent immediately after device reset/power cycle
