@@ -642,17 +642,19 @@ class FlashTool:
             logger.error("Validation error in biss_write: %s", str(e))
             raise
 
-    def biss_write_word(self, addr: int, word: Union[int, List[int]]) -> None:
+    def biss_write_word(self, addr: int, word: Union[int, List[int], bytearray, np.ndarray]) -> None:
         """
         Writes one or more 8, 16, or 32-bit words to BiSS registers starting at the specified address.
 
         Converts the provided word(s) to bytes, handles endianness, and writes them to the BiSS encoder.
-        Supports single integers or lists of integers, automatically determining the word
-        size (8, 16, or 32 bits) based on the maximum value.
+        Supports:
+        - Single integers or lists of integers
+        - bytearray
+        - numpy arrays (np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32)
 
         Args:
             addr: The starting BiSS register address (0-127).
-            word: A single integer or a list of integers to write.
+            word: A single integer, list of integers, bytearray, or numpy array to write.
 
         Raises:
             ValueError: If the address is out of range, the word list is empty, a word is negative,
@@ -664,36 +666,108 @@ class FlashTool:
             >>> ft = FlashTool()
             >>> ft.biss_write_word(0x10, 0xABCD)  # Write a 16-bit word
             >>> ft.biss_write_word(0x20, [0x01, 0x02])  # Write two 8-bit words
+            >>> ft.biss_write_word(0x30, np.array([0x1234, 0x5678], dtype=np.int16))
+            >>> ft.biss_write_word(0x40, bytearray([0x01, 0x02, 0x03]))
         """
         try:
             if not 0 <= addr <= 127:
                 raise ValueError(f"Address {addr} out of range (0-127)")
 
-            words = [word] if isinstance(word, int) else word
-            if not words:
-                raise ValueError("Empty word list provided")
+            if isinstance(word, (np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32)):
+                words = [int(word)]
+                word_size = word.itemsize
 
-            for i, w in enumerate(words):
-                if not isinstance(w, int):
-                    raise TypeError(f"Word {i} is not an integer (got {type(w)})")
-                if w < 0:
-                    raise ValueError(f"Word {i} is negative ({w})")
+            elif isinstance(word, int):
+                words = [word]
+                max_word = word
+                if max_word > 0xFFFFFFFF:
+                    raise ValueError(f"Word value {max_word} exceeds 32-bit limit")
+                word_size = 4 if max_word > 0xFFFF else (2 if max_word > 0xFF else 1)
 
-            # Determine word size
-            max_word = max(words)
-            if max_word > 0xFFFFFFFF:
-                raise ValueError(f"Word value {max_word} exceeds 32-bit limit")
-            word_size = 4 if max_word > 0xFFFF else (2 if max_word > 0xFF else 1)
+            elif isinstance(word, np.ndarray):
+                if word.ndim != 1:
+                    raise ValueError(f"Numpy array must be 1-dimensional (got {word.ndim}D)")
 
-            # Convert to bytes
-            try:
-                byte_list = []
+                supported_dtypes = [
+                    np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32,
+                    'int8', 'int16', 'int32', 'uint8', 'uint16', 'uint32'
+                ]
+
+                if word.dtype not in supported_dtypes:
+                    raise ValueError(f"Unsupported numpy dtype: {word.dtype}. "
+                                     f"Supported: int8, int16, int32, uint8, uint16, uint32")
+
+                words = word.tolist()
+                word_size = word.itemsize
+
+                if word.dtype in [np.uint8, 'uint8'] and any(w > 0xFF for w in words):
+                    raise ValueError("uint8 values must be <= 0xFF")
+                elif word.dtype in [np.uint16, 'uint16'] and any(w > 0xFFFF for w in words):
+                    raise ValueError("uint16 values must be <= 0xFFFF")
+                elif word.dtype in [np.uint32, 'uint32'] and any(w > 0xFFFFFFFF for w in words):
+                    raise ValueError("uint32 values must be <= 0xFFFFFFFF")
+
+            elif isinstance(word, bytearray):
+                words = list(word)
+                word_size = 1
+
+            elif isinstance(word, list):
+                words = word
+                if not words:
+                    raise ValueError("Empty word list provided")
+
+                for i, w in enumerate(words):
+                    if not isinstance(w, int):
+                        raise TypeError(f"Word {i} is not an integer (got {type(w)})")
+                    if w < 0:
+                        raise ValueError(f"Word {i} is negative ({w})")
+
+                max_word = max(words)
+                if max_word > 0xFFFFFFFF:
+                    raise ValueError(f"Word value {max_word} exceeds 32-bit limit")
+                word_size = 4 if max_word > 0xFFFF else (2 if max_word > 0xFF else 1)
+
+            else:
+                raise TypeError(f"Unsupported type: {type(word)}. "
+                                f"Supported: int, list[int], bytearray, np.ndarray")
+
+            if not isinstance(word, (np.ndarray, np.integer)):
+                max_val_in_list = max(words) if words else 0
+                if word_size == 1 and max_val_in_list > 0xFF:
+                    raise ValueError(f"Word size determined as 1-byte, but value {max_val_in_list} > 0xFF")
+                elif word_size == 2 and max_val_in_list > 0xFFFF:
+                    raise ValueError(f"Word size determined as 2-byte, but value {max_val_in_list} > 0xFFFF")
+                elif word_size == 4 and max_val_in_list > 0xFFFFFFFF:
+                    raise ValueError(f"Word size determined as 4-byte, but value {max_val_in_list} > 0xFFFFFFFF")
+
+            byte_list = []
+
+            if isinstance(word, np.ndarray):
+                byte_list = list(word.tobytes())
+
+            elif isinstance(word, bytearray):
+                byte_list = list(word)
+
+            else:
                 for w in words:
-                    byte_list.extend(w.to_bytes(word_size, byteorder='big'))
-                reversed_bytes = reverse_endian(byte_list, word_size)
-            except OverflowError as e:
-                raise ValueError(f"Word size mismatch: {e}") from e
-            logger.debug("Sending word %s with starting index %s", word, addr)
+                    try:
+                        byte_list.extend(w.to_bytes(word_size, byteorder='big', signed=(w < 0)))
+                    except OverflowError as e:
+                        raise ValueError(f"Word {w} doesn't fit in {word_size} byte(s)") from e
+
+            max_available_bytes = BiSSBank.FIXED_BANK_SIZE - addr
+            if len(byte_list) > max_available_bytes:
+                raise ValueError(
+                    f"Packet size exceeds limit for address {addr}"
+                )
+
+            reversed_bytes = reverse_endian(byte_list, word_size)
+
+            if isinstance(word, np.ndarray):
+                logger.debug("Sending numpy array %s (dtype: %s, shape: %s) to address %s",
+                             word, word.dtype, word.shape, addr)
+            else:
+                logger.debug("Sending word %s with starting index %s", word, addr)
 
             self._write_to_port(generate_byte_line(addr, UartCmd.HEX_WRITE_CMD, reversed_bytes))
 
