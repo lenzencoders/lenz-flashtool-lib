@@ -755,12 +755,6 @@ class FlashTool:
                     except OverflowError as e:
                         raise ValueError(f"Word {w} doesn't fit in {word_size} byte(s)") from e
 
-            max_available_bytes = BiSSBank.FIXED_BANK_SIZE - addr
-            if len(byte_list) > max_available_bytes:
-                raise ValueError(
-                    f"Packet size exceeds limit for address {addr}"
-                )
-
             reversed_bytes = reverse_endian(byte_list, word_size)
 
             if isinstance(word, np.ndarray):
@@ -1648,7 +1642,7 @@ class FlashTool:
             ValueError: If a checksum or command error occurs in the received data.
         """
         status and print('Read USB data for ', read_time, ' seconds: ', end='')
-        size = int(read_time * 500)
+        size = int(read_time * 750)
         size_l = int(size) % 256
         size_m = int(size / 256) % 256
         b1 = size_l.to_bytes(1, 'big')
@@ -2034,6 +2028,9 @@ class FlashTool:
         """
         try:
             state_flags = self.biss_read_state_flags()
+            if state_flags is None:
+                logger.error("Failed to read state flags: No data received")
+                raise FlashToolError("No state flags data received from encoder")
             logger.debug("State flags raw data: %s", state_flags)
             flags = (np.uint16(state_flags[1]) << 8) | state_flags[0]
             interpreted_flags = interpret_error_flags(flags)
