@@ -2686,3 +2686,58 @@ class FlashTool:
             logger.error(f"An exception occurred while disconnecting from bootloader: {e}")
             return _cleanup_and_return(False)
 
+    def set_pos_irs(self, deg: float, reverse: bool = False) -> tuple:
+        """
+        Set IRS encoder position.
+        
+        Args:
+            deg (float): Desired angle in degrees (0 to 360).
+            reverse (bool): If True, use reverse direction mode.
+        
+        Returns:
+            tuple: (b_1, b_2) or (None, None) on failure.
+        """
+        if not (0 <= deg <= 360):
+            logger.error(f"Invalid angle {deg}. Must be between 0 and 360 degrees.")
+            return None, None
+        
+        # Mode configuration
+        offset = 13 if reverse else 5
+        cmd_byte = 14 if reverse else 6
+        checksum_base = 242 if reverse else 250
+        
+        try:
+            data = np.int32((deg / 360 * 4096) % 4096)
+            b_2 = np.uint8(data >> 4)
+            b_1 = np.uint8(data << 4) | offset
+            
+            if not self.enter_bl_irs():
+                logger.error("Failed to connect to bootloader of IRS encoder!")
+                return None, None
+            
+            set_pos_cmd = bytearray([0, b_1, b_2, cmd_byte, 
+                                    np.uint8(checksum_base - b_1 - b_2)])
+            logger.debug(f"Sending {'reverse' if reverse else 'forward'} command: {set_pos_cmd.hex().upper()}")
+            
+            tx = bytes.fromhex(generate_hex_line(
+                address=0x0000,
+                command=UartCmd.HEX_IRS_ENC_WRITE_READ_CMD,
+                data=set_pos_cmd,
+            )[1:])
+            self._write_to_port(tx)
+            
+            enc_ans = self.port_read(len(tx) - UartCmd.PKG_INFO_LENGTH)
+            
+            if enc_ans is None:
+                logger.error("No response from IRS encoder!")
+                return None, None
+            
+            if not self.enter_fw_irs():
+                logger.error("Failed to exit bootloader mode of IRS encoder!")
+                return None, None
+            
+            return b_1, b_2
+            
+        except Exception as e:
+            logger.error(f"Exception while setting IRS encoder position: {e}")
+            return None, None
