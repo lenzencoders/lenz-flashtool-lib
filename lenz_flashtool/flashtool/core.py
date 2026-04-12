@@ -642,17 +642,19 @@ class FlashTool:
             logger.error("Validation error in biss_write: %s", str(e))
             raise
 
-    def biss_write_word(self, addr: int, word: Union[int, List[int]]) -> None:
+    def biss_write_word(self, addr: int, word: Union[int, List[int], bytearray, np.ndarray]) -> None:
         """
         Writes one or more 8, 16, or 32-bit words to BiSS registers starting at the specified address.
 
         Converts the provided word(s) to bytes, handles endianness, and writes them to the BiSS encoder.
-        Supports single integers or lists of integers, automatically determining the word
-        size (8, 16, or 32 bits) based on the maximum value.
+        Supports:
+        - Single integers or lists of integers
+        - bytearray
+        - numpy arrays (np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32)
 
         Args:
             addr: The starting BiSS register address (0-127).
-            word: A single integer or a list of integers to write.
+            word: A single integer, list of integers, bytearray, or numpy array to write.
 
         Raises:
             ValueError: If the address is out of range, the word list is empty, a word is negative,
@@ -664,36 +666,102 @@ class FlashTool:
             >>> ft = FlashTool()
             >>> ft.biss_write_word(0x10, 0xABCD)  # Write a 16-bit word
             >>> ft.biss_write_word(0x20, [0x01, 0x02])  # Write two 8-bit words
+            >>> ft.biss_write_word(0x30, np.array([0x1234, 0x5678], dtype=np.int16))
+            >>> ft.biss_write_word(0x40, bytearray([0x01, 0x02, 0x03]))
         """
         try:
             if not 0 <= addr <= 127:
                 raise ValueError(f"Address {addr} out of range (0-127)")
 
-            words = [word] if isinstance(word, int) else word
-            if not words:
-                raise ValueError("Empty word list provided")
+            if isinstance(word, (np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32)):
+                words = [int(word)]
+                word_size = word.itemsize
 
-            for i, w in enumerate(words):
-                if not isinstance(w, int):
-                    raise TypeError(f"Word {i} is not an integer (got {type(w)})")
-                if w < 0:
-                    raise ValueError(f"Word {i} is negative ({w})")
+            elif isinstance(word, int):
+                words = [word]
+                max_word = word
+                if max_word > 0xFFFFFFFF:
+                    raise ValueError(f"Word value {max_word} exceeds 32-bit limit")
+                word_size = 4 if max_word > 0xFFFF else (2 if max_word > 0xFF else 1)
 
-            # Determine word size
-            max_word = max(words)
-            if max_word > 0xFFFFFFFF:
-                raise ValueError(f"Word value {max_word} exceeds 32-bit limit")
-            word_size = 4 if max_word > 0xFFFF else (2 if max_word > 0xFF else 1)
+            elif isinstance(word, np.ndarray):
+                if word.ndim != 1:
+                    raise ValueError(f"Numpy array must be 1-dimensional (got {word.ndim}D)")
 
-            # Convert to bytes
-            try:
-                byte_list = []
+                supported_dtypes = [
+                    np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32,
+                    'int8', 'int16', 'int32', 'uint8', 'uint16', 'uint32'
+                ]
+
+                if word.dtype not in supported_dtypes:
+                    raise ValueError(f"Unsupported numpy dtype: {word.dtype}. "
+                                     f"Supported: int8, int16, int32, uint8, uint16, uint32")
+
+                words = word.tolist()
+                word_size = word.itemsize
+
+                if word.dtype in [np.uint8, 'uint8'] and any(w > 0xFF for w in words):
+                    raise ValueError("uint8 values must be <= 0xFF")
+                elif word.dtype in [np.uint16, 'uint16'] and any(w > 0xFFFF for w in words):
+                    raise ValueError("uint16 values must be <= 0xFFFF")
+                elif word.dtype in [np.uint32, 'uint32'] and any(w > 0xFFFFFFFF for w in words):
+                    raise ValueError("uint32 values must be <= 0xFFFFFFFF")
+
+            elif isinstance(word, bytearray):
+                words = list(word)
+                word_size = 1
+
+            elif isinstance(word, list):
+                words = word
+                if not words:
+                    raise ValueError("Empty word list provided")
+
+                for i, w in enumerate(words):
+                    if not isinstance(w, int):
+                        raise TypeError(f"Word {i} is not an integer (got {type(w)})")
+                    if w < 0:
+                        raise ValueError(f"Word {i} is negative ({w})")
+
+                max_word = max(words)
+                if max_word > 0xFFFFFFFF:
+                    raise ValueError(f"Word value {max_word} exceeds 32-bit limit")
+                word_size = 4 if max_word > 0xFFFF else (2 if max_word > 0xFF else 1)
+
+            else:
+                raise TypeError(f"Unsupported type: {type(word)}. "
+                                f"Supported: int, list[int], bytearray, np.ndarray")
+
+            if not isinstance(word, (np.ndarray, np.integer)):
+                max_val_in_list = max(words) if words else 0
+                if word_size == 1 and max_val_in_list > 0xFF:
+                    raise ValueError(f"Word size determined as 1-byte, but value {max_val_in_list} > 0xFF")
+                elif word_size == 2 and max_val_in_list > 0xFFFF:
+                    raise ValueError(f"Word size determined as 2-byte, but value {max_val_in_list} > 0xFFFF")
+                elif word_size == 4 and max_val_in_list > 0xFFFFFFFF:
+                    raise ValueError(f"Word size determined as 4-byte, but value {max_val_in_list} > 0xFFFFFFFF")
+
+            byte_list = []
+
+            if isinstance(word, np.ndarray):
+                byte_list = list(word.tobytes())
+
+            elif isinstance(word, bytearray):
+                byte_list = list(word)
+
+            else:
                 for w in words:
-                    byte_list.extend(w.to_bytes(word_size, byteorder='big'))
-                reversed_bytes = reverse_endian(byte_list, word_size)
-            except OverflowError as e:
-                raise ValueError(f"Word size mismatch: {e}") from e
-            logger.debug("Sending word %s with starting index %s", word, addr)
+                    try:
+                        byte_list.extend(w.to_bytes(word_size, byteorder='big', signed=(w < 0)))
+                    except OverflowError as e:
+                        raise ValueError(f"Word {w} doesn't fit in {word_size} byte(s)") from e
+
+            reversed_bytes = reverse_endian(byte_list, word_size)
+
+            if isinstance(word, np.ndarray):
+                logger.debug("Sending numpy array %s (dtype: %s, shape: %s) to address %s",
+                             word, word.dtype, word.shape, addr)
+            else:
+                logger.debug("Sending word %s with starting index %s", word, addr)
 
             self._write_to_port(generate_byte_line(addr, UartCmd.HEX_WRITE_CMD, reversed_bytes))
 
@@ -1574,7 +1642,7 @@ class FlashTool:
             ValueError: If a checksum or command error occurs in the received data.
         """
         status and print('Read USB data for ', read_time, ' seconds: ', end='')
-        size = int(read_time * 500)
+        size = int(read_time * 750)
         size_l = int(size) % 256
         size_m = int(size / 256) % 256
         b1 = size_l.to_bytes(1, 'big')
@@ -1960,6 +2028,9 @@ class FlashTool:
         """
         try:
             state_flags = self.biss_read_state_flags()
+            if state_flags is None:
+                logger.error("Failed to read state flags: No data received")
+                raise FlashToolError("No state flags data received from encoder")
             logger.debug("State flags raw data: %s", state_flags)
             flags = (np.uint16(state_flags[1]) << 8) | state_flags[0]
             interpreted_flags = interpret_error_flags(flags)
@@ -2462,7 +2533,7 @@ class FlashTool:
             logger.error(f"Error reading encoder angle: {str(e)}", exc_info=True)
             return False
 
-    def enter_bl_biss_encoder(self) -> bool:
+    def enter_bl_biss_encoder(self, reset_attempts: int = 12, power_cycle_delay: float = 0.01) -> bool:
         """
         Reset the BISS encoder to bootloader mode by power cycling.
 
@@ -2474,21 +2545,22 @@ class FlashTool:
         - The presence of ['FLAGS_STARTUP_ERROR'] flags typically indicates
         successful entry into bootloader mode.
 
+        Args:
+            reset_attempts (int): Number of power cycle attempts (default: 12)
+            power_cycle_delay (float): Delay between power cycles in seconds (default: 0.01)
+
         Returns:
             bool: True if encoder entered bootloader mode (startup error flags detected),
                 False otherwise.
         """
-        RESET_ATTEMPTS = 12
-        POWER_CYCLE_DELAY = 0.01
-
         initial_flags, initial_cmd_state = self.biss_read_flags()
         # logger.debug("Initial flags: %s, Command state: %s", initial_flags, initial_cmd_state)
 
-        for attempt in range(RESET_ATTEMPTS):
+        for attempt in range(reset_attempts):
             self.encoder_power_off()
-            time.sleep(POWER_CYCLE_DELAY)
+            time.sleep(power_cycle_delay)
             self.encoder_power_on()
-            time.sleep(POWER_CYCLE_DELAY)
+            time.sleep(power_cycle_delay)
 
         final_flags, final_cmd_state = self.biss_read_flags()
         # logger.debug("Final flags after reset: %s, Command state: %s", final_flags, final_cmd_state)
@@ -2614,3 +2686,58 @@ class FlashTool:
             logger.error(f"An exception occurred while disconnecting from bootloader: {e}")
             return _cleanup_and_return(False)
 
+    def set_pos_irs(self, deg: float, reverse: bool = False) -> tuple:
+        """
+        Set IRS encoder position.
+        
+        Args:
+            deg (float): Desired angle in degrees (0 to 360).
+            reverse (bool): If True, use reverse direction mode.
+        
+        Returns:
+            tuple: (b_1, b_2) or (None, None) on failure.
+        """
+        if not (0 <= deg <= 360):
+            logger.error(f"Invalid angle {deg}. Must be between 0 and 360 degrees.")
+            return None, None
+        
+        # Mode configuration
+        offset = 13 if reverse else 5
+        cmd_byte = 14 if reverse else 6
+        checksum_base = 242 if reverse else 250
+        
+        try:
+            data = np.int32((deg / 360 * 4096) % 4096)
+            b_2 = np.uint8(data >> 4)
+            b_1 = np.uint8(data << 4) | offset
+            
+            if not self.enter_bl_irs():
+                logger.error("Failed to connect to bootloader of IRS encoder!")
+                return None, None
+            
+            set_pos_cmd = bytearray([0, b_1, b_2, cmd_byte, 
+                                    np.uint8(checksum_base - b_1 - b_2)])
+            logger.debug(f"Sending {'reverse' if reverse else 'forward'} command: {set_pos_cmd.hex().upper()}")
+            
+            tx = bytes.fromhex(generate_hex_line(
+                address=0x0000,
+                command=UartCmd.HEX_IRS_ENC_WRITE_READ_CMD,
+                data=set_pos_cmd,
+            )[1:])
+            self._write_to_port(tx)
+            
+            enc_ans = self.port_read(len(tx) - UartCmd.PKG_INFO_LENGTH)
+            
+            if enc_ans is None:
+                logger.error("No response from IRS encoder!")
+                return None, None
+            
+            if not self.enter_fw_irs():
+                logger.error("Failed to exit bootloader mode of IRS encoder!")
+                return None, None
+            
+            return b_1, b_2
+            
+        except Exception as e:
+            logger.error(f"Exception while setting IRS encoder position: {e}")
+            return None, None

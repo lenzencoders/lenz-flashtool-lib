@@ -638,7 +638,7 @@ class UartBootloaderSeq:
         - Data and address fields may contain specific handshake parameters
     """
 
-    UART_SEQ_ANSWER_TO_STAY_IN_BL = [0x06, 0xB1, 0x4E, 0xF9]  # [0xF9, 0x4E, 0xB1, 0x06]
+    UART_SEQ_ANSWER_TO_STAY_IN_BL = [0xF9, 0x4E, 0xB1, 0x06]  # [0x06, 0xB1, 0x4E, 0xF9]  # [0xF9, 0x4E, 0xB1, 0x06]
     """list: Response sequence to keep device in bootloader mode and prevent firmware execution.
 
     Response:
