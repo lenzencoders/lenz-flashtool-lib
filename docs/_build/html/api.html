@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lenz-flashtool Library API Reference &#8212; lenz-flashtool 0.1.6 documentation</title>
+    <title>lenz-flashtool Library API Reference &#8212; lenz-flashtool 0.1.9 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=6e0256f3"></script>
+    <script src="_static/documentation_options.js?v=8618f531"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
@@ -1509,13 +1509,15 @@ setting direction, or initiating calibration. Commands are written to the comman
 <span class="sig-name descname"><span class="pre">biss_write_word</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">addr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.FlashTool.biss_write_word" title="Link to this definition">#</a></dt>
 <dd><p>Writes one or more 8, 16, or 32-bit words to BiSS registers starting at the specified address.</p>
 <p>Converts the provided word(s) to bytes, handles endianness, and writes them to the BiSS encoder.
-Supports single integers or lists of integers, automatically determining the word
-size (8, 16, or 32 bits) based on the maximum value.</p>
+Supports:
+- Single integers or lists of integers
+- bytearray
+- numpy arrays (np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>addr</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – The starting BiSS register address (0-127).</p></li>
-<li><p><strong>word</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]]</span>) – A single integer or a list of integers to write.</p></li>
+<li><p><strong>word</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">bytearray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span>) – A single integer, list of integers, bytearray, or numpy array to write.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -1534,6 +1536,8 @@ size (8, 16, or 32 bits) based on the maximum value.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">biss_write_word</span><span class="p">(</span><span class="mh">0x10</span><span class="p">,</span> <span class="mh">0xABCD</span><span class="p">)</span>  <span class="c1"># Write a 16-bit word</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">biss_write_word</span><span class="p">(</span><span class="mh">0x20</span><span class="p">,</span> <span class="p">[</span><span class="mh">0x01</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">])</span>  <span class="c1"># Write two 8-bit words</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">biss_write_word</span><span class="p">(</span><span class="mh">0x30</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mh">0x1234</span><span class="p">,</span> <span class="mh">0x5678</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span><span class="o">.</span><span class="n">biss_write_word</span><span class="p">(</span><span class="mh">0x40</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">([</span><span class="mh">0x01</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x03</span><span class="p">]))</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1808,7 +1812,7 @@ preserving the original handlers for restoration during cleanup.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.FlashTool.enter_bl_biss_encoder">
-<span class="sig-name descname"><span class="pre">enter_bl_biss_encoder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.FlashTool.enter_bl_biss_encoder" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">enter_bl_biss_encoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reset_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power_cycle_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.FlashTool.enter_bl_biss_encoder" title="Link to this definition">#</a></dt>
 <dd><p>Reset the BISS encoder to bootloader mode by power cycling.</p>
 <p>This method performs multiple power cycles to force the encoder
 into bootloader mode. The bootloader mode is indicated by specific
@@ -1817,15 +1821,21 @@ error flags being set in the encoder’s status register.</p>
 - The presence of [‘FLAGS_STARTUP_ERROR’] flags typically indicates
 successful entry into bootloader mode.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><dl class="simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reset_attempts</strong> (<em>int</em>) – Number of power cycle attempts (default: 12)</p></li>
+<li><p><strong>power_cycle_delay</strong> (<em>float</em>) – Delay between power cycles in seconds (default: 0.01)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
 <dt>True if encoder entered bootloader mode (startup error flags detected),</dt><dd><p>False otherwise.</p>
 </dd>
 </dl>
 </p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>bool</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2146,19 +2156,81 @@ The response contains 8 bytes where:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><dl class="simple">
-<dt>If successful, returns:</dt><dd><ul class="simple">
-<li><p>str: Encoder angle in hexadecimal format</p></li>
+<dt>If successful, returns a tuple containing:</dt><dd><ul class="simple">
+<li><p>str: Encoder angle in hexadecimal format (24-bit value)</p></li>
 <li><p>list[int]: Angle parts [degrees, minutes, seconds]</p></li>
 </ul>
 </dd>
+<dt>bool: False if operation fails</dt><dd><ul class="simple">
+<li><p>No response from encoder</p></li>
+<li><p>Invalid response structure</p></li>
+<li><p>CRC mismatch in packet checksum</p></li>
+<li><p>Communication errors</p></li>
+</ul>
+</dd>
 </dl>
-<p>bool: False if operation fails (CRC error, no response, etc.)</p>
 </p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>tuple[str, list[int]]</p>
+<dd class="field-even"><p>tuple[str, list[int]] | bool</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ft</span><span class="o">.</span><span class="n">read_instant_angle_enc_SPI</span><span class="p">()</span>
+<span class="go">[16733568]:    359° 03&#39; 48&quot;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.FlashTool.read_instant_angle_packet_enc_SPI">
+<span class="sig-name descname"><span class="pre">read_instant_angle_packet_enc_SPI</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.FlashTool.read_instant_angle_packet_enc_SPI" title="Link to this definition">#</a></dt>
+<dd><p>Read instant extended angle packet from encoder via SPI over USB.</p>
+<p>This method reads not only the angle value but also additional status
+information including error/warning flags and CRC for data integrity
+verification.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>If successful, returns a tuple containing:</dt><dd><ul class="simple">
+<li><p>str: Encoder angle in hexadecimal format (24-bit value)</p></li>
+<li><dl class="simple">
+<dt>list[int]: Extended angle information:</dt><dd><p>[degrees, minutes, seconds, nE_flag, nW_flag, received_crc, status]
+where:
+- degrees: Integer degrees (0-359)
+- minutes: Integer minutes (0-59)
+- seconds: Integer seconds (0-59)
+- nE_flag: Error flag (0=no error, 1=error detected)
+- nW_flag: Warning flag (0=no warning, 1=warning present)
+- received_crc: Received 6-bit CRC value from encoder
+- status: “OK” if CRC matches, “ERR” if CRC mismatch</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>bool: False if operation fails due to:</dt><dd><ul class="simple">
+<li><p>No response from encoder</p></li>
+<li><p>Invalid response structure</p></li>
+<li><p>CRC mismatch in packet checksum</p></li>
+<li><p>Communication errors</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[str, list[int]] | bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ft</span> <span class="o">=</span> <span class="n">FlashTool</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ft</span><span class="o">.</span><span class="n">read_instant_angle_packet_enc_SPI</span><span class="p">()</span>
+<span class="go">[16733568]:    359° 03&#39; 48&quot;</span>
+<span class="go">nE:1 nW:1 CRC:0F (OK)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2423,6 +2495,26 @@ and verifies each page with a flash CRC check. Supports a progress bar and diffe
 <span class="go">INFO: Done uploading!</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lenz_flashtool.FlashTool.set_pos_irs">
+<span class="sig-name descname"><span class="pre">set_pos_irs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.FlashTool.set_pos_irs" title="Link to this definition">#</a></dt>
+<dd><p>Set IRS encoder position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>deg</strong> (<em>float</em>) – Desired angle in degrees (0 to 360).</p></li>
+<li><p><strong>reverse</strong> (<em>bool</em>) – If True, use reverse direction mode.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(b_1, b_2) or (None, None) on failure.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -3457,7 +3549,7 @@ Response: [DATA_SIZE][REG_ADDR][0x1F][UART_SEQ_ANSWER_TO_STAY_IN_BL][CHECKSUM]</
 </pre></div>
 </div>
 </dd>
-<dt>Response:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">:</span><span class="mi">0400001</span><span class="n">ff94eb106XX</span>  <span class="c1"># [0xF9, 0x4E, 0xB1, 0x06] + checksum</span>
+<dt>Response:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">:</span><span class="mi">0400001</span><span class="n">ff94eb106XX</span>  <span class="c1"># [0x06, 0xB1, 0x4E, 0xF9] + checksum</span>
 </pre></div>
 </div>
 </dd>
@@ -3535,7 +3627,7 @@ Response: [DATA_SIZE][REG_ADDR][0x1F][UART_SEQ_ANSWER_TO_STAY_IN_BL][CHECKSUM]</
 </pre></div>
 </div>
 </dd>
-<dt>Response:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">:</span><span class="mi">0400001</span><span class="n">ff94eb106df</span>  <span class="c1"># [0xF9, 0x4E, 0xB1, 0x06] + checksum</span>
+<dt>Response:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">:</span><span class="mi">0400001</span><span class="n">ff94eb106df</span>  <span class="c1"># [0x06, 0xB1, 0x4E, 0xF9] + checksum</span>
 </pre></div>
 </div>
 </dd>
@@ -4156,6 +4248,63 @@ channel 2 - SPI</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.UartCmd.HEX_READ_INSTANT_ANGLE_PACKET_ENC_SPI">
+<span class="sig-name descname"><span class="pre">HEX_READ_INSTANT_ANGLE_PACKET_ENC_SPI</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">19</span></em><a class="headerlink" href="#lenz_flashtool.UartCmd.HEX_READ_INSTANT_ANGLE_PACKET_ENC_SPI" title="Link to this definition">#</a></dt>
+<dd><p>Command to read instant extended angle packet from encoder via SPI.</p>
+<dl>
+<dt>Usage:</dt><dd><ul class="simple">
+<li><p>Single data frame for encoder reading with extended status information</p></li>
+<li><p>Requires encoder to be powered on</p></li>
+<li><p>Returns one measurement packet in each response packet</p></li>
+<li><p>Includes additional status flags and CRC for data integrity verification</p></li>
+</ul>
+</dd>
+<dt>Response Format:</dt><dd><p>Data frame contains:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">Header</span><span class="p">][</span><span class="n">DataPacket</span><span class="p">][</span><span class="n">Checksum</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Where:</p>
+<ul class="simple">
+<li><p>Header: <cite>[0x06, 0x00, 0x00, 0x23]</cite> (fixed pattern)</p></li>
+<li><p>DataPacket: 1 measurement packet (6 bytes):</p></li>
+</ul>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">ENC2_LOW</span><span class="p">][</span><span class="n">ENC2_MID</span><span class="p">][</span><span class="n">ENC2_HIGH</span><span class="p">][</span><span class="n">ENC2_COUNTER</span><span class="p">][</span><span class="n">ENC2_STATUS</span><span class="p">][</span><span class="n">ENC2_CRC</span><span class="p">]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Checksum: 1 byte (sum of first 10 bytes modulo …)</p></li>
+</ul>
+</dd>
+<dt>Data Interpretation:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Encoder</span> <span class="n">Angle</span> <span class="o">=</span> <span class="p">(</span><span class="n">HIGH</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">MID</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="n">LOW</span>
+</pre></div>
+</div>
+<p>Counter = Single byte time-of-life counter (8-bit)
+Status = Single byte status flags including:
+Bit 0: Warning flag (nW);
+Bit 1: Error flag (nE);
+Bits 2-7: Reserved/encoder-specific status bits.
+CRC = 6-bit CRC checksum for data validation (stored in low 6 bits)</p>
+</dd>
+<dt>Example Packet Structure:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="mi">06</span> <span class="mi">00</span> <span class="mi">00</span> <span class="mi">23</span> <span class="p">[</span><span class="mi">1</span> <span class="n">packet</span><span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="n">checksum</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Extended format compared to basic angle reading</p></li>
+<li><p>Provides additional diagnostic information (nW/nE flags)</p></li>
+<li><p>Includes CRC for enhanced data integrity checking</p></li>
+<li><p>Maintains backward compatibility with angle calculation</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.UartCmd.HEX_WRITE_CMD">
 <span class="sig-name descname"><span class="pre">HEX_WRITE_CMD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">13</span></em><a class="headerlink" href="#lenz_flashtool.UartCmd.HEX_WRITE_CMD" title="Link to this definition">#</a></dt>
 <dd><p>Command to write data to encoder registers.</p>
@@ -4740,6 +4889,7 @@ The file should be in Intel HEX format.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashTool.read_enc2_current"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_enc2_current()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashTool.read_fw_bl_ver"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_fw_bl_ver()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashTool.read_instant_angle_enc_SPI"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_instant_angle_enc_SPI()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashTool.read_instant_angle_packet_enc_SPI"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_instant_angle_packet_enc_SPI()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashTool.read_memory_state_bl"><code class="docutils literal notranslate"><span class="pre">FlashTool.read_memory_state_bl()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashTool.reboot_to_bl"><code class="docutils literal notranslate"><span class="pre">FlashTool.reboot_to_bl()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashTool.reboot_to_fw"><code class="docutils literal notranslate"><span class="pre">FlashTool.reboot_to_fw()</span></code></a></li>
@@ -4749,6 +4899,7 @@ The file should be in Intel HEX format.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashTool.select_spi_ch1_mode"><code class="docutils literal notranslate"><span class="pre">FlashTool.select_spi_ch1_mode()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashTool.select_spi_channel"><code class="docutils literal notranslate"><span class="pre">FlashTool.select_spi_channel()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashTool.send_data_to_device"><code class="docutils literal notranslate"><span class="pre">FlashTool.send_data_to_device()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashTool.set_pos_irs"><code class="docutils literal notranslate"><span class="pre">FlashTool.set_pos_irs()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.FlashToolError"><code class="docutils literal notranslate"><span class="pre">FlashToolError</span></code></a></li>
@@ -4892,6 +5043,7 @@ The file should be in Intel HEX format.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.UartCmd.HEX_READ_CMD"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_READ_CMD</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.UartCmd.HEX_READ_ENC2_CURRENT"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_READ_ENC2_CURRENT</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.UartCmd.HEX_READ_INSTANT_ANGLE_PACKET_ENC_SPI"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_READ_INSTANT_ANGLE_PACKET_ENC_SPI</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.UartCmd.HEX_WRITE_CMD"><code class="docutils literal notranslate"><span class="pre">UartCmd.HEX_WRITE_CMD</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.UartCmd.PKG_INFO_LENGTH"><code class="docutils literal notranslate"><span class="pre">UartCmd.PKG_INFO_LENGTH</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.UartCmd.RX_DATA_LENGTH_CURRENT"><code class="docutils literal notranslate"><span class="pre">UartCmd.RX_DATA_LENGTH_CURRENT</span></code></a></li>

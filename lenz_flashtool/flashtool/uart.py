@@ -366,9 +366,9 @@ class UartCmd(IntEnum):
 
         Counter = Single byte time-of-life counter (8-bit)
         Status = Single byte status flags including:
-            - Bit 0: Warning flag (nW)
-            - Bit 1: Error flag (nE)
-            - Bits 2-7: Reserved/encoder-specific status bits
+        Bit 0: Warning flag (nW);
+        Bit 1: Error flag (nE);
+        Bits 2-7: Reserved/encoder-specific status bits.
         CRC = 6-bit CRC checksum for data validation (stored in low 6 bits)
 
     Example Packet Structure:
