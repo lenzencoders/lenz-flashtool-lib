@@ -12,3 +12,4 @@ _bak/
 *.log
 *.ps1
 update_version.py
+.flake8

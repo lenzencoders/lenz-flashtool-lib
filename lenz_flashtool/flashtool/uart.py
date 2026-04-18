@@ -10,8 +10,10 @@ UART commands for the LENZ FlashTool device.
 
 
 Author:
-    LENZ ENCODERS, 2020-2025
+    LENZ ENCODERS, 2020-2026
 '''
+
+
 from enum import IntEnum
 
 
@@ -484,7 +486,7 @@ class UartBootloaderCmd(IntEnum):
     UART_COMMAND_STATE_STAY_BL = 0x00
     """int: Command to stay in bootloader.
 
-    Need to be sent in 5s after FlashTool is powered on. 
+    Need to be sent in 5s after FlashTool is powered on.
     To try again to reset the power of FlashTool.
 
     Usage:
