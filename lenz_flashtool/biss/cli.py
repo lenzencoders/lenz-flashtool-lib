@@ -35,15 +35,19 @@ Example Commands:
 # |_____|_____|_| \_/____|  |_____|_| \_|\____\___/|____/|_____|_| \_|____/
 #
 
+import struct
 import sys
 import logging
 import time
+import datetime
 from typing import List
 from ..flashtool import FlashTool, biss_send_hex, generate_hex_line
 from ..utils.termcolors import TermColors
 from . import (
     BiSSBank,
-    biss_commands
+    biss_commands,
+    interpret_error_flags,
+    interpret_biss_commandstate,
 )
 try:
     import colorama
@@ -95,6 +99,8 @@ class BiSSCommandLine:
         print("\nDevice Information:")
         print("  readserial               - Read encoder serial number, manufacturing date, device ID, and firmware version")
         print("  readhsi                  - Read hardware status indicator")
+        print("  dump                     - Read and decode fixed-address registers (0x40-0x7F) with color map")
+        print("  dump <bank>              - Read and decode bank (0-37) calibration page + fixed registers")
         print("\nAdvanced Operation:")
         print("  hex <addr> <cmd> <data>  - Send custom hexadecimal FlashTool command sequence")
         print("                             Format: <target_addr> <command_byte> <data_bytes...>")
@@ -204,6 +210,8 @@ class BiSSCommandLine:
                 self._read_angle_once()
             elif command == "angleloop":
                 self._read_angle_loop()
+            elif command == "dump":
+                self._dump_registers(args)
             elif command == "sendhexfile":
                 self._send_hex_file(args)
             else:
@@ -327,6 +335,384 @@ class BiSSCommandLine:
             mins = int((ang - degrs) * 60)
             secs = int((ang - degrs - (mins / 60)) * 3600)
             self._std(ans[0], degrs, degree_sign, mins, secs)
+
+    # ------------------------------------------------------------------
+    #  dump – read & decode fixed-address registers (0x40-0x7F)
+    # ------------------------------------------------------------------
+
+    # Pastel 256-color ANSI foreground palette (no extra libraries)
+    # Works on macOS Terminal, iTerm2, Windows Terminal (+ colorama)
+    _P_BLUE      = "\033[38;5;153m"   # Baby Blue
+    _P_CYAN      = "\033[38;5;116m"   # Aquamarine
+    _P_GREEN     = "\033[38;5;150m"   # Sage
+    _P_MINT      = "\033[38;5;114m"   # Seafoam
+    _P_YELLOW    = "\033[38;5;222m"   # Buttercup
+    _P_CREAM     = "\033[38;5;229m"   # Lemon
+    _P_PEACH     = "\033[38;5;216m"   # Light Coral
+    _P_SALMON    = "\033[38;5;210m"   # Salmon
+    _P_ROSE      = "\033[38;5;217m"   # Rose
+    _P_PINK      = "\033[38;5;174m"   # Pink
+    _P_BLUSH     = "\033[38;5;224m"   # Blush
+    _P_LAVENDER  = "\033[38;5;139m"   # Lavender
+    _P_ORCHID    = "\033[38;5;182m"   # Orchid
+    _P_MAUVE     = "\033[38;5;181m"   # Dusty Pink
+    _P_SAND      = "\033[38;5;179m"   # Sand
+    _P_KHAKI     = "\033[38;5;186m"   # Khaki
+    _P_SILVER    = "\033[38;5;188m"   # Silver
+    _P_GRAY      = "\033[38;5;253m"   # Light Gray
+    _P_ICE       = "\033[38;5;152m"   # Powder Blue
+    _P_CORAL     = "\033[38;5;208m"   # Orange
+    _P_PERI      = "\033[38;5;146m"   # Periwinkle
+    _P_DUSTY     = "\033[38;5;137m"   # Dusty Rose
+    _RST         = "\033[0m"
+
+    # Register map: (start_offset, length, name, bg_color)
+    # Offsets relative to 0x40
+    _FIXED_REG_MAP = [
+        (0x00, 1, "BankSelect",    _P_BLUE),
+        (0x01, 1, "EDSBankNum",    _P_CYAN),
+        (0x02, 2, "ProfileID",     _P_GREEN),
+        (0x04, 4, "SerialNum",     _P_PEACH),
+        (0x08, 2, "CMD",           _P_SALMON),
+        (0x0A, 2, "EncoderState",  _P_CREAM),
+        (0x0C, 1, "EncoderTemp",   _P_ORCHID),
+        (0x0D, 1, "ExternalTemp",  _P_MAUVE),
+        (0x0E, 2, "Vcc",           _P_MINT),
+        (0x10, 4, "FirstHarm",     _P_GREEN),
+        (0x14, 4, "OutCfg",        _P_ROSE),
+        (0x18, 2, "SignalAmp",     _P_PERI),
+        (0x1A, 1, "CalPhase",      _P_KHAKI),
+        (0x1B, 1, "ExcPhase",      _P_SAND),
+        (0x1C, 4, "CalParams",     _P_YELLOW),
+        (0x20, 1, "(Reserved)",    _P_GRAY),
+        (0x21, 1, "CommandState",  _P_LAVENDER),
+        (0x22, 2, "ErrorFlags",    _P_CORAL),
+        (0x24, 8, "(Reserved)",    _P_GRAY),
+        (0x2C, 4, "BootloaderVer", _P_ICE),
+        (0x30, 4, "ProgramVer",    _P_MINT),
+        (0x34, 4, "ProdDate",      _P_PEACH),
+        (0x38, 6, "DevID",         _P_PINK),
+        (0x3E, 2, "MfrID",         _P_BLUSH),
+    ]
+
+    # Encoder state bitfield definitions: (start_bit, width, name, values_map)
+    _ENCODER_STATE_FIELDS = [
+        (0,  1, "SetupLock",      {0: "LOCKED", 1: "UNLOCKED"}),
+        (1,  1, "FlashLock",      {0: "LOCKED", 1: "UNLOCKED"}),
+        (2,  2, "Zeroing",        {0: "IDLE", 1: "REQ", 2: "DONE"}),
+        (4,  2, "ClearDifLUT",    {0: "IDLE", 1: "REQ", 2: "DONE"}),
+        (6,  2, "AmpCalibration", {0: "IDLE", 1: "REQ", 2: "SECOND_TURN", 3: "DONE"}),
+        (8,  1, "ArcCalibration", {0: "DISABLED", 1: "ENABLED"}),
+        (9,  2, "Flashing",       {0: "IDLE", 1: "REQ", 2: "DONE"}),
+        (11, 2, "ClearDifFlash",  {0: "IDLE", 1: "REQ", 2: "DONE"}),
+        (13, 2, "FlashDifLUT",    {0: "IDLE", 1: "REQ", 2: "DONE", 3: "CRC_FAULT"}),
+        (15, 1, "UserBankState",  {0: "IDLE", 1: "DIFLUT_REQ"}),
+    ]
+
+    # OutCfg (REV_RES) resolution lookup
+    _RESOLUTION_MAP = {0: "17-bit", 1: "18-bit", 2: "19-bit", 3: "20-bit",
+                       4: "18-bit", 5: "22-bit", 6: "23-bit", 7: "24-bit"}
+
+    def _dump_registers(self, args: List[str]) -> None:
+        """Read and decode fixed-address registers 0x40-0x7F with colored hex dump."""
+        bank = None
+        if len(args) > 2:
+            bank = int(args[2])
+
+        # Read 64 bytes of fixed-address region
+        raw = self.ft.biss_addr_readb(bank if bank is not None else 0, 0x40, 64)
+        data = bytes(int(b) for b in raw)
+
+        bank_data = None
+        if bank is not None:
+            raw_bank = self.ft.biss_addr_readb(bank, 0x00, 64)
+            bank_data = bytes(int(b) for b in raw_bank)
+
+        if bank_data is not None:
+            if bank == 0:
+                print(f"\n{TermColors.Bold}=== Bank 0 Calibration Page (0x00-0x3F) ==={TermColors.ENDC}")
+                self._print_bank0_dump(bank_data)
+                self._decode_bank0(bank_data)
+            else:
+                print(f"\n{TermColors.Bold}=== Bank {bank} Raw Data (0x00-0x3F) ==={TermColors.ENDC}")
+                self._print_raw_dump(bank_data, base_addr=0x00)
+
+        print(f"\n{TermColors.Bold}=== Fixed-Address Registers (0x40-0x7F) ==={TermColors.ENDC}")
+        self._print_fixed_dump(data)
+        self._decode_fixed_registers(data)
+
+    def _print_dump_header(self) -> None:
+        """Print the hex dump table header."""
+        hdr = f"  {TermColors.Bold}Addr   "
+        for i in range(16):
+            hdr += f" +{i:X} "
+        hdr += TermColors.ENDC
+        print(hdr)
+        print("  " + "-" * 71)
+
+    def _print_raw_dump(self, data: bytes, base_addr: int = 0x00) -> None:
+        """Print 64 bytes as plain hex dump without field coloring."""
+        self._print_dump_header()
+        for row in range(4):
+            base = row * 16
+            addr = base_addr + base
+            line = f"  {TermColors.Bold}0x{addr:02X}{TermColors.ENDC}  "
+            for col in range(16):
+                line += f"  {TermColors.Blue}{data[base + col]:02X}{TermColors.ENDC}"
+            print(line)
+
+    def _print_fixed_dump(self, data: bytes) -> None:
+        """Print 64 bytes at 0x40-0x7F with per-register background colors."""
+        # Build a color map: offset -> bg_color
+        color_map = {}
+        for off, length, _, bg in self._FIXED_REG_MAP:
+            for i in range(off, off + length):
+                color_map[i] = bg
+        self._print_dump_header()
+        for row in range(4):
+            base = row * 16
+            addr = 0x40 + base
+            line = f"  {TermColors.Bold}0x{addr:02X}{TermColors.ENDC}  "
+            for col in range(16):
+                offset = base + col
+                bg = color_map.get(offset, self._P_GRAY)
+                line += f"  {bg}{data[offset]:02X}{self._RST}"
+            print(line)
+
+    def _decode_fixed_registers(self, data: bytes) -> None:
+        """Decode and display all fixed-address register fields."""
+        print(f"\n  {TermColors.Bold}{'Register':<21} {'Addr':>6}  {'Raw':>23}  Decoded{TermColors.ENDC}")
+        print("  " + "-" * 80)
+
+        for off, length, name, fg in self._FIXED_REG_MAP:
+            raw_bytes = data[off:off + length]
+            hex_str = " ".join(f"{b:02X}" for b in raw_bytes)
+            addr_str = f"0x{0x40 + off:02X}"
+
+            decoded = self._decode_field(name, raw_bytes, data)
+            print(f"  {fg}>> {name:<18}{self._RST} {addr_str:>6}  {fg}{hex_str:>23}{self._RST}  {decoded}")
+
+    def _decode_field(self, name: str, raw: bytes, full_data: bytes) -> str:
+        """Decode a single register field into a human-readable string."""
+        if name == "BankSelect":
+            return f"Bank {raw[0]}"
+
+        if name == "EDSBankNum":
+            return f"EDS Bank {raw[0]}"
+
+        if name == "ProfileID":
+            val = struct.unpack_from("<H", raw)[0]
+            return f"0x{val:04X}"
+
+        if name == "SerialNum":
+            try:
+                ascii_part = raw[0:2].decode("ascii")
+                hex_part = raw[2:4].hex().upper()
+                return f"{ascii_part}{hex_part} (ASCII+hex)"
+            except (UnicodeDecodeError, ValueError):
+                return raw.hex().upper()
+
+        if name == "CMD":
+            val = struct.unpack_from("<H", raw)[0]
+            if val == 0:
+                return "No command"
+            # Try to find command name
+            for cmd_name, (opcode, _) in biss_commands.items():
+                if opcode == val:
+                    return f"0x{val:04X} ({cmd_name})"
+            return f"0x{val:04X}"
+
+        if name == "EncoderState":
+            val = struct.unpack_from("<H", raw)[0]
+            if val == 0:
+                return "OK (all clear)"
+            return self._decode_encoder_state(val)
+
+        if name == "EncoderTemp":
+            return f"{raw[0] - 64} C (raw {raw[0]})" if raw[0] != 0 else "N/A"
+
+        if name == "ExternalTemp":
+            return f"{raw[0] - 64} C" if raw[0] != 0 else "No sensor"
+
+        if name == "Vcc":
+            val = struct.unpack_from("<H", raw)[0]
+            return f"{val / 1000:.3f} V (raw {val})"
+
+        if name == "FirstHarm":
+            amp = struct.unpack_from("<H", raw, 0)[0]
+            ang = struct.unpack_from("<H", raw, 2)[0]
+            if amp == 0 and ang == 0:
+                return "Not calibrated"
+            return f"amp={amp}, angle={ang}"
+
+        if name == "OutCfg":
+            val = struct.unpack_from("<I", raw)[0]
+            hyst_res = (val >> 25) & 0x07
+            cv_cfg = (val >> 24) & 0x01
+            out_dif = val & 0x00FFFFFF
+            res_str = self._RESOLUTION_MAP.get(hyst_res, f"unknown({hyst_res})")
+            dir_str = "CW" if cv_cfg == 0 else "CCW"
+            return f"{res_str}, {dir_str}, OutDif={out_dif}"
+
+        if name == "SignalAmp":
+            val = struct.unpack_from("<H", raw)[0]
+            return f"0x{val:04X} ({val})"
+
+        if name in ("CalPhase", "ExcPhase"):
+            return f"0x{raw[0]:02X} ({raw[0]})"
+
+        if name == "CalParams":
+            val = struct.unpack_from("<I", raw)[0]
+            return f"0x{val:08X}" if val != 0 else "Not set"
+
+        if name == "CommandState":
+            states = interpret_biss_commandstate(raw[0])
+            return states[0]
+
+        if name == "ErrorFlags":
+            val = struct.unpack_from("<H", raw)[0]
+            flags = interpret_error_flags(val)
+            if val == 0:
+                return "OK (0x0000)"
+            return f"0x{val:04X}: {', '.join(flags)}"
+
+        if name == "BootloaderVer" or name == "ProgramVer":
+            return f"{raw[3]}.{raw[2]}.{raw[1]}.{raw[0]}"
+
+        if name == "ProdDate":
+            val = struct.unpack_from(">I", raw)[0]
+            try:
+                dt = datetime.datetime.fromtimestamp(val, tz=datetime.timezone.utc)
+                return f"{dt.strftime('%Y-%m-%d %H:%M')}"
+            except (OSError, OverflowError, ValueError):
+                return f"0x{val:08X}"
+
+        if name == "DevID":
+            try:
+                return f"\"{raw.decode('ascii')}\" (ASCII)"
+            except (UnicodeDecodeError, ValueError):
+                return raw.hex().upper()
+
+        if name == "MfrID":
+            try:
+                return f"\"{raw.decode('ascii')}\" (ASCII)"
+            except (UnicodeDecodeError, ValueError):
+                return f"0x{raw.hex().upper()}"
+
+        if name == "(Reserved)":
+            return f"{TermColors.DarkGray}---{TermColors.ENDC}"
+
+        return raw.hex().upper()
+
+    def _decode_encoder_state(self, val: int) -> str:
+        """Decode EncoderState 16-bit bitfield into active flags."""
+        parts = []
+        for start_bit, width, name, values in self._ENCODER_STATE_FIELDS:
+            mask = (1 << width) - 1
+            field_val = (val >> start_bit) & mask
+            if field_val != 0:
+                label = values.get(field_val, f"?{field_val}")
+                parts.append(f"{name}={label}")
+        if not parts:
+            return "OK (all clear)"
+        return f"0x{val:04X}: " + ", ".join(parts)
+
+    # ------------------------------------------------------------------
+    #  Bank 0 (calibration page) dump & decode
+    # ------------------------------------------------------------------
+
+    _BANK0_REG_MAP = [
+        (0x00, 2, "Sin.Min.Low",   _P_BLUE),
+        (0x02, 2, "Sin.Min.High",  _P_ICE),
+        (0x04, 2, "Sin.Max.Low",   _P_CYAN),
+        (0x06, 2, "Sin.Max.High",  _P_MINT),
+        (0x08, 2, "Cos.Min.Low",   _P_YELLOW),
+        (0x0A, 2, "Cos.Min.High",  _P_CREAM),
+        (0x0C, 2, "Cos.Max.Low",   _P_ORCHID),
+        (0x0E, 2, "Cos.Max.High",  _P_BLUSH),
+        (0x10, 4, "Coarse[0]",     _P_PEACH),
+        (0x14, 4, "Coarse[1]",     _P_SAND),
+        (0x18, 4, "Coarse[2]",     _P_PEACH),
+        (0x1C, 4, "Coarse[3]",     _P_SAND),
+        (0x20, 4, "Coarse[4]",     _P_PEACH),
+        (0x24, 4, "Coarse[5]",     _P_SAND),
+        (0x28, 4, "Coarse[6]",     _P_PEACH),
+        (0x2C, 4, "Coarse[7]",     _P_SAND),
+        (0x30, 4, "Harmonic[0]",   _P_SALMON),
+        (0x34, 4, "Harmonic[1]",   _P_ROSE),
+        (0x38, 4, "Harmonic[2]",   _P_SALMON),
+        (0x3C, 4, "Harmonic[3]",   _P_ROSE),
+    ]
+
+    def _print_bank0_dump(self, data: bytes) -> None:
+        """Print 64-byte bank with per-field background colors."""
+        color_map = {}
+        for off, length, _, bg in self._BANK0_REG_MAP:
+            for i in range(off, off + length):
+                color_map[i] = bg
+
+        self._print_dump_header()
+        for row in range(4):
+            base = row * 16
+            addr = base
+            line = f"  {TermColors.Bold}0x{addr:02X}{TermColors.ENDC}  "
+            for col in range(16):
+                offset = base + col
+                bg = color_map.get(offset, self._P_GRAY)
+                line += f"  {bg}{data[offset]:02X}{self._RST}"
+            print(line)
+
+    def _decode_bank0(self, data: bytes) -> None:
+        """Decode bank 0 calibration page fields."""
+        import math
+
+        print(f"\n  {TermColors.Bold}{'Field':<19} {'Addr':>6}  {'Raw':>6}  Decoded{TermColors.ENDC}")
+        print("  " + "-" * 44)
+
+        # Amplitude calibration (Sin/Cos min/max)
+        amp_fields = [
+            (0x00, "Sin.Min.Low"),  (0x02, "Sin.Min.High"),
+            (0x04, "Sin.Max.Low"),  (0x06, "Sin.Max.High"),
+            (0x08, "Cos.Min.Low"),  (0x0A, "Cos.Min.High"),
+            (0x0C, "Cos.Max.Low"),  (0x0E, "Cos.Max.High"),
+        ]
+        for off, name in amp_fields:
+            val = struct.unpack_from("<h", data, off)[0]
+            hex_str = f"{data[off]:02X} {data[off+1]:02X}"
+            # Find color
+            fg = next(c for o, _, _, c in self._BANK0_REG_MAP if o == off)
+            print(f"  {fg}>> {name:<16}{self._RST} "
+                  f"  0x{off:02X}  {fg}{hex_str:>6}{self._RST}  {val}")
+
+        # Coarse offset channels
+        print()
+        print(f"  {TermColors.Bold}{'Channel':<18} {'Addr':>7}  {'ZeroL':>5} {'ZeroH':>5} "
+              f"{'PosL':>5} {'NegH':>5}{TermColors.ENDC}")
+        print("  " + "-" * 53)
+        for ch in range(8):
+            off = 0x10 + ch * 4
+            zl, zh, pl, nh = struct.unpack_from("<bbbb", data, off)
+            fg = self._P_PEACH if ch % 2 == 0 else self._P_SAND
+            print(f"  {fg}>> Coarse[{ch}]       {self._RST} "
+                  f"  0x{off:02X}  {fg}{zl:>5} {zh:>5} {pl:>5} {nh:>5}{self._RST}")
+
+        # Harmonics
+        print()
+        print(f"  {TermColors.Bold}{'Harmonic':<19} {'Addr':>6}  {'Real':>6} {'Imag':>6} "
+              f"{'Mag':>9} {'Phase':>8}{TermColors.ENDC}")
+        print("  " + "-" * 66)
+        harmonics_raw = struct.unpack_from("<8h", data, 0x30)
+        for i in range(4):
+            off = 0x30 + i * 4
+            re_val = harmonics_raw[i * 2]
+            im_val = harmonics_raw[i * 2 + 1]
+            mag = math.hypot(re_val, im_val)
+            phase = math.degrees(math.atan2(im_val, re_val))
+            fg = self._P_SALMON if i % 2 == 0 else self._P_ROSE
+            mag_color = TermColors.White if mag > 500 else TermColors.Yellow if mag > 100 else TermColors.DarkGray
+            print(f"  {fg}>> H{i}              {self._RST} "
+                  f"  0x{off:02X}  {fg}{re_val:>+6} {im_val:>+6}{self._RST} "
+                  f" {mag_color}{mag:>8.1f}{TermColors.ENDC} {phase:>+7.1f} deg")
 
     def _send_hex_file(self, args: List[str]) -> None:
         """Send a hex file to the encoder"""
