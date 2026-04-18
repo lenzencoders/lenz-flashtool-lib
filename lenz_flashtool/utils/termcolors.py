@@ -9,7 +9,7 @@ r'''
 Color definition class for stdout and progress bar purposes
 
 Author:
-    LENZ ENCODERS, 2020-2025
+    LENZ ENCODERS, 2020-2026
 '''
 
 
@@ -74,3 +74,28 @@ class TermColors:
     BackgroundLightMagenta = "\033[105m"
     BackgroundLightCyan = "\033[106m"
     BackgroundWhite = "\033[107m"
+
+    # 256-color pastel foreground palette (38;5;N)
+    PastelBabyBlue = "\033[38;5;153m"
+    PastelAquamarine = "\033[38;5;116m"
+    PastelSage = "\033[38;5;150m"
+    PastelSeafoam = "\033[38;5;114m"
+    PastelButtercup = "\033[38;5;222m"
+    PastelLemon = "\033[38;5;229m"
+    PastelCoral = "\033[38;5;216m"
+    PastelSalmon = "\033[38;5;210m"
+    PastelRose = "\033[38;5;217m"
+    PastelPink = "\033[38;5;174m"
+    PastelBlush = "\033[38;5;224m"
+    PastelLavender = "\033[38;5;139m"
+    PastelOrchid = "\033[38;5;182m"
+    PastelDustyPink = "\033[38;5;181m"
+    PastelSand = "\033[38;5;179m"
+    PastelKhaki = "\033[38;5;186m"
+    PastelSilver = "\033[38;5;188m"
+    PastelGray = "\033[38;5;253m"
+    PastelDarkGray = "\033[38;5;245m"
+    PastelPowderBlue = "\033[38;5;152m"
+    PastelOrange = "\033[38;5;208m"
+    PastelPeriwinkle = "\033[38;5;146m"
+    PastelDustyRose = "\033[38;5;137m"

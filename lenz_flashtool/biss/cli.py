@@ -336,63 +336,34 @@ class BiSSCommandLine:
             secs = int((ang - degrs - (mins / 60)) * 3600)
             self._std(ans[0], degrs, degree_sign, mins, secs)
 
-    # ------------------------------------------------------------------
-    #  dump – read & decode fixed-address registers (0x40-0x7F)
-    # ------------------------------------------------------------------
-
-    # Pastel 256-color ANSI foreground palette (no extra libraries)
-    # Works on macOS Terminal, iTerm2, Windows Terminal (+ colorama)
-    _P_BLUE      = "\033[38;5;153m"   # Baby Blue
-    _P_CYAN      = "\033[38;5;116m"   # Aquamarine
-    _P_GREEN     = "\033[38;5;150m"   # Sage
-    _P_MINT      = "\033[38;5;114m"   # Seafoam
-    _P_YELLOW    = "\033[38;5;222m"   # Buttercup
-    _P_CREAM     = "\033[38;5;229m"   # Lemon
-    _P_PEACH     = "\033[38;5;216m"   # Light Coral
-    _P_SALMON    = "\033[38;5;210m"   # Salmon
-    _P_ROSE      = "\033[38;5;217m"   # Rose
-    _P_PINK      = "\033[38;5;174m"   # Pink
-    _P_BLUSH     = "\033[38;5;224m"   # Blush
-    _P_LAVENDER  = "\033[38;5;139m"   # Lavender
-    _P_ORCHID    = "\033[38;5;182m"   # Orchid
-    _P_MAUVE     = "\033[38;5;181m"   # Dusty Pink
-    _P_SAND      = "\033[38;5;179m"   # Sand
-    _P_KHAKI     = "\033[38;5;186m"   # Khaki
-    _P_SILVER    = "\033[38;5;188m"   # Silver
-    _P_GRAY      = "\033[38;5;253m"   # Light Gray
-    _P_ICE       = "\033[38;5;152m"   # Powder Blue
-    _P_CORAL     = "\033[38;5;208m"   # Orange
-    _P_PERI      = "\033[38;5;146m"   # Periwinkle
-    _P_DUSTY     = "\033[38;5;137m"   # Dusty Rose
-    _RST         = "\033[0m"
-
-    # Register map: (start_offset, length, name, bg_color)
-    # Offsets relative to 0x40
+    # Register map: (start_offset, length, name, color)
+    # Offsets relative to 0x40; colors from TermColors pastel palette
+    _TC = TermColors
     _FIXED_REG_MAP = [
-        (0x00, 1, "BankSelect",    _P_BLUE),
-        (0x01, 1, "EDSBankNum",    _P_CYAN),
-        (0x02, 2, "ProfileID",     _P_GREEN),
-        (0x04, 4, "SerialNum",     _P_PEACH),
-        (0x08, 2, "CMD",           _P_SALMON),
-        (0x0A, 2, "EncoderState",  _P_CREAM),
-        (0x0C, 1, "EncoderTemp",   _P_ORCHID),
-        (0x0D, 1, "ExternalTemp",  _P_MAUVE),
-        (0x0E, 2, "Vcc",           _P_MINT),
-        (0x10, 4, "FirstHarm",     _P_GREEN),
-        (0x14, 4, "OutCfg",        _P_ROSE),
-        (0x18, 2, "SignalAmp",     _P_PERI),
-        (0x1A, 1, "CalPhase",      _P_KHAKI),
-        (0x1B, 1, "ExcPhase",      _P_SAND),
-        (0x1C, 4, "CalParams",     _P_YELLOW),
-        (0x20, 1, "(Reserved)",    _P_GRAY),
-        (0x21, 1, "CommandState",  _P_LAVENDER),
-        (0x22, 2, "ErrorFlags",    _P_CORAL),
-        (0x24, 8, "(Reserved)",    _P_GRAY),
-        (0x2C, 4, "BootloaderVer", _P_ICE),
-        (0x30, 4, "ProgramVer",    _P_MINT),
-        (0x34, 4, "ProdDate",      _P_PEACH),
-        (0x38, 6, "DevID",         _P_PINK),
-        (0x3E, 2, "MfrID",         _P_BLUSH),
+        (0x00, 1, "BankSelect",    _TC.PastelBabyBlue),
+        (0x01, 1, "EDSBankNum",    _TC.PastelAquamarine),
+        (0x02, 2, "ProfileID",     _TC.PastelSage),
+        (0x04, 4, "SerialNum",     _TC.PastelCoral),
+        (0x08, 2, "CMD",           _TC.PastelSalmon),
+        (0x0A, 2, "EncoderState",  _TC.PastelLemon),
+        (0x0C, 1, "EncoderTemp",   _TC.PastelOrchid),
+        (0x0D, 1, "ExternalTemp",  _TC.PastelDustyPink),
+        (0x0E, 2, "Vcc",           _TC.PastelSeafoam),
+        (0x10, 4, "FirstHarm",     _TC.PastelSage),
+        (0x14, 4, "OutCfg",        _TC.PastelRose),
+        (0x18, 2, "SignalAmp",     _TC.PastelPeriwinkle),
+        (0x1A, 1, "CalPhase",      _TC.PastelKhaki),
+        (0x1B, 1, "ExcPhase",      _TC.PastelSand),
+        (0x1C, 4, "CalParams",     _TC.PastelButtercup),
+        (0x20, 1, "(Reserved)",    _TC.PastelDarkGray),
+        (0x21, 1, "CommandState",  _TC.PastelLavender),
+        (0x22, 2, "ErrorFlags",    _TC.PastelOrange),
+        (0x24, 8, "(Reserved)",    _TC.PastelDarkGray),
+        (0x2C, 4, "BootloaderVer", _TC.PastelPowderBlue),
+        (0x30, 4, "ProgramVer",    _TC.PastelSeafoam),
+        (0x34, 4, "ProdDate",      _TC.PastelCoral),
+        (0x38, 6, "DevID",         _TC.PastelPink),
+        (0x3E, 2, "MfrID",         _TC.PastelBlush),
     ]
 
     # Encoder state bitfield definitions: (start_bit, width, name, values_map)
@@ -475,8 +446,8 @@ class BiSSCommandLine:
             line = f"  {TermColors.Bold}0x{addr:02X}{TermColors.ENDC}  "
             for col in range(16):
                 offset = base + col
-                bg = color_map.get(offset, self._P_GRAY)
-                line += f"  {bg}{data[offset]:02X}{self._RST}"
+                bg = color_map.get(offset, TermColors.PastelGray)
+                line += f"  {bg}{data[offset]:02X}{TermColors.ENDC}"
             print(line)
 
     def _decode_fixed_registers(self, data: bytes) -> None:
@@ -490,7 +461,7 @@ class BiSSCommandLine:
             addr_str = f"0x{0x40 + off:02X}"
 
             decoded = self._decode_field(name, raw_bytes, data)
-            print(f"  {fg}>> {name:<18}{self._RST} {addr_str:>6}  {fg}{hex_str:>23}{self._RST}  {decoded}")
+            print(f"  {fg}>> {name:<18}{TermColors.ENDC} {addr_str:>6}  {fg}{hex_str:>23}{TermColors.ENDC}  {decoded}")
 
     def _decode_field(self, name: str, raw: bytes, full_data: bytes) -> str:
         """Decode a single register field into a human-readable string."""
@@ -622,26 +593,26 @@ class BiSSCommandLine:
     # ------------------------------------------------------------------
 
     _BANK0_REG_MAP = [
-        (0x00, 2, "Sin.Min.Low",   _P_BLUE),
-        (0x02, 2, "Sin.Min.High",  _P_ICE),
-        (0x04, 2, "Sin.Max.Low",   _P_CYAN),
-        (0x06, 2, "Sin.Max.High",  _P_MINT),
-        (0x08, 2, "Cos.Min.Low",   _P_YELLOW),
-        (0x0A, 2, "Cos.Min.High",  _P_CREAM),
-        (0x0C, 2, "Cos.Max.Low",   _P_ORCHID),
-        (0x0E, 2, "Cos.Max.High",  _P_BLUSH),
-        (0x10, 4, "Coarse[0]",     _P_PEACH),
-        (0x14, 4, "Coarse[1]",     _P_SAND),
-        (0x18, 4, "Coarse[2]",     _P_PEACH),
-        (0x1C, 4, "Coarse[3]",     _P_SAND),
-        (0x20, 4, "Coarse[4]",     _P_PEACH),
-        (0x24, 4, "Coarse[5]",     _P_SAND),
-        (0x28, 4, "Coarse[6]",     _P_PEACH),
-        (0x2C, 4, "Coarse[7]",     _P_SAND),
-        (0x30, 4, "Harmonic[0]",   _P_SALMON),
-        (0x34, 4, "Harmonic[1]",   _P_ROSE),
-        (0x38, 4, "Harmonic[2]",   _P_SALMON),
-        (0x3C, 4, "Harmonic[3]",   _P_ROSE),
+        (0x00, 2, "Sin.Min.Low",   _TC.PastelBabyBlue),
+        (0x02, 2, "Sin.Min.High",  _TC.PastelPowderBlue),
+        (0x04, 2, "Sin.Max.Low",   _TC.PastelAquamarine),
+        (0x06, 2, "Sin.Max.High",  _TC.PastelSeafoam),
+        (0x08, 2, "Cos.Min.Low",   _TC.PastelButtercup),
+        (0x0A, 2, "Cos.Min.High",  _TC.PastelLemon),
+        (0x0C, 2, "Cos.Max.Low",   _TC.PastelOrchid),
+        (0x0E, 2, "Cos.Max.High",  _TC.PastelBlush),
+        (0x10, 4, "Coarse[0]",     _TC.PastelCoral),
+        (0x14, 4, "Coarse[1]",     _TC.PastelSand),
+        (0x18, 4, "Coarse[2]",     _TC.PastelCoral),
+        (0x1C, 4, "Coarse[3]",     _TC.PastelSand),
+        (0x20, 4, "Coarse[4]",     _TC.PastelCoral),
+        (0x24, 4, "Coarse[5]",     _TC.PastelSand),
+        (0x28, 4, "Coarse[6]",     _TC.PastelCoral),
+        (0x2C, 4, "Coarse[7]",     _TC.PastelSand),
+        (0x30, 4, "Harmonic[0]",   _TC.PastelSalmon),
+        (0x34, 4, "Harmonic[1]",   _TC.PastelRose),
+        (0x38, 4, "Harmonic[2]",   _TC.PastelSalmon),
+        (0x3C, 4, "Harmonic[3]",   _TC.PastelRose),
     ]
 
     def _print_bank0_dump(self, data: bytes) -> None:
@@ -658,8 +629,8 @@ class BiSSCommandLine:
             line = f"  {TermColors.Bold}0x{addr:02X}{TermColors.ENDC}  "
             for col in range(16):
                 offset = base + col
-                bg = color_map.get(offset, self._P_GRAY)
-                line += f"  {bg}{data[offset]:02X}{self._RST}"
+                bg = color_map.get(offset, TermColors.PastelGray)
+                line += f"  {bg}{data[offset]:02X}{TermColors.ENDC}"
             print(line)
 
     def _decode_bank0(self, data: bytes) -> None:
@@ -681,8 +652,8 @@ class BiSSCommandLine:
             hex_str = f"{data[off]:02X} {data[off+1]:02X}"
             # Find color
             fg = next(c for o, _, _, c in self._BANK0_REG_MAP if o == off)
-            print(f"  {fg}>> {name:<16}{self._RST} "
-                  f"  0x{off:02X}  {fg}{hex_str:>6}{self._RST}  {val}")
+            print(f"  {fg}>> {name:<16}{TermColors.ENDC} "
+                  f"  0x{off:02X}  {fg}{hex_str:>6}{TermColors.ENDC}  {val}")
 
         # Coarse offset channels
         print()
@@ -692,9 +663,9 @@ class BiSSCommandLine:
         for ch in range(8):
             off = 0x10 + ch * 4
             zl, zh, pl, nh = struct.unpack_from("<bbbb", data, off)
-            fg = self._P_PEACH if ch % 2 == 0 else self._P_SAND
-            print(f"  {fg}>> Coarse[{ch}]       {self._RST} "
-                  f"  0x{off:02X}  {fg}{zl:>5} {zh:>5} {pl:>5} {nh:>5}{self._RST}")
+            fg = TermColors.PastelCoral if ch % 2 == 0 else TermColors.PastelSand
+            print(f"  {fg}>> Coarse[{ch}]       {TermColors.ENDC} "
+                  f"  0x{off:02X}  {fg}{zl:>5} {zh:>5} {pl:>5} {nh:>5}{TermColors.ENDC}")
 
         # Harmonics
         print()
@@ -708,10 +679,10 @@ class BiSSCommandLine:
             im_val = harmonics_raw[i * 2 + 1]
             mag = math.hypot(re_val, im_val)
             phase = math.degrees(math.atan2(im_val, re_val))
-            fg = self._P_SALMON if i % 2 == 0 else self._P_ROSE
+            fg = TermColors.PastelSalmon if i % 2 == 0 else TermColors.PastelRose
             mag_color = TermColors.White if mag > 500 else TermColors.Yellow if mag > 100 else TermColors.DarkGray
-            print(f"  {fg}>> H{i}              {self._RST} "
-                  f"  0x{off:02X}  {fg}{re_val:>+6} {im_val:>+6}{self._RST} "
+            print(f"  {fg}>> H{i}              {TermColors.ENDC} "
+                  f"  0x{off:02X}  {fg}{re_val:>+6} {im_val:>+6}{TermColors.ENDC} "
                   f" {mag_color}{mag:>8.1f}{TermColors.ENDC} {phase:>+7.1f} deg")
 
     def _send_hex_file(self, args: List[str]) -> None:
