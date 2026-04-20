@@ -483,12 +483,17 @@ class BiSSIOMixin:
         logger.info("Encoder's program version: " + ".".join(
                     f"{num:X}" for num in self.biss_addr_read(BiSSBank.PROGVER_REG_INDEX, 4)[::-1]))
 
-    def biss_read_calibration_temp_vcc(self) -> None:
+    def biss_read_calibration_temp_vcc(self, iterations: Optional[int] = None) -> None:
         """
-        Continuously reads and prints encoder calibration state, signal modulation, temperature, and VCC.
+        Reads and prints encoder calibration state, signal modulation, temperature, and VCC.
 
         Retrieves calibration data, including calibration state, signal modulation, temperature,
         and supply voltage, and prints them in a loop with a 1-second interval.
+
+        Args:
+            iterations: Number of read cycles. ``None`` (default) loops until SIGINT
+                is received (handled by :meth:`enable_signal_handling`) or the
+                process is otherwise terminated. Pass an int for a bounded read.
 
         Returns:
             None
@@ -500,10 +505,12 @@ class BiSSIOMixin:
             ...
         """
         degree_sign = "\N{DEGREE SIGN}"
-        while True:
+        count = 0
+        while iterations is None or count < iterations:
             read_data = self.biss_addr_read(BiSSBank.ENC_DATA_REG_INDEX, 18).view('uint16').byteswap()
             print(f"CalState: {read_data[0]}, SignalMod: {read_data[[7, 8]]}, ",
                   f"EncTemp = {int(read_data[1] >> 8) - 64} {degree_sign}C, Vcc = {read_data[2] / 1000} V")
+            count += 1
             time.sleep(1)
 
     def biss_read_command_state(self) -> Optional[np.ndarray]:
