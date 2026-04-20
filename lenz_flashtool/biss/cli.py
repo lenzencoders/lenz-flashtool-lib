@@ -48,6 +48,7 @@ from . import (
     biss_commands,
     interpret_error_flags,
     interpret_biss_commandstate,
+    ENCODER_STATE_FIELDS,
 )
 try:
     import colorama
@@ -366,20 +367,6 @@ class BiSSCommandLine:
         (0x3E, 2, "MfrID",         _TC.PastelBlush),
     ]
 
-    # Encoder state bitfield definitions: (start_bit, width, name, values_map)
-    _ENCODER_STATE_FIELDS = [
-        (0,  1, "SetupLock",      {0: "LOCKED", 1: "UNLOCKED"}),
-        (1,  1, "FlashLock",      {0: "LOCKED", 1: "UNLOCKED"}),
-        (2,  2, "Zeroing",        {0: "IDLE", 1: "REQ", 2: "DONE"}),
-        (4,  2, "ClearDifLUT",    {0: "IDLE", 1: "REQ", 2: "DONE"}),
-        (6,  2, "AmpCalibration", {0: "IDLE", 1: "REQ", 2: "SECOND_TURN", 3: "DONE"}),
-        (8,  1, "ArcCalibration", {0: "DISABLED", 1: "ENABLED"}),
-        (9,  2, "Flashing",       {0: "IDLE", 1: "REQ", 2: "DONE"}),
-        (11, 2, "ClearDifFlash",  {0: "IDLE", 1: "REQ", 2: "DONE"}),
-        (13, 2, "FlashDifLUT",    {0: "IDLE", 1: "REQ", 2: "DONE", 3: "CRC_FAULT"}),
-        (15, 1, "UserBankState",  {0: "IDLE", 1: "DIFLUT_REQ"}),
-    ]
-
     # OutCfg (REV_RES) resolution lookup
     _RESOLUTION_MAP = {0: "17-bit", 1: "18-bit", 2: "19-bit", 3: "20-bit",
                        4: "18-bit", 5: "22-bit", 6: "23-bit", 7: "24-bit"}
@@ -578,11 +565,14 @@ class BiSSCommandLine:
     def _decode_encoder_state(self, val: int) -> str:
         """Decode EncoderState 16-bit bitfield into active flags."""
         parts = []
-        for start_bit, width, name, values in self._ENCODER_STATE_FIELDS:
+        for name, (enum_cls, start_bit, width) in ENCODER_STATE_FIELDS.items():
             mask = (1 << width) - 1
             field_val = (val >> start_bit) & mask
             if field_val != 0:
-                label = values.get(field_val, f"?{field_val}")
+                try:
+                    label = enum_cls(field_val).name
+                except ValueError:
+                    label = f"?{field_val}"
                 parts.append(f"{name}={label}")
         if not parts:
             return "OK (all clear)"

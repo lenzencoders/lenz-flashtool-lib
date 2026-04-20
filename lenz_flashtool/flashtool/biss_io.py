@@ -15,12 +15,14 @@ Author:
 import sys
 import time
 import logging
-from typing import Optional, List, Union, Tuple, Any
+from enum import IntEnum
+from typing import Iterable, Optional, List, Union, Tuple, Any
 import numpy as np
 from ..biss import (
     biss_commands, interpret_biss_commandstate, interpret_error_flags,
     BiSSBank,
 )
+from ..biss.encoder_state import ENCODER_STATE_FIELDS
 from .uart import UartCmd
 from .errors import FlashToolError
 from .hex_utils import (
@@ -640,6 +642,126 @@ class BiSSIOMixin:
             logger.debug(np.array(list(biss_data[4:-1]), 'uint8'))
             return np.array(list(biss_data[4:-1]), 'uint8')
         raise FlashToolError('Timeout waiting for register data.')
+
+    def read_encoder_flag(
+        self,
+        flag_name: Optional[str] = None,
+        start_bit: Optional[int] = None,
+        num_bits: int = 1,
+    ) -> Union[IntEnum, int]:
+        """
+        Reads a bitfield from the EncoderState register (BiSSBank.ENC_DATA_REG_INDEX, 0x4A).
+
+        Two modes:
+            - Named:  pass ``flag_name`` to resolve the field via ``ENCODER_STATE_FIELDS``
+              and get back the corresponding ``IntEnum`` member.
+            - Raw:    pass ``start_bit`` (and optionally ``num_bits``) to get back a
+              plain integer for fields not modeled as an enum.
+
+        Args:
+            flag_name: Name of a field defined in
+                :data:`lenz_flashtool.biss.encoder_state.ENCODER_STATE_FIELDS`
+                (e.g. ``'AmplitudeCalibration'``).
+            start_bit: LSB position of the field within the 16-bit register (0-15).
+                Required when ``flag_name`` is ``None``.
+            num_bits: Width of the field in bits. Only used in raw mode.
+
+        Returns:
+            ``IntEnum`` member when ``flag_name`` is given, otherwise the raw
+            integer value of the extracted bits.
+
+        Raises:
+            ValueError: If ``flag_name`` is unknown, neither argument is provided,
+                or the extracted raw value is not a defined member of the target
+                enum (indicates firmware/library drift).
+            FlashToolError: Propagated from the underlying BiSS read.
+
+        Examples:
+            >>> ft.read_encoder_flag('AmplitudeCalibration')
+            <AmplitudeCalibration.DONE: 3>
+            >>> ft.read_encoder_flag(start_bit=11, num_bits=2)
+            0
+        """
+        if flag_name is not None:
+            try:
+                enum_cls, start_bit, num_bits = ENCODER_STATE_FIELDS[flag_name]
+            except KeyError:
+                raise ValueError(
+                    f"Unknown flag: {flag_name!r}. "
+                    f"Available: {list(ENCODER_STATE_FIELDS)}"
+                )
+        else:
+            if start_bit is None:
+                raise ValueError("Must provide either flag_name or start_bit")
+            enum_cls = None
+
+        raw = self.biss_addr_read(BiSSBank.ENC_DATA_REG_INDEX, 2)
+        value = int(raw[0]) | (int(raw[1]) << 8)
+        mask = (1 << num_bits) - 1
+        field_val = (value >> start_bit) & mask
+
+        if enum_cls is not None:
+            return enum_cls(field_val)
+        return field_val
+
+    def wait_for_flag(
+        self,
+        flag_name: str,
+        target_state: Union[int, IntEnum, Iterable[Union[int, IntEnum]]],
+        timeout: float = 30.0,
+        interval: float = 0.2,
+    ) -> IntEnum:
+        """
+        Polls the EncoderState register until ``flag_name`` reaches an accepted state.
+
+        Transient :class:`FlashToolError` exceptions raised during polling are
+        logged at DEBUG level and retried on the next interval — BiSS reads can
+        briefly fail while the encoder is busy with long operations (flashing,
+        calibration).
+
+        Args:
+            flag_name: Name of the field to poll (key in ``ENCODER_STATE_FIELDS``).
+            target_state: Single acceptable state or an iterable of acceptable
+                states. Each may be an ``IntEnum`` member or a plain ``int``.
+            timeout: Maximum total wait time, in seconds.
+            interval: Delay between polls, in seconds.
+
+        Returns:
+            The ``IntEnum`` state that satisfied the predicate.
+
+        Raises:
+            TimeoutError: If no accepted state is observed within ``timeout``.
+
+        Example:
+            >>> from lenz_flashtool import AmplitudeCalibration
+            >>> ft.wait_for_flag(
+            ...     'AmplitudeCalibration',
+            ...     [AmplitudeCalibration.DONE, AmplitudeCalibration.IDLE],
+            ...     timeout=30.0,
+            ...     interval=0.5,
+            ... )
+        """
+        if isinstance(target_state, (int, IntEnum)):
+            targets = {int(target_state)}
+        else:
+            targets = {int(s) for s in target_state}
+
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            try:
+                state = self.read_encoder_flag(flag_name)
+            except FlashToolError as e:
+                logger.debug("Transient error reading %s: %s; retrying.", flag_name, e)
+            else:
+                if int(state) in targets:
+                    logger.info("%s reached target state: %s", flag_name, state)
+                    return state
+            time.sleep(interval)
+
+        raise TimeoutError(
+            f"Timeout ({timeout}s) waiting for {flag_name} "
+            f"to reach one of {sorted(targets)}"
+        )
 
     def biss_read_flags_flashCRC(self) -> int:
         """

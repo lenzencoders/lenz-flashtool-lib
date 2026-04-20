@@ -20,7 +20,10 @@ Author:
 
 from .utils import plot, plot2, TermColors
 from .biss import (
-    ERROR_FLAGS, BISS_COMMANDSTATE, biss_commands, BiSSBank
+    ERROR_FLAGS, BISS_COMMANDSTATE, biss_commands, BiSSBank,
+    SetupLock, FlashLock, Zeroing, ClearDifLUT, AmplitudeCalibration,
+    ArcCalibration, Flashing, ClearDifFlash, FlashDifLUT, UserBankState,
+    ENCODER_STATE_FIELDS,
     )
 from .flashtool import (
     UartCmd,
@@ -50,6 +53,19 @@ __all__ = [
     'BISS_COMMANDSTATE',
     'biss_commands',
     'BiSSBank',
+
+    # EncoderState bitfield enums
+    'SetupLock',
+    'FlashLock',
+    'Zeroing',
+    'ClearDifLUT',
+    'AmplitudeCalibration',
+    'ArcCalibration',
+    'Flashing',
+    'ClearDifFlash',
+    'FlashDifLUT',
+    'UserBankState',
+    'ENCODER_STATE_FIELDS',
 
     # Command constants
     'UartCmd',
