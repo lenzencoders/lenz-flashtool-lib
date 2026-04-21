@@ -14,6 +14,10 @@ Features:
 - Serial number and device info reading
 - Comprehensive error handling
 - Sending hex files to the encoder
+- FlashTool mode selection
+- SPI channel selection
+- Multi-encoder data reading (SPI-SPI and AB-SPI modes)
+- FlashTool firmware and bootloader version reading
 
 Usage:
     >>> python -m lenz_flashtool.biss.cli <command> [arguments]
@@ -25,6 +29,11 @@ Example Commands:
     >>> python -m lenz_flashtool.biss.cli hex 41 82 AA55FF
     >>> python -m lenz_flashtool.biss.cli readserial
     >>> python -m lenz_flashtool.biss.cli sendhexfile SAB039_1_1_4.hex
+    >>> python -m lenz_flashtool.biss.cli setmode spi_spi
+    >>> python -m lenz_flashtool.biss.cli setspi channel1
+    >>> python -m lenz_flashtool.biss.cli read_dual_spi_spi 0.1
+    >>> python -m lenz_flashtool.biss.cli read_dual_ab_spi 2.0 data.csv
+    >>> python -m lenz_flashtool.biss.cli readversions
 """
 #
 # r'''
@@ -104,6 +113,22 @@ class BiSSCommandLine:
         print("                                                              <data> used only for length.")
         print("  sendhexfile <filename>   - Send a hex file to the encoder")
         print("                             Example: sendhexfile SAB039_1_1_4.hex")
+        print("\nFlashTool Configuration:")
+        print("  setmode <mode>           - Set FlashTool operation mode")
+        print("                             Modes: spi_spi, ab_uart, spi_uart_irs, ab_spi, default_spi")
+        print("  setspi <channel>         - Select SPI channel (channel1 or channel2)")
+        print("\nDual Encoder Reading:")
+        print("  read_dual_spi_spi <time> [output.csv] - Read data from both encoders via SPI interface")
+        print("                             Both encoders use SPI protocol")
+        print("                             Example: read_dual_spi_spi 0.1           - Read for 100ms")
+        print("                                      read_dual_spi_spi 2.0 data.csv   - Save to CSV file")
+        print("  read_dual_ab_spi <time> [output.csv]  - Read data from encoders in mixed mode")
+        print("                             Encoder 1: AB interface, Encoder 2: SPI interface")
+        print("                             Example: read_dual_ab_spi 0.5             - Read for 500ms")
+        print("                                      read_dual_ab_spi 3.0 data.csv    - Save to CSV file")
+        print("\nSystem Information:")
+        print("  readversions             - Read FlashTool firmware and bootloader versions")
+        print("                             Shows versions in readable format (e.g., 0.1.0.11)")
 
     def execute_command(self, args: List[str]) -> None:
         """
@@ -157,6 +182,39 @@ class BiSSCommandLine:
                 - Description: Sends a hex file to the encoder.
                 - Usage: sendhexfile <filename.hex>
 
+            setmode <mode>
+                - Description: Sets the FlashTool communication mode for both channels.
+                - Available modes:
+                    spi_spi      - Channel 1: SPI, Channel 2: SPI
+                    ab_uart      - Channel 1: AB signal, Channel 2: UART
+                    spi_uart_irs - Channel 1: SPI, Channel 2: UART for IRS encoders
+                    ab_spi       - Channel 1: AB signal, Channel 2: SPI
+                    default_spi  - Default mode: Channel 1: None, Channel 2: SPI
+                - Usage: setmode spi_spi        # sets SPI on both channels
+                        setmode ab_uart         # sets AB on channel1, UART on channel2
+
+            setspi <channel>
+                - Description: Selects which SPI channel to use for communication.
+                - Available channels:
+                    channel1     - Select SPI channel 1
+                    channel2     - Select SPI channel 2
+                - Usage: setspi channel1        # selects channel 1 for SPI communication
+                        setspi channel2         # selects channel 2 for SPI communication
+
+            read_dual <time>
+                - Description: Reads data from both encoders simultaneously via SPI interface.
+                - Requires FlashTool mode to be set to 'spi_spi' using setmode command first.
+                - Reads encoder data for specified duration and displays sample values.
+                - Time parameter specifies reading duration in seconds (can be fractional).
+                - Usage: read_dual 0.1          # reads data for 100 milliseconds
+                        read_dual 2.0           # reads data for 2 seconds
+
+            readversions
+                - Description: Reads firmware and bootloader versions from the FlashTool device.
+                - Automatically reboots device to bootloader mode, reads versions, and reboots back.
+                - Returns version strings as 8-character hexadecimal values.
+                - Usage: readversions
+
             <predefined command>
                 - Description: Executes a predefined command from the biss_commands registry.
                 - Examples:
@@ -173,6 +231,9 @@ class BiSSCommandLine:
         Notes:
             - All addresses and data bytes can be in either hexadecimal (0xNN) or decimal (NN) format.
             - The method logs each step and captures errors for user-friendly CLI output.
+            - For read_dual command, ensure the encoder is properly connected and powered.
+            - The setmode command must be issued before read_dual when using SPI-SPI configuration.
+            - Some commands require specific hardware configurations and encoder types.
         """
 
         if len(args) < 2:
@@ -206,6 +267,18 @@ class BiSSCommandLine:
                 self._read_angle_loop()
             elif command == "sendhexfile":
                 self._send_hex_file(args)
+            elif command == "setmode":
+                self._set_flashtool_mode(args)
+            elif command == "setspi":
+                self._set_spi_channel(args)
+            # elif command == "read_dual":
+            #     self._read_dual_encoders(args)
+            elif command == "read_dual_spi_spi":
+                self._read_dual_encoders_spi_spi(args)
+            elif command == "read_dual_ab_spi":
+                self._read_dual_encoders_ab_spi(args)
+            elif command == "readversions":
+                self._read_versions()
             else:
                 raise ValueError(f"Unknown command: {command}")
         except ValueError as e:
@@ -340,12 +413,140 @@ class BiSSCommandLine:
         biss_send_hex(filename, pbar=pbar)
         print(f"Successfully sent hex file: {filename}")
 
-    @staticmethod
-    def _std(ans2, degrs, degree_sign, mins, secs):
-        """stdout format"""
-        sys.stdout.write("\r" + f'[{ans2}]: \t {str(degrs):>3}{degree_sign} {str(mins):2}\' {str(secs):2}\"' + '\t\t')
-        sys.stdout.flush()
+    def _set_flashtool_mode(self, args: List[str]) -> None:
+        """Set the FlashTool operation mode"""
+        if len(args) < 3:
+            raise ValueError("Usage: setmode <mode>")
+        
+        mode = args[2].lower()
+        self.ft.select_flashtool_mode(mode)  # Прямой вызов
+        print(f"{TermColors.Green}FlashTool mode set to: {mode}{TermColors.ENDC}")
 
+    def _set_spi_channel(self, args: List[str]) -> None:
+        """Set the SPI channel"""
+        if len(args) < 3:
+            raise ValueError("Usage: setspi <channel>")
+        
+        channel = args[2].lower()
+        self.ft.select_spi_channel(channel)
+        print(f"{TermColors.Green}SPI channel set to: {channel}{TermColors.ENDC}")
+
+    def _read_dual_encoders_spi_spi(self, args: List[str]) -> None:
+        """
+        Read data from both encoders in SPI-SPI mode.
+        
+        Both encoders communicate via SPI interface.
+        
+        Args:
+            args: Command line arguments containing read time and optional output file
+        """
+        if len(args) < 3:
+            raise ValueError("Usage: read_dual_spi_spi <read_time_seconds> [output_file.csv]")
+        
+        try:
+            read_time = float(args[2])
+        except ValueError:
+            raise ValueError("read_time must be a number")
+        
+        # Optional filename for saving data
+        save_file = args[3] if len(args) > 3 else None
+        
+        self.ft.select_flashtool_mode('spi_spi')
+        self.ft.encoder_power_cycle()
+        self.ft.encoder_ch1_power_cycle()
+
+        enc1, enc2 = self.ft.read_data_enc1_enc2_SPI(read_time, status=True)
+        
+        self._print_dual_encoder_results(enc1, enc2, save_file, mode="SPI-SPI")
+
+    def _read_dual_encoders_ab_spi(self, args: List[str]) -> None:
+        """
+        Read data from both encoders in AB-SPI mode.
+        
+        Encoder 1 communicates via AB interface, Encoder 2 via SPI.
+        
+        Args:
+            args: Command line arguments containing read time and optional output file
+        """
+        if len(args) < 3:
+            raise ValueError("Usage: read_dual_ab_spi <read_time_seconds> [output_file.csv]")
+        
+        try:
+            read_time = float(args[2])
+        except ValueError:
+            raise ValueError("read_time must be a number")
+        
+        # Optional filename for saving data
+        save_file = args[3] if len(args) > 3 else None
+        
+        self.ft.select_flashtool_mode('ab_spi')
+        self.ft.encoder_power_cycle()
+        self.ft.encoder_ch1_power_cycle()
+
+        enc1, enc2 = self.ft.read_data_enc1_AB_enc2_SPI(read_time, status=True)
+        
+        self._print_dual_encoder_results(enc1, enc2, save_file, mode="AB-SPI")
+
+    def _read_versions(self) -> None:
+        """Read FlashTool firmware and bootloader versions"""
+        self.ft.reboot_to_bl()
+        fw_ver_hex, bl_ver_hex = self.ft.read_fw_bl_ver()
+        self.ft.reboot_to_fw()
+        
+        fw_ver_readable = self._hex_to_version(fw_ver_hex)
+        bl_ver_readable = self._hex_to_version(bl_ver_hex)
+        
+        print(f"Firmware: {fw_ver_readable}, Bootloader: {bl_ver_readable}")
+
+    @staticmethod
+    def _print_dual_encoder_results(enc1, enc2, save_file: str = None, mode: str = "") -> None:
+        """
+        Print and save results from dual encoder readings.
+        
+        Args:
+            enc1: Data from encoder 1
+            enc2: Data from encoder 2
+            save_file: Optional CSV filename to save data
+            mode: Mode description for display (e.g., "SPI-SPI" or "AB-SPI")
+        """
+        # Save to file if requested (without index column)
+        if save_file:
+            import csv
+            with open(save_file, 'w', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(['Encoder1', 'Encoder2'])  # Header without index
+                for e1, e2 in zip(enc1, enc2):
+                    writer.writerow([int(e1), int(e2)])
+            print(f"\n{TermColors.Green}Data saved to: {save_file}{TermColors.ENDC}")
+        
+        # Console output - summary
+        mode_display = f"Mode: {mode}" if mode else ""
+        print(f"\n{TermColors.Green}Encoder Data Summary {mode_display}{TermColors.ENDC}")
+        print("=" * 60)
+        print(f"Total samples:   {len(enc1)} readings per encoder")
+        print("-" * 60)
+        
+        # Convert numpy ints to Python ints for clean display
+        enc1_clean = [int(x) for x in enc1]
+        enc2_clean = [int(x) for x in enc2]
+        
+        # First 5 values
+        print(f"First 5 values:")
+        print(f"  Encoder 1: {enc1_clean[:5]}")
+        print(f"  Encoder 2: {enc2_clean[:5]}")
+        
+        # Last 5 values (if more than 10 total samples)
+        if len(enc1) > 10:
+            print(f"\nLast 5 values:")
+            print(f"  Encoder 1: {enc1_clean[-5:]}")
+            print(f"  Encoder 2: {enc2_clean[-5:]}")
+        elif len(enc1) > 5:
+            print(f"\nRemaining values:")
+            print(f"  Encoder 1: {enc1_clean[5:]}")
+            print(f"  Encoder 2: {enc2_clean[5:]}")
+        
+        print("-" * 60)
+    
     def _parse_hex(self, value: str) -> int:
         """Safely parse hex or decimal string"""
         try:
@@ -361,6 +562,26 @@ class BiSSCommandLine:
 
         for i, byte in enumerate(data):
             print(f"{TermColors.DarkGray}{i:04X}: {byte:02X} ({byte:3d}){TermColors.ENDC}")
+
+    @staticmethod
+    def _hex_to_version(hex_str: str) -> str:
+        """Convert hex version string to dotted decimal format"""
+        hex_value = int(hex_str, 16) if isinstance(hex_str, str) else hex_str
+        
+        major = (hex_value >> 24) & 0xFF
+        minor = (hex_value >> 16) & 0xFF
+        patch = (hex_value >> 8) & 0xFF
+        build = hex_value & 0xFF
+        
+        if build == 0:
+            return f"{major}.{minor}.{patch}"
+        return f"{major}.{minor}.{patch}.{build}"
+
+    @staticmethod
+    def _std(ans2, degrs, degree_sign, mins, secs):
+        """stdout format"""
+        sys.stdout.write("\r" + f'[{ans2}]: \t {str(degrs):>3}{degree_sign} {str(mins):2}\' {str(secs):2}\"' + '\t\t')
+        sys.stdout.flush()
 
 
 def main():
