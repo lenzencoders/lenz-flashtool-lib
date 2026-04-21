@@ -15,15 +15,84 @@ Author:
 
 import time
 import logging
-from typing import Literal
+from typing import Dict, Literal
+from ..biss import BiSSBank
 from .uart import UartCmd
 from .hex_utils import generate_hex_line
 
 logger = logging.getLogger(__name__)
 
 
+RESOLUTION_MAP: Dict[int, str] = {
+    0: "17-bit", 1: "18-bit", 2: "19-bit", 3: "20-bit",
+    4: "18-bit", 5: "22-bit", 6: "23-bit", 7: "24-bit",
+}
+"""REV_RES HystRes field (bits 27:25) code → resolution label. Used by
+``FlashTool.set_resolution_and_direction`` and the CLI register-dump decoder."""
+
+
+_BITS_TO_HYST_RES: Dict[int, int] = {
+    17: 0, 18: 1, 19: 2, 20: 3, 22: 5, 23: 6, 24: 7,
+}
+
+
 class EncoderControlMixin:
     """Mixin providing encoder power control, FlashTool reset, and mode/channel selection."""
+
+    def set_resolution_and_direction(
+        self,
+        bits: int = 24,
+        direction: Literal["CW", "CCW"] = "CW",
+    ) -> None:
+        """
+        Configures encoder resolution and rotation direction, persists to flash, and power-cycles.
+
+        Writes the REV_RES register (``BiSSBank.REV_RES_REG_INDEX``, 0x54) with the
+        requested HystRes / CvCfg combination and runs the full
+        ``unlocksetup → unlockflash → write → saveflash → power_cycle`` sequence
+        so the new configuration is active on return.
+
+        Register layout (32-bit word):
+            bits 31:28 — reserved (0)
+            bits 27:25 — HystRes (resolution code)
+            bit  24    — CvCfg: 0 = CW-increasing, 1 = CCW-increasing
+            bits 23:0  — OutDif (written as 0)
+
+        Args:
+            bits: Resolution in bits. Accepted: 17, 18, 19, 20, 22, 23, 24. Defaults to 24.
+            direction: "CW" (default) or "CCW".
+
+        Raises:
+            ValueError: If ``bits`` or ``direction`` is outside the supported set.
+
+        Example:
+            >>> ft.set_resolution_and_direction()                # 24-bit, CW (defaults)
+            >>> ft.set_resolution_and_direction(bits=22)         # 22-bit, CW
+            >>> ft.set_resolution_and_direction(24, "CCW")       # 24-bit, CCW
+        """
+        if bits not in _BITS_TO_HYST_RES:
+            raise ValueError(
+                f"Unsupported resolution: {bits}. "
+                f"Supported: {sorted(_BITS_TO_HYST_RES)} bits."
+            )
+        if direction not in ("CW", "CCW"):
+            raise ValueError(f'Direction must be "CW" or "CCW", got {direction!r}')
+
+        hyst_res = _BITS_TO_HYST_RES[bits]
+        cv_cfg = 0 if direction == "CW" else 1
+        value = (hyst_res << 25) | (cv_cfg << 24)
+
+        logger.info(
+            "Setting encoder: %d-bit %s (REV_RES = 0x%08X)",
+            bits, direction, value,
+        )
+
+        self.biss_write_command('unlocksetup')
+        self.biss_write_command('unlockflash')
+        self.biss_write_word(BiSSBank.REV_RES_REG_INDEX, value)
+        self.biss_write_command('saveflash')
+        time.sleep(0.2)
+        self.encoder_power_cycle()
 
     def encoder_power_off(self) -> None:
         """

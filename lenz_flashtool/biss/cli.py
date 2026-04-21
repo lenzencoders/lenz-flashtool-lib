@@ -42,6 +42,7 @@ import time
 import datetime
 from typing import List
 from ..flashtool import FlashTool, biss_send_hex, generate_hex_line
+from ..flashtool.encoder_control import RESOLUTION_MAP
 from ..utils.termcolors import TermColors
 from . import (
     BiSSBank,
@@ -367,10 +368,6 @@ class BiSSCommandLine:
         (0x3E, 2, "MfrID",         _TC.PastelBlush),
     ]
 
-    # OutCfg (REV_RES) resolution lookup
-    _RESOLUTION_MAP = {0: "17-bit", 1: "18-bit", 2: "19-bit", 3: "20-bit",
-                       4: "18-bit", 5: "22-bit", 6: "23-bit", 7: "24-bit"}
-
     def _dump_registers(self, args: List[str]) -> None:
         """Read and decode fixed-address registers 0x40-0x7F with colored hex dump."""
         bank = None
@@ -508,7 +505,7 @@ class BiSSCommandLine:
             hyst_res = (val >> 25) & 0x07
             cv_cfg = (val >> 24) & 0x01
             out_dif = val & 0x00FFFFFF
-            res_str = self._RESOLUTION_MAP.get(hyst_res, f"unknown({hyst_res})")
+            res_str = RESOLUTION_MAP.get(hyst_res, f"unknown({hyst_res})")
             dir_str = "CW" if cv_cfg == 0 else "CCW"
             return f"{res_str}, {dir_str}, OutDif={out_dif}"
 

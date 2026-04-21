@@ -6,7 +6,7 @@ This library provides functions for interfacing with BiSS C encoders using LENZ 
 and executing calibration routines.
 
 Author:
-    LENZ ENCODERS, 2020-2025
+    LENZ ENCODERS, 2020-2026
 """
 
 #
@@ -30,6 +30,7 @@ from .flashtool import (
     UartBootloaderSeq,
     FlashTool,
     FlashToolError,
+    RESOLUTION_MAP,
     generate_hex_line,
     init_logging,
     get_nonce,
@@ -76,6 +77,7 @@ __all__ = [
     'FlashToolError',
     'MockFlashTool',
     'LenzEncoderProcessor',
+    'RESOLUTION_MAP',
 
     # Utility functions and classes
     'generate_hex_line',
