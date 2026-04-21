@@ -509,9 +509,9 @@ class BiSSIOMixin:
         degree_sign = "\N{DEGREE SIGN}"
         count = 0
         while iterations is None or count < iterations:
-            read_data = self.biss_addr_read(BiSSBank.ENC_DATA_REG_INDEX, 18).view('uint16').byteswap()
+            read_data = self.biss_addr_read(BiSSBank.ENC_DATA_REG_INDEX, 18).view('uint16')
             print(f"CalState: {read_data[0]}, SignalMod: {read_data[[7, 8]]}, ",
-                  f"EncTemp = {int(read_data[1] >> 8) - 64} {degree_sign}C, Vcc = {read_data[2] / 1000} V")
+                  f"EncTemp = {int(read_data[1]) - 64} {degree_sign}C, Vcc = {read_data[2] / 1000} V")
             count += 1
             time.sleep(1)
 
