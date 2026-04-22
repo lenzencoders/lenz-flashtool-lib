@@ -2612,7 +2612,7 @@ class FlashTool:
                 logger.error("No response from IRS encoder!")
                 return False
 
-            expected_ans = np.array(UartBootloaderSeq.UART_SEQ_ANSWER_TO_STAY_IN_BL, dtype=np.uint8)
+            expected_ans = np.array(UartBootloaderSeq.UART_SEQ_ANSWER_TO_STAY_IN_BL_IRS, dtype=np.uint8)
 
             if np.array_equal(expected_ans, enc_ans):
                 logger.info("IRS Encoder enter bootloader successfully!")

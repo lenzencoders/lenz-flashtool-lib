@@ -638,11 +638,35 @@ class UartBootloaderSeq:
         - Data and address fields may contain specific handshake parameters
     """
 
-    UART_SEQ_ANSWER_TO_STAY_IN_BL = [0xF9, 0x4E, 0xB1, 0x06]  # [0x06, 0xB1, 0x4E, 0xF9]  # [0xF9, 0x4E, 0xB1, 0x06]
-    """list: Response sequence to keep device in bootloader mode and prevent firmware execution.
+    UART_SEQ_ANSWER_TO_STAY_IN_BL_IRS = [0xF9, 0x4E, 0xB1, 0x06]
+    """list: Response sequence to keep device in bootloader mode (IRS variant).
 
     Response:
         - 4-byte acknowledgment sequence confirming bootloader mode entry
+        - Byte order: [0xF9, 0x4E, 0xB1, 0x06] (IRS format)
+
+    Packet Structure:
+        Request: [DATA_SIZE][REG_ADDR][0x0F][UART_SEQ_STAY_IN_BL][CHECKSUM]
+        Response: [DATA_SIZE][REG_ADDR][0x1F][UART_SEQ_ANSWER_TO_STAY_IN_BL][CHECKSUM]
+
+    Command Sequence:
+        Request:
+            >>> :0400000f0531f6b9XX  # [0x05, 0x31, 0xF6, 0xB9] + checksum
+        Response:
+            >>> :0400001ff94eb106XX  # [0x06, 0xB1, 0x4E, 0xF9] + checksum
+
+    Usage:
+        - Typically sent immediately after device reset/power cycle
+        - Must be acknowledged before proceeding with firmware operations
+        - Data and address fields may contain specific handshake parameters
+    """
+
+    UART_SEQ_ANSWER_TO_STAY_IN_BL_FT = [0x06, 0xB1, 0x4E, 0xF9]
+    """list: Response sequence to keep device in bootloader mode (FlashTool variant).
+
+    Response:
+        - 4-byte acknowledgment sequence confirming bootloader mode entry
+        - Byte order: [0x06, 0xB1, 0x4E, 0xF9] (FlashTool format)
 
     Packet Structure:
         Request: [DATA_SIZE][REG_ADDR][0x0F][UART_SEQ_STAY_IN_BL][CHECKSUM]

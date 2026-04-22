@@ -128,7 +128,7 @@ def connect_and_stay_in_bl(timeout_s: int = 20, retry_delay: float = 0.5) -> boo
                         ft._write_to_port(tx_row)
                         response = ft.port_read(len(tx_row) - 1)
 
-                        if list(response) == list(UartBootloaderSeq.UART_SEQ_ANSWER_TO_STAY_IN_BL):
+                        if list(response) == list(UartBootloaderSeq.UART_SEQ_ANSWER_TO_STAY_IN_BL_FT):
                             logger.info(f"{TermColors.Green}Answer sequence to stay in bl is correct{TermColors.Default}")
                             return True
 
