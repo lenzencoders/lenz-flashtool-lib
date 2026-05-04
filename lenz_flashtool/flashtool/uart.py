@@ -462,6 +462,62 @@ class UartCmd(IntEnum):
             >>>  0x1004092032A  Register 0x40 keeps 0x03
     """
 
+    UART_COMMAND_READ_DIAGNOSTIC_STATUS = 0xFE
+    """int: Command to read comprehensive diagnostic status from FlashTool device.
+
+    Usage:
+        - Retrieves complete error and fault state information from the device
+        - Essential for fault detection and system health monitoring
+        - Returns error type, error codes, and BiSS fault states in single response
+        - Should be called periodically in critical applications or after communication errors
+
+    Response Format:
+        Each 3-byte response packet contains:
+
+        >>> [ErrorType][ErrorCode][FaultState]
+
+        Where:
+
+        - ErrorType (byte 0): Type of error present (0x00=None, 0x01=BiSS, 0x02=UART)
+        - ErrorCode (byte 1): Specific UART error code (detailed error identification)
+        - FaultState (byte 2): BiSS interface fault state (BiSS-specific errors)
+
+    Error Type Interpretation:
+        >>> ERROR_TYPE_NONE = 0x00  # No errors detected
+        >>> ERROR_TYPE_BISS = 0x01  # BiSS communication error
+        >>> ERROR_TYPE_UART = 0x02  # UART protocol error
+
+    UART Error Codes:
+        >>> UART_ERROR_NONE = 0x00              # No error
+        >>> UART_ERROR_CRC = 0x01               # CRC verification failed
+        >>> UART_ERROR_QUEUE_FULL = 0x02        # UART queue overflow
+        >>> UART_ERROR_BISS = 0x03              # BiSS communication error
+        >>> UART_ERROR_BISS_WRITE_FAULT = 0x04  # BiSS write operation failed
+        >>> UART_ERROR_BISS_READ_FAULT = 0x05   # BiSS read operation failed
+        >>> UART_ERROR_LEN_DATA_IS_ZERO = 0x06  # Zero-length data received
+        >>> UART_ERROR_LEN_IS_NOT_CORRECT = 0x07 # Incorrect data length
+        >>> UART_ERROR_INVALID_CMD = 0x08       # Invalid command received
+        >>> UART_ERROR_INVALID_MODE = 0x09      # Invalid operation mode
+
+    BiSS Fault States:
+        >>> BISS_NO_FAULTS = 0x00       # No faults detected
+        >>> BISS_FAULT_IDL = 0x01       # IDLE state fault (line idle timeout)
+        >>> BISS_FAULT_WRITE = 0x02     # Write operation fault (data write failure)
+        >>> BISS_FAULT_READ_CRC = 0x03  # Read CRC verification fault
+
+    Example Response Packets:
+        >>> UART CRC error: [0x02, 0x01, 0x00]
+        >>> BiSS IDLE fault: [0x01, 0x00, 0x01]
+
+    Notes:
+        - Non-zero status codes in ErrorCode or FaultState fields (when ErrorType=NONE) 
+        may indicate warning conditions requiring attention
+        - Should be called after any communication failure to identify root cause
+        - Response length is fixed at 3 bytes regardless of error presence
+        - Error states are latched and persist until cleared or device reset
+        - Some error conditions may require device reinitialization for recovery
+    """
+
     CMD_REBOOT_TO_BL = 0xFF
     """int: Command to reboot to bootloader.
 

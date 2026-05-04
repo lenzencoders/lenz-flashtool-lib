@@ -30,7 +30,7 @@ from ..biss import (
     BiSSBank,
 )
 from .uart import UartCmd, UartBootloaderCmd, UartBootloaderMemoryStates, UartBootloaderSeq
-from .errors import FlashToolError
+from .errors import FlashToolError, UARTErrorType, UARTErrorCode, BiSSFaultState
 from .hex_utils import (
     calculate_checksum,
     generate_byte_line,
@@ -2741,3 +2741,209 @@ class FlashTool:
         except Exception as e:
             logger.error(f"Exception while setting IRS encoder position: {e}")
             return None, None
+
+    def get_diagnostic_status(self, raise_on_error: bool = False) -> Optional[dict]:
+        """
+        Get FlashTool diagnostic status including UART and BiSS errors.
+        
+        Returns comprehensive error information from the FlashTool device:
+            - UART communication errors (CRC, queue, commands)
+            - BiSS machine state errors (IDLE, write faults, CRC)
+        
+        Args:
+            raise_on_error: If True, raise FlashToolError when error detected
+            
+        Returns:
+            Dictionary with keys:
+                - is_error (bool): True if any error present
+                - error_type (UARTErrorType): Type of error (BISS/UART/NONE)
+                - error_code (UARTErrorCode): Specific error code for UART errors
+                - fault_state (BiSSFaultState): BiSS fault state for BiSS errors
+                - message (str): Human-readable error description
+                - raw_response (np.array): Raw bytes from device
+        """
+        tx_row = bytes.fromhex(generate_hex_line(
+            address=0x0000,
+            command=UartCmd.UART_COMMAND_READ_DIAGNOSTIC_STATUS,
+            data=[0x00, 0x00, 0x00],
+        )[1:])
+
+        logger.debug(f"Sent command: {tx_row.hex()}")
+        self._write_to_port(tx_row)
+        self.__port.reset_input_buffer()
+        
+        try:
+            response = self.port_read(len(tx_row) - UartCmd.PKG_INFO_LENGTH)
+            error_state = self._decode_uart_error_state_fw(response)
+            
+            if raise_on_error and error_state and error_state.get('is_error', False):
+                self._raise_flash_tool_error(error_state)
+            
+            return error_state
+            
+        except FlashToolError:
+            raise
+            
+        except Exception as e:
+            logger.error(f"Communication error while reading error state: {e}")
+            error_state = {
+                'is_error': True,
+                'communication_error': True,
+                'message': f"Communication failed: {e}",
+                'error_type': None,
+                'error_code': None,
+                'fault_state': None,
+                'raw_response': None
+            }
+            
+            if raise_on_error:
+                self._raise_flash_tool_error(error_state)
+            
+            return error_state
+
+    def _raise_flash_tool_error(self, error_state: dict) -> None:
+        """
+        Raise FlashToolError from error state dictionary.
+        
+        Args:
+            error_state: Dictionary containing error information
+        """
+        raise FlashToolError(
+            message=error_state['message'],
+            error_type=error_state.get('error_type', UARTErrorType.ERROR_TYPE_NONE),
+            error_code=error_state.get('error_code', UARTErrorCode.UART_ERROR_NONE),
+            fault_state=error_state.get('fault_state')
+        )
+
+    def _decode_uart_error_state_fw(self, response: np.array) -> dict:
+        """
+        Decode UART error state response from device.
+        
+        The response format is:
+            Byte 0: Error type (0x00=None, 0x01=BiSS, 0x02=UART)
+            Byte 1: Error code (specific error details)
+            Byte 2: BiSS fault state (BiSS-specific error details)
+        
+        Args:
+            response: Raw response bytes from device
+            
+        Returns:
+            Dictionary with decoded error information
+        """
+        # Validate response length
+        if len(response) < 3:
+            logger.error(f"Invalid response length: {len(response)} bytes")
+            return {'is_error': True, 'message': 'Invalid response length'}
+        
+        type_byte, code_byte, fault_byte = response[0], response[1], response[2]
+        
+        # Initialize result dictionary
+        result = {
+            'raw_response': response,
+            'error_type_byte': type_byte,
+            'error_code_byte': code_byte,
+            'fault_state_byte': fault_byte,
+            'error_type': None,
+            'error_code': None,
+            'fault_state': None,
+            'message': None,
+            'is_error': False
+        }
+        
+        try:
+            error_type = UARTErrorType(type_byte)
+            result['error_type'] = error_type
+            result['is_error'] = error_type != UARTErrorType.ERROR_TYPE_NONE
+            
+            logger.info(f"UART Error Type: {error_type.name} (0x{type_byte:02x})")
+            
+            # Dispatch to appropriate handler based on error type
+            if error_type == UARTErrorType.ERROR_TYPE_BISS:
+                self._process_biss_error(result, fault_byte)
+            elif error_type == UARTErrorType.ERROR_TYPE_UART:
+                self._process_uart_error(result, code_byte)
+            else:  # ERROR_TYPE_NONE
+                self._process_no_error(result, code_byte, fault_byte)
+            
+        except ValueError:
+            result['message'] = f"Unknown error type: 0x{type_byte:02x}"
+            logger.error(result['message'])
+        
+        return result
+
+    def _process_biss_error(self, result: dict, fault_byte: int) -> None:
+        """
+        Process BiSS error response.
+        
+        Args:
+            result: Result dictionary to update
+            fault_byte: BiSS fault state byte from device
+        """
+        try:
+            fault_state = BiSSFaultState(fault_byte)
+            result['fault_state'] = fault_state
+            fault_msg = FlashToolError.BISS_FAULT_MESSAGES.get(
+                fault_state, f"Unknown BiSS fault: {fault_state}"
+            )
+            result['message'] = f"BiSS Error: {fault_msg} (State: {fault_state})"
+            logger.error(f"BiSS Fault: {fault_msg} (0x{fault_byte:02x})")
+        except ValueError:
+            result['message'] = f"Unknown BiSS fault state: 0x{fault_byte:02x}"
+            logger.error(result['message'])
+
+    def _process_uart_error(self, result: dict, code_byte: int) -> None:
+        """
+        Process UART error response.
+        
+        Args:
+            result: Result dictionary to update
+            code_byte: UART error code byte from device
+        """
+        try:
+            error_code = UARTErrorCode(code_byte)
+            result['error_code'] = error_code
+            error_msg = FlashToolError.ERROR_MESSAGES.get(
+                error_code, f"Unknown UART error: {error_code}"
+            )
+            result['message'] = f"UART Error: {error_msg} (Code: {error_code:#04x})"
+            logger.error(f"UART Error: {error_msg} (0x{code_byte:02x})")
+        except ValueError:
+            result['message'] = f"Unknown UART error code: 0x{code_byte:02x}"
+            logger.error(result['message'])
+
+    def _process_no_error(self, result: dict, code_byte: int, fault_byte: int) -> None:
+        """
+        Process no-error state response.
+        
+        Logs status codes for informational purposes.
+        
+        Args:
+            result: Result dictionary to update
+            code_byte: UART status code byte
+            fault_byte: BiSS status byte
+        """
+        result['message'] = "No errors detected"
+        
+        # Log UART status codes (non-zero values indicate issues)
+        if code_byte != 0:
+            try:
+                error_code = UARTErrorCode(code_byte)
+                result['error_code'] = error_code
+                error_msg = FlashToolError.ERROR_MESSAGES.get(
+                    error_code, f"Unknown status: {error_code}"
+                )
+                logger.info(f"UART Status: {error_msg} (0x{code_byte:02x})")
+            except ValueError:
+                logger.warning(f"Unknown UART status code: 0x{code_byte:02x}")
+        
+        # Log BiSS status codes (non-zero values indicate issues)
+        if fault_byte != 0:
+            try:
+                fault_state = BiSSFaultState(fault_byte)
+                result['fault_state'] = fault_state
+                fault_msg = FlashToolError.BISS_FAULT_MESSAGES.get(
+                    fault_state, f"Unknown status: {fault_state}"
+                )
+                logger.info(f"BiSS Status: {fault_msg} (0x{fault_byte:02x})")
+            except ValueError:
+                logger.warning(f"Unknown BiSS status: 0x{fault_byte:02x}")
