@@ -100,27 +100,27 @@ from .hex_utils import HexFileProcessor
 
 def extract_version_from_filename(filename: str) -> int:
     """
-    Extract version number from filename in format *_ver_X_Y_Z.*
-    and convert it to 0x00XXYYZZ hex format.
-
-    Args:
-        filename: Filename containing version (e.g., "firmware_FT_ver_1_0_2.hex")
-
-    Returns:
-        int: Version in 0x00XXYYZZ format (e.g., 0x00010002 for 1.0.2)
-
-    Raises:
-        ValueError: If version pattern not found in filename
+    Extract version from filename and convert to 32-bit integer.
+    Supports 'X.Y.Z' (dots) or 'X_Y_Z' (underscores) formats.
+    
+    Returns version as (major << 16) | (minor << 8) | patch
     """
-    # Find version pattern in filename
-    match = re.search(r'_ver_(\d+)_(\d+)_(\d+)', filename)
+    basename = os.path.basename(filename)
+    
+    # Try new format with dots: X.Y.Z
+    match = re.search(r'(\d+)\.(\d+)\.(\d+)', basename)
     if not match:
-        raise ValueError(f"Version not found in filename: {filename}")
-
-    major, minor, patch = map(int, match.groups())
-
-    # Pack into 0x00MMmmpp format (MM=major, mm=minor, pp=patch)
-    return (major << 16) | (minor << 8) | patch
+        # Fallback to old format with underscores: X_Y_Z
+        match = re.search(r'(\d+)_(\d+)_(\d+)', basename)
+    
+    if match:
+        major = int(match.group(1))
+        minor = int(match.group(2))
+        patch = int(match.group(3))
+        return (major << 16) | (minor << 8) | patch
+    
+    # Default version 1.0.0
+    return 0x00000100
 
 
 def get_file_date(filepath: str) -> int:
@@ -159,16 +159,19 @@ def generate_hex_main_fw(firmware_file: str, bootloader_file: str,
                          firmware_date: int = None, bootloader_date: int = None):
     """
     Generate a processed HEX file with CRC metadata for main firmware and optional bootloader.
-    Automatically extracts versions from filenames if they contain '_ver_X_Y_Z' pattern.
-    Output file will be named 'app_ver_X_Y_Z.hex' using version from firmware filename.
+    Automatically extracts versions from filenames (supports 'ver_X_Y_Z' or 'X.Y.Z' patterns).
+    Output file will be named 'app_X.Y.Z.hex' using version from firmware filename (SemVer format).
 
     Args:
         firmware_file (str): Filename of main firmware HEX file (must exist)
         bootloader_file (str): Filename of bootloader HEX file (optional)
 
     Example:
+        >>> generate_hex_main_fw("firmware_FT_1.0.11.hex", "bootloader_FT_1.0.3.hex")
+        # Will create output file: app_1.0.11.hex
+        
         >>> generate_hex_main_fw("firmware_FT_ver_1_0_2.hex", "bootloader_FT_ver_1_0_0.hex")
-        # Will create output file: app_ver_1_0_2.hex
+        # Will create output file: app_1.0.2.hex (backward compatible)
     """
     processor = HexFileProcessor()
 
@@ -176,11 +179,21 @@ def generate_hex_main_fw(firmware_file: str, bootloader_file: str,
     try:
         program_version = extract_version_from_filename(firmware_file)
         # Extract version string for output filename
-        version_match = re.search(r'_ver_(\d+)_(\d+)_(\d+)', firmware_file)
-        version_str = f"app_ver_{version_match.group(1)}_{version_match.group(2)}_{version_match.group(3)}.hex"
+        # Try new format first (X.Y.Z)
+        version_match = re.search(r'(\d+)\.(\d+)\.(\d+)', firmware_file)
+        if not version_match:
+            # Fallback to old format (_ver_X_Y_Z)
+            version_match = re.search(r'_ver_(\d+)_(\d+)_(\d+)', firmware_file)
+        
+        # Extract version numbers for output filename in SemVer format
+        if version_match:
+            major, minor, patch = version_match.group(1), version_match.group(2), version_match.group(3)
+            version_str = f"app_{major}.{minor}.{patch}.hex"
+        else:
+            version_str = "app_1.0.0.hex"
     except ValueError:
         program_version = 0x00000100  # Default version 1.0.0
-        version_str = "app_ver_1_0_0.hex"  # Default output filename
+        version_str = "app_1.0.0.hex"  # Default output filename
 
     try:
         bootloader_version = extract_version_from_filename(bootloader_file) if bootloader_file else 0x00000100
@@ -223,9 +236,10 @@ def generate_hex_main_fw(firmware_file: str, bootloader_file: str,
         f.write("\n".join(processed_hex))
 
 
-def find_latest_fw_version(directory: str = None, pattern: str = "app_ver_*_*_*.hex") -> str:
+def find_latest_fw_version(directory: str = None, pattern: str = "firmware_FT_*.hex") -> str:
     """
     Finds the firmware file with the latest version matching the specified pattern.
+    Supports both 'X.Y.Z' (dots) and 'X_Y_Z' (underscores) version formats.
 
     Searches the specified directory for files following the version pattern and returns
     the path to the file with the highest version number (X.Y.Z).
@@ -233,30 +247,24 @@ def find_latest_fw_version(directory: str = None, pattern: str = "app_ver_*_*_*.
     Args:
         directory (str, optional): Directory to search in. If None, uses the script's directory.
                                 Defaults to None.
-        pattern (str, optional): File pattern to match with wildcards for version numbers.
-                            Should contain '*' where version numbers appear.
-                            Defaults to "app_ver_*_*_*.hex".
+        pattern (str, optional): File pattern to match. Should contain '*' as wildcard.
+                            Defaults to "firmware_FT_*.hex".
 
     Returns:
         str: Full path to the firmware file with the highest version number.
 
     Raises:
         FileNotFoundError: If no matching firmware files are found in the directory.
-        ValueError: If the pattern doesn't contain enough wildcards for version numbers.
 
     Examples:
         >>> find_latest_fw_version("/firmware/")
-        "/firmware/app_ver_2_1_0.hex"
+        "/firmware/firmware_FT_1.0.11.hex"
 
-        >>> find_latest_fw_version(pattern="fw_v*.*.*.hex")
-        "C:/project/fw_v3.2.1.hex"
+        >>> find_latest_fw_version(pattern="bootloader_FT_*.hex")
+        "/firmware/bootloader_FT_1.0.3.hex"
     """
     if directory is None:
         directory = os.path.dirname(os.path.abspath(__file__))
-
-    # Validate the pattern has enough wildcards for version components
-    if pattern.count('*') < 3:
-        raise ValueError("Pattern must contain at least 3 wildcards for version components (major.minor.patch)")
 
     full_pattern = os.path.join(directory, pattern)
     fw_files = glob(full_pattern)
@@ -266,21 +274,32 @@ def find_latest_fw_version(directory: str = None, pattern: str = "app_ver_*_*_*.
 
     def extract_version(filename):
         """
-        Extracts version tuple (X,Y,Z) from filename based on the pattern.
-
-        Converts the pattern to a regex by replacing wildcards with capture groups.
+        Extracts version tuple (X,Y,Z) from filename.
+        Supports both 'X.Y.Z' (dots) and 'X_Y_Z' (underscores) formats.
         """
-        # Convert glob pattern to regex
-        regex_pattern = re.escape(pattern)
-        regex_pattern = regex_pattern.replace(r'\*', r'(\d+)')  # Replace escaped * with digit capture
-        match = re.search(regex_pattern, os.path.basename(filename))
-        if match and len(match.groups()) >= 3:
-            return tuple(map(int, match.groups()[:3]))  # Take first 3 groups as version
+        basename = os.path.basename(filename)
+        
+        # Try new format with dots first: X.Y.Z
+        match = re.search(r'(\d+)\.(\d+)\.(\d+)', basename)
+        if match:
+            return (int(match.group(1)), int(match.group(2)), int(match.group(3)))
+        
+        # Fallback to old format with underscores: X_Y_Z
+        match = re.search(r'(\d+)_(\d+)_(\d+)', basename)
+        if match:
+            return (int(match.group(1)), int(match.group(2)), int(match.group(3)))
+        
+        # No version found
         return (0, 0, 0)
 
+    # Sort by version tuple (major, minor, patch)
     sorted_files = sorted(fw_files, key=extract_version)
     latest_fw = sorted_files[-1]
     version = extract_version(latest_fw)
 
-    print(f"Found firmware version {version[0]}.{version[1]}.{version[2]}: {latest_fw}")
+    if version == (0, 0, 0):
+        print(f"Warning: Could not extract version from filename: {latest_fw}")
+    else:
+        print(f"Found firmware version {version[0]}.{version[1]}.{version[2]}: {latest_fw}")
+    
     return latest_fw
