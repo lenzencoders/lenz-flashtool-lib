@@ -27,6 +27,9 @@ from .flashtool import (
     UartBootloaderSeq,
     FlashTool,
     FlashToolError,
+    UARTErrorType,
+    UARTErrorCode,
+    BiSSFaultState,
     generate_hex_line,
     init_logging,
     get_nonce,
@@ -58,6 +61,9 @@ __all__ = [
     # Core classes
     'FlashTool',
     'FlashToolError',
+    'UARTErrorType',
+    'UARTErrorCode',
+    'BiSSFaultState',
     'MockFlashTool',
     'LenzEncoderProcessor',
 

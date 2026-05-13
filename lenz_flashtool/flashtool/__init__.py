@@ -21,7 +21,7 @@ from .uart import UartCmd, UartBootloaderSeq
 from .core import FlashTool
 from .logging import init_logging
 from .hex_utils import get_nonce, generate_hex_line, calculate_checksum, _readhex, dif2hex, prep_hex, read_hex_file_irs
-from .errors import FlashToolError
+from .errors import FlashToolError, UARTErrorType, UARTErrorCode, BiSSFaultState
 from .operations import biss_send_dif, biss_send_hex, send_hex_irs_enc
 from .ft_bl_connection import connect_and_stay_in_bl, connect_and_enter_fw
 __all__ = [
@@ -33,6 +33,9 @@ __all__ = [
     'calculate_checksum',
     'get_nonce',
     'FlashToolError',
+    'UARTErrorType',
+    'UARTErrorCode',
+    'BiSSFaultState',
     '_readhex',
     'biss_send_dif',
     'biss_send_hex',
