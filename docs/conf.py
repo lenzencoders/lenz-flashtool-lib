@@ -51,9 +51,9 @@ html_static_path = ['_static']
 html_css_files = ['custom.css']
 html_favicon = '_static/favicon.ico'
 
-# Set Pygments style for code highlighting
-pygments_style = 'monokai'
-pygments_dark_style = 'monokai'
+# Set Pygments style for code highlighting (overridden by custom.css token colors)
+pygments_style = 'default'
+pygments_dark_style = 'github-dark'
 
 # Theme customization
 html_theme_options = {

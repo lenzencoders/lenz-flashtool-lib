@@ -133,80 +133,75 @@ html_sidebars = {{
 
     custom_css = """
 /* docs/_static/custom.css */
-/* LENZ Encoders — strict, modern tech documentation palette */
+/* LENZ Encoders — strict, Apple/Kimi-inspired documentation styling */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-@font-face {
-    font-family: 'Inconsolata LGC';
-    src: local('Inconsolata LGC'), local('InconsolataLGC');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Inconsolata LGC';
-    src: local('Inconsolata LGC Bold'), local('InconsolataLGC-Bold');
-    font-weight: 700;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Inconsolata LGC';
-    src: local('Inconsolata LGC Italic'), local('InconsolataLGC-Italic');
-    font-weight: 400;
-    font-style: italic;
-    font-display: swap;
-}
-
 /* --------------------------------------------------------------------------
- * LENZ design tokens
+ * Design tokens
  * -------------------------------------------------------------------------- */
 
 :root {
+    /* Surfaces */
     --lenz-bg: #ffffff;
-    --lenz-surface: #f7f8fa;
-    --lenz-surface-hover: #eff1f4;
-    --lenz-text: #111418;
-    --lenz-text-muted: #5c6370;
-    --lenz-accent: #2563eb;
-    --lenz-accent-dim: #1d4ed8;
-    --lenz-accent-soft: #dbeafe;
-    --lenz-border: #e1e4e8;
-    --lenz-border-muted: #f0f1f4;
+    --lenz-surface: #fafbfc;
+    --lenz-surface-hover: #f4f5f7;
+    --lenz-code-bg: #f6f7f9;
+    --lenz-inline-bg: #f1f2f5;
+
+    /* Text */
+    --lenz-text: #1a1d21;
+    --lenz-text-soft: #3a3f47;
+    --lenz-text-muted: #6b7280;
+    --lenz-text-faint: #9ca3af;
+
+    /* Accent — quieter tech blue */
+    --lenz-accent: #0066cc;
+    --lenz-accent-dim: #004999;
+    --lenz-accent-soft: #e7f0fb;
+
+    /* Borders — barely visible */
+    --lenz-border: #ececef;
+    --lenz-border-strong: #d8dadd;
+
+    /* Semantic */
     --lenz-good: #16a34a;
-    --lenz-good-soft: #dcfce7;
+    --lenz-good-soft: #e9f7ee;
     --lenz-bad: #dc2626;
-    --lenz-bad-soft: #fee2e2;
+    --lenz-bad-soft: #fdecec;
     --lenz-warn: #d97706;
-    --lenz-warn-soft: #fef3c7;
+    --lenz-warn-soft: #fdf3e3;
     --lenz-info: #0284c7;
-    --lenz-info-soft: #e0f2fe;
-    --lenz-code-bg: #f6f8fa;
+    --lenz-info-soft: #e6f3fa;
 }
 
 html[data-theme="dark"] {
-    --lenz-bg: #0a0b0d;
-    --lenz-surface: #13151a;
-    --lenz-surface-hover: #1a1c23;
-    --lenz-text: #f0f1f4;
+    --lenz-bg: #0d0f12;
+    --lenz-surface: #14171c;
+    --lenz-surface-hover: #1b1f25;
+    --lenz-code-bg: #14171c;
+    --lenz-inline-bg: #1b1f25;
+
+    --lenz-text: #e7e9ed;
+    --lenz-text-soft: #c5c9d0;
     --lenz-text-muted: #8a919c;
-    --lenz-accent: #60a5fa;
-    --lenz-accent-dim: #3b82f6;
-    --lenz-accent-soft: #1e3a8a;
-    --lenz-border: #252a33;
-    --lenz-border-muted: #1a1c23;
+    --lenz-text-faint: #5a6068;
+
+    --lenz-accent: #4f9eff;
+    --lenz-accent-dim: #80b8ff;
+    --lenz-accent-soft: #11233a;
+
+    --lenz-border: #1f2126;
+    --lenz-border-strong: #2a2d33;
+
     --lenz-good: #34d399;
-    --lenz-good-soft: #064e3b;
+    --lenz-good-soft: #0e2418;
     --lenz-bad: #f87171;
-    --lenz-bad-soft: #450a0a;
+    --lenz-bad-soft: #2a1212;
     --lenz-warn: #fbbf24;
-    --lenz-warn-soft: #451a03;
+    --lenz-warn-soft: #2a1f0c;
     --lenz-info: #38bdf8;
-    --lenz-info-soft: #0c4a6e;
-    --lenz-code-bg: #0d0d0f;
+    --lenz-info-soft: #0c2433;
 }
 
 /* --------------------------------------------------------------------------
@@ -214,68 +209,118 @@ html[data-theme="dark"] {
  * -------------------------------------------------------------------------- */
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    font-feature-settings: 'liga' 1, 'calt' 1;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1, 'ss01' 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    line-height: 1.65;
+    line-height: 1.7;
     font-size: 16px;
     color: var(--lenz-text);
     background-color: var(--lenz-bg);
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
     color: var(--lenz-text);
+    line-height: 1.25;
     background: none;
     -webkit-background-clip: unset;
     -webkit-text-fill-color: unset;
-    display: block;
 }
 
 h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 2.25rem;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    margin: 0 0 1.5rem 0;
 }
 
 h2 {
-    font-size: 1.4rem;
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--lenz-border);
+    font-size: 1.625rem;
+    font-weight: 600;
+    letter-spacing: -0.018em;
+    margin: 3rem 0 1rem 0;
+    padding: 0;
+    border: 0;
 }
 
 h3 {
-    font-size: 1.1rem;
-    margin-top: 1.75rem;
-    margin-bottom: 0.75rem;
-    color: var(--lenz-text);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin: 2rem 0 0.75rem 0;
+}
+
+h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 1.5rem 0 0.5rem 0;
+}
+
+h5, h6 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--lenz-text-muted);
+    margin: 1.25rem 0 0.5rem 0;
 }
 
 p {
-    color: var(--lenz-text-muted);
-    margin-bottom: 1rem;
+    color: var(--lenz-text);
+    margin: 0 0 1rem 0;
 }
 
-p strong {
+p strong, li strong {
     color: var(--lenz-text);
+    font-weight: 600;
 }
+
+ul, ol {
+    color: var(--lenz-text);
+    padding-left: 1.5rem;
+    margin: 0 0 1rem 0;
+}
+
+li {
+    margin: 0.25rem 0;
+}
+
+em {
+    font-style: italic;
+}
+
+/* --------------------------------------------------------------------------
+ * Links — Apple signature: always underlined, offset, subtle
+ * -------------------------------------------------------------------------- */
 
 a {
     color: var(--lenz-accent);
-    text-decoration: none;
-    transition: color 0.15s ease;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(0, 102, 204, 0.4);
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+html[data-theme="dark"] a {
+    text-decoration-color: rgba(79, 158, 255, 0.45);
 }
 
 a:hover {
     color: var(--lenz-accent-dim);
-    text-decoration: underline;
+    text-decoration-color: var(--lenz-accent);
 }
 
-a > code {
+a > code,
+a > .pre {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+    text-decoration: none;
     color: inherit;
 }
 
@@ -283,66 +328,67 @@ a > code {
  * Code
  * -------------------------------------------------------------------------- */
 
-code, pre, .highlight {
-    font-family: 'JetBrains Mono', 'Inconsolata LGC', 'Inconsolata', 'Fira Code', 'Consolas', monospace;
-    font-size: 14px;
+code, pre, kbd, samp, tt,
+.highlight {
+    font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-feature-settings: 'liga' 0;
 }
 
-code {
+/* Inline code — no border, soft chip */
+code.literal,
+:not(pre) > code {
+    font-size: 0.875em;
+    font-weight: 500;
+    background-color: var(--lenz-inline-bg);
     color: var(--lenz-text);
-    background-color: var(--lenz-code-bg);
-    border: 1px solid var(--lenz-border);
-    border-radius: 4px;
-    padding: 0.15em 0.35em;
+    border: 0;
+    border-radius: 5px;
+    padding: 0.1em 0.4em;
+    letter-spacing: -0.005em;
 }
 
+/* Code blocks — borderless, slightly off-bg */
 .highlight {
     background: var(--lenz-code-bg);
-    border: 1px solid var(--lenz-border);
-    border-radius: 8px;
-    padding: 1rem;
+    border: 0;
+    border-radius: 10px;
+    padding: 1rem 1rem;
     margin: 1rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* Override pygments.css's auto-generated `html[data-theme] .highlight`
+   background rules (specificity match required). */
+html[data-theme="light"] .highlight,
+html[data-theme="dark"] .highlight {
+    background: var(--lenz-code-bg);
 }
 
 .highlight pre {
     color: var(--lenz-text);
-    line-height: 1.65;
+    line-height: 1.6;
+    font-size: 0.875rem;
     background: transparent;
+    border: 0;
     padding: 0;
     margin: 0;
+    overflow: visible;
 }
 
 /* --------------------------------------------------------------------------
- * Syntax highlighting — Kimi / GitHub-style palette
+ * Syntax highlighting — light mode (GitHub-light inspired)
  * -------------------------------------------------------------------------- */
 
-/* Light mode (GitHub-light inspired) */
-.highlight .k,
-.highlight .kc,
-.highlight .kd,
-.highlight .kn,
-.highlight .kp,
-.highlight .kr,
-.highlight .kt { color: #cf222e; font-weight: 500; }
+.highlight .k, .highlight .kc, .highlight .kd, .highlight .kn,
+.highlight .kp, .highlight .kr, .highlight .kt { color: #cf222e; font-weight: 500; }
 
-.highlight .s,
-.highlight .s1,
-.highlight .s2,
-.highlight .sb,
-.highlight .sc,
-.highlight .sd,
-.highlight .se,
-.highlight .sh,
-.highlight .si,
-.highlight .sr,
-.highlight .sx,
-.highlight .ss { color: #0a3069; }
+.highlight .s, .highlight .s1, .highlight .s2, .highlight .sb,
+.highlight .sc, .highlight .sd, .highlight .se, .highlight .sh,
+.highlight .si, .highlight .sr, .highlight .sx, .highlight .ss { color: #0a3069; }
 
-.highlight .c,
-.highlight .c1,
-.highlight .cm,
-.highlight .cp,
-.highlight .cs { color: #6e7781; font-style: italic; }
+.highlight .c, .highlight .c1, .highlight .cm,
+.highlight .cp, .highlight .cs { color: #6e7781; font-style: italic; }
 
 .highlight .n  { color: var(--lenz-text); }
 .highlight .na { color: #1f2328; }
@@ -359,21 +405,17 @@ code {
 .highlight .ow { color: #cf222e; }
 .highlight .bp { color: #cf222e; }
 .highlight .fm { color: #8250df; }
-.highlight .vc { color: #1f2328; }
-.highlight .vg { color: #1f2328; }
-.highlight .vi { color: #1f2328; }
+.highlight .vc, .highlight .vg, .highlight .vi { color: #1f2328; }
 
-.highlight .m,
-.highlight .mb,
-.highlight .mf,
-.highlight .mh,
-.highlight .mi,
-.highlight .mo { color: #0550ae; }
+.highlight .m, .highlight .mb, .highlight .mf,
+.highlight .mh, .highlight .mi, .highlight .mo { color: #0550ae; }
 
-.highlight .o,
-.highlight .p  { color: #59636e; }
+.highlight .o, .highlight .p  { color: #59636e; }
 
-/* Dark mode (Kimi / GitHub-dark inspired) */
+/* --------------------------------------------------------------------------
+ * Syntax highlighting — dark mode (GitHub-dark inspired)
+ * -------------------------------------------------------------------------- */
+
 html[data-theme="dark"] .highlight .k,
 html[data-theme="dark"] .highlight .kc,
 html[data-theme="dark"] .highlight .kd,
@@ -416,8 +458,8 @@ html[data-theme="dark"] .highlight .nv { color: #e6edf3; }
 html[data-theme="dark"] .highlight .ow { color: #ff7b72; }
 html[data-theme="dark"] .highlight .bp { color: #ff7b72; }
 html[data-theme="dark"] .highlight .fm { color: #d2a8ff; }
-html[data-theme="dark"] .highlight .vc { color: #e6edf3; }
-html[data-theme="dark"] .highlight .vg { color: #e6edf3; }
+html[data-theme="dark"] .highlight .vc,
+html[data-theme="dark"] .highlight .vg,
 html[data-theme="dark"] .highlight .vi { color: #e6edf3; }
 
 html[data-theme="dark"] .highlight .m,
@@ -431,58 +473,395 @@ html[data-theme="dark"] .highlight .o,
 html[data-theme="dark"] .highlight .p  { color: #8b949e; }
 
 /* --------------------------------------------------------------------------
- * API / signatures
+ * API signatures — monospaced, left-rule, quiet
  * -------------------------------------------------------------------------- */
 
-.sig-name {
-    color: var(--lenz-accent);
+dl.py > dt,
+dl.c > dt,
+dl.cpp > dt,
+dl.js > dt,
+dt.sig {
+    font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.9rem;
+    background: transparent;
+    border: 0;
+    border-left: 2px solid var(--lenz-border-strong);
+    padding: 0.45rem 0 0.45rem 1rem;
+    margin: 1.75rem 0 0.5rem 0;
+    color: var(--lenz-text);
+    border-radius: 0;
+}
+
+.sig-prename, .sig-prename .pre {
+    color: var(--lenz-text-muted);
+    font-weight: 400;
+}
+
+.sig-name, .sig-name .pre {
+    color: var(--lenz-text);
     font-weight: 600;
 }
 
+.sig-param,
+.sig-param .n {
+    color: var(--lenz-text-soft);
+    font-style: normal;
+}
+
+.sig-param .default_value,
 .sig-param .o,
-.sig-param .default_value {
+.sig-return,
+.sig-return .pre {
     color: var(--lenz-text-muted);
+    font-weight: 400;
+}
+
+.sig-return-icon {
+    color: var(--lenz-text-faint);
+}
+
+dl.py dd, dl.c dd, dl.cpp dd, dl.js dd {
+    margin-left: 0;
+    padding: 0 0 0 1rem;
+    border: 0;
 }
 
 /* --------------------------------------------------------------------------
- * Sidebar
+ * Field lists (Returns, Raises, Parameters in autodoc)
  * -------------------------------------------------------------------------- */
 
+dl.field-list {
+    margin: 1rem 0;
+}
+
+dl.field-list > dt {
+    font-weight: 600;
+    color: var(--lenz-text);
+    background: transparent;
+    padding: 0.25rem 0.5rem 0.25rem 0;
+    text-transform: none;
+    font-size: 0.875rem;
+    border-radius: 0;
+}
+
+dl.field-list > dd {
+    padding-left: 1rem;
+    border-left: 0;
+    margin-bottom: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+ * Layout — narrower reading column
+ * -------------------------------------------------------------------------- */
+
+.bd-main .bd-content .bd-article-container {
+    max-width: 820px;
+}
+
+article.bd-article {
+    padding: 1rem 0 4rem 0;
+}
+
+/* --------------------------------------------------------------------------
+ * Header / navbar
+ * -------------------------------------------------------------------------- */
+
+.bd-header {
+    background: var(--lenz-bg) !important;
+    border-bottom: 1px solid var(--lenz-border);
+    box-shadow: none !important;
+}
+
+.bd-header .navbar-nav .nav-link {
+    color: var(--lenz-text-soft);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.bd-header .navbar-nav .nav-link:hover {
+    color: var(--lenz-text);
+}
+
+.bd-header .navbar-brand {
+    font-weight: 600;
+    color: var(--lenz-text);
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+}
+
+/* --------------------------------------------------------------------------
+ * Sidebar — borderless, quiet, 2px accent rule on active
+ * -------------------------------------------------------------------------- */
+
+.bd-sidebar {
+    display: block !important;
+    visibility: visible !important;
+    border-right: 1px solid var(--lenz-border) !important;
+    background: var(--lenz-bg);
+}
+
+.bd-sidebar-primary {
+    padding-top: 1.5rem;
+}
+
 .bd-sidebar .nav-link {
-    color: var(--lenz-text-muted);
+    color: var(--lenz-text-soft);
     border-left: 2px solid transparent;
-    border-radius: 0 4px 4px 0;
-    padding-left: 0.75rem;
+    border-radius: 0;
+    padding: 0.35rem 0.75rem;
     font-weight: 400;
-    transition: all 0.15s ease;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    background: transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .bd-sidebar .nav-link:hover {
     color: var(--lenz-text);
-    background-color: var(--lenz-surface-hover);
-    border-left-color: var(--lenz-border);
+    background-color: transparent;
+    border-left-color: var(--lenz-border-strong);
 }
 
 .bd-sidebar .nav-link.active {
     color: var(--lenz-accent);
-    background-color: var(--lenz-surface);
+    background-color: transparent;
     border-left-color: var(--lenz-accent);
     font-weight: 500;
 }
 
+.bd-sidebar .nav > li > a.reference {
+    color: var(--lenz-text);
+    font-weight: 500;
+}
+
+/* Hide noisy TOC headings */
+.bd-sidebar .nav > li > a.nav-link.toc-heading,
+.bd-sidebar-primary h3,
+nav.bd-links p.bd-links__title,
+nav.bd-links p.caption {
+    display: none;
+}
+
+/* Secondary (right) sidebar — page TOC */
+.bd-sidebar-secondary {
+    font-size: 0.8125rem;
+}
+
+.bd-sidebar-secondary .toc-h2 a,
+.bd-sidebar-secondary .toc-h3 a,
+.bd-sidebar-secondary .toc-h4 a,
+.bd-sidebar-secondary .nav-link,
+.toc-entry a.nav-link {
+    color: var(--lenz-text-muted);
+    text-decoration: none;
+    padding: 0.25rem 0 0.25rem 0.75rem;
+}
+
+.bd-sidebar-secondary a:hover {
+    color: var(--lenz-text);
+}
+
+.bd-sidebar-secondary .active > a,
+.toc-entry a.nav-link.active,
+.toc-entry a.nav-link[aria-current="true"] {
+    color: var(--lenz-accent);
+}
+
 /* --------------------------------------------------------------------------
- * Target / highlight states — override the ugly PyData default
+ * Admonitions — left-border only, no fill
+ * -------------------------------------------------------------------------- */
+
+.admonition,
+div.admonition {
+    margin: 1.5rem 0;
+    padding: 0.875rem 1.125rem;
+    border-radius: 0;
+    border: 0;
+    border-left: 3px solid var(--lenz-border-strong);
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--lenz-text);
+}
+
+.admonition > .admonition-title,
+div.admonition > .admonition-title {
+    margin: 0 0 0.5rem 0;
+    padding: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--lenz-text-muted);
+    background: transparent;
+    border: 0;
+}
+
+.admonition > .admonition-title::before,
+.admonition > .admonition-title::after,
+div.admonition > .admonition-title::before,
+div.admonition > .admonition-title::after {
+    display: none !important;
+}
+
+.admonition > p:not(.admonition-title),
+div.admonition > p:not(.admonition-title) {
+    margin: 0 0 0.5rem 0;
+    color: var(--lenz-text);
+}
+
+.admonition > p:not(.admonition-title):last-child,
+div.admonition > p:not(.admonition-title):last-child {
+    margin-bottom: 0;
+}
+
+.admonition.note, .admonition.tip, .admonition.hint,
+.admonition.seealso, .admonition.important,
+div.admonition.note, div.admonition.tip, div.admonition.hint,
+div.admonition.seealso, div.admonition.important {
+    border-left-color: var(--lenz-accent);
+}
+.admonition.note > .admonition-title,
+.admonition.tip > .admonition-title,
+.admonition.hint > .admonition-title,
+.admonition.seealso > .admonition-title,
+.admonition.important > .admonition-title,
+div.admonition.note > .admonition-title,
+div.admonition.tip > .admonition-title,
+div.admonition.hint > .admonition-title,
+div.admonition.seealso > .admonition-title,
+div.admonition.important > .admonition-title {
+    color: var(--lenz-accent);
+}
+
+.admonition.warning, .admonition.attention, .admonition.caution,
+div.admonition.warning, div.admonition.attention, div.admonition.caution {
+    border-left-color: var(--lenz-warn);
+}
+.admonition.warning > .admonition-title,
+.admonition.attention > .admonition-title,
+.admonition.caution > .admonition-title,
+div.admonition.warning > .admonition-title,
+div.admonition.attention > .admonition-title,
+div.admonition.caution > .admonition-title {
+    color: var(--lenz-warn);
+}
+
+.admonition.danger, .admonition.error,
+div.admonition.danger, div.admonition.error {
+    border-left-color: var(--lenz-bad);
+}
+.admonition.danger > .admonition-title,
+.admonition.error > .admonition-title,
+div.admonition.danger > .admonition-title,
+div.admonition.error > .admonition-title {
+    color: var(--lenz-bad);
+}
+
+/* --------------------------------------------------------------------------
+ * Tables — clean, sentence-case headers
+ * -------------------------------------------------------------------------- */
+
+table.docutils,
+table.table,
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+    border: 0;
+}
+
+table.docutils th, table.table th, table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--lenz-border-strong);
+    color: var(--lenz-text);
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.875rem;
+    background: transparent;
+}
+
+table.docutils td, table.table td, table td {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--lenz-border);
+    color: var(--lenz-text);
+}
+
+table.docutils tr:last-child td, table.table tr:last-child td {
+    border-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+ * Blockquotes, hr
+ * -------------------------------------------------------------------------- */
+
+blockquote {
+    margin: 1.5rem 0;
+    padding: 0.25rem 0 0.25rem 1rem;
+    border-left: 3px solid var(--lenz-border-strong);
+    color: var(--lenz-text-soft);
+    font-style: normal;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--lenz-border);
+    margin: 3rem 0;
+}
+
+/* --------------------------------------------------------------------------
+ * Target / highlight (anchored items)
  * -------------------------------------------------------------------------- */
 
 dt:target,
 span.highlighted,
 .viewcode-block:target,
 :target > :is(h1, h2, h3, h4, h5, h6) {
-    background-color: var(--lenz-surface-hover);
+    background-color: var(--lenz-accent-soft);
+    border-radius: 4px;
 }
 
 /* --------------------------------------------------------------------------
- * PyData theme semantic color overrides — strict, modern tech palette
+ * Headerlinks (¶) — invisible until hover
+ * -------------------------------------------------------------------------- */
+
+a.headerlink {
+    color: var(--lenz-text-faint);
+    text-decoration: none;
+    padding: 0 0.25rem;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    font-weight: 400;
+}
+
+h1:hover .headerlink,
+h2:hover .headerlink,
+h3:hover .headerlink,
+h4:hover .headerlink,
+dt:hover .headerlink {
+    opacity: 1;
+}
+
+a.headerlink:hover {
+    color: var(--lenz-accent);
+    background: transparent;
+    text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+ * Selection
+ * -------------------------------------------------------------------------- */
+
+::selection {
+    background: var(--lenz-accent-soft);
+    color: var(--lenz-text);
+}
+
+/* --------------------------------------------------------------------------
+ * PyData theme variable overrides
  * -------------------------------------------------------------------------- */
 
 html[data-theme="light"] {
@@ -504,15 +883,13 @@ html[data-theme="light"] {
     --pst-color-danger-bg: var(--lenz-bad-soft);
     --pst-color-text-base: var(--lenz-text);
     --pst-color-text-muted: var(--lenz-text-muted);
-    --pst-color-shadow: rgba(0, 0, 0, 0.08);
+    --pst-color-shadow: rgba(0, 0, 0, 0.04);
     --pst-color-border: var(--lenz-border);
-    --pst-color-border-muted: var(--lenz-border-muted);
-    --pst-color-blockquote-notch: var(--lenz-border);
+    --pst-color-border-muted: var(--lenz-border);
     --pst-color-inline-code: var(--lenz-text);
-    --pst-color-link-higher-contrast: var(--lenz-accent-dim);
-    --pst-color-target: var(--lenz-surface-hover);
+    --pst-color-target: var(--lenz-accent-soft);
     --pst-color-table: var(--lenz-text);
-    --pst-color-table-row-hover-bg: var(--lenz-surface-hover);
+    --pst-color-table-row-hover-bg: var(--lenz-surface);
     --pst-color-table-inner-border: var(--lenz-border);
     --pst-color-background: var(--lenz-bg);
     --pst-color-on-background: var(--lenz-bg);
@@ -522,16 +899,16 @@ html[data-theme="light"] {
     --pst-color-link: var(--lenz-accent);
     --pst-color-link-hover: var(--lenz-accent-dim);
     --pst-color-table-outer-border: var(--lenz-border);
-    --pst-color-table-heading-bg: var(--lenz-surface);
+    --pst-color-table-heading-bg: transparent;
     --pst-color-table-row-zebra-high-bg: var(--lenz-bg);
-    --pst-color-table-row-zebra-low-bg: var(--lenz-surface);
+    --pst-color-table-row-zebra-low-bg: var(--lenz-bg);
 }
 
 html[data-theme="dark"] {
     --pst-color-primary: var(--lenz-accent);
     --pst-color-primary-bg: var(--lenz-accent-soft);
     --pst-color-secondary: var(--lenz-text-muted);
-    --pst-color-secondary-bg: var(--lenz-surface-hover);
+    --pst-color-secondary-bg: var(--lenz-surface);
     --pst-color-accent: var(--lenz-accent);
     --pst-color-accent-bg: var(--lenz-accent-soft);
     --pst-color-info: var(--lenz-info);
@@ -546,15 +923,13 @@ html[data-theme="dark"] {
     --pst-color-danger-bg: var(--lenz-bad-soft);
     --pst-color-text-base: var(--lenz-text);
     --pst-color-text-muted: var(--lenz-text-muted);
-    --pst-color-shadow: rgba(0, 0, 0, 0.35);
+    --pst-color-shadow: rgba(0, 0, 0, 0.5);
     --pst-color-border: var(--lenz-border);
-    --pst-color-border-muted: var(--lenz-border-muted);
-    --pst-color-blockquote-notch: var(--lenz-border);
+    --pst-color-border-muted: var(--lenz-border);
     --pst-color-inline-code: var(--lenz-text);
-    --pst-color-link-higher-contrast: var(--lenz-accent);
-    --pst-color-target: var(--lenz-surface-hover);
+    --pst-color-target: var(--lenz-accent-soft);
     --pst-color-table: var(--lenz-text);
-    --pst-color-table-row-hover-bg: var(--lenz-surface-hover);
+    --pst-color-table-row-hover-bg: var(--lenz-surface);
     --pst-color-table-inner-border: var(--lenz-border);
     --pst-color-background: var(--lenz-bg);
     --pst-color-on-background: var(--lenz-surface);
@@ -564,145 +939,9 @@ html[data-theme="dark"] {
     --pst-color-link: var(--lenz-accent);
     --pst-color-link-hover: var(--lenz-accent-dim);
     --pst-color-table-outer-border: var(--lenz-border);
-    --pst-color-table-heading-bg: var(--lenz-surface);
-    --pst-color-table-row-zebra-high-bg: var(--lenz-surface-hover);
-    --pst-color-table-row-zebra-low-bg: var(--lenz-surface);
-}
-
-/* --------------------------------------------------------------------------
- * Hide noisy TOC headings
- * -------------------------------------------------------------------------- */
-
-.bd-sidebar .nav > li > a.nav-link.toc-heading,
-.bd-sidebar-primary h3,
-nav.bd-links p.bd-links__title,
-nav.bd-links p.caption {
-    display: none;
-}
-
-/* --------------------------------------------------------------------------
- * Tables
- * -------------------------------------------------------------------------- */
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 1.25rem 0;
-    font-size: 0.9rem;
-}
-
-th, td {
-    text-align: left;
-    padding: 0.75rem 0.5rem;
-    border-bottom: 1px solid var(--lenz-border);
-}
-
-th {
-    color: var(--lenz-text-muted);
-    font-weight: 500;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.03em;
-}
-
-td {
-    color: var(--lenz-text);
-}
-
-/* --------------------------------------------------------------------------
- * Misc
- * -------------------------------------------------------------------------- */
-
-em {
-    font-style: italic;
-}
-
-.bd-sidebar {
-    display: block !important;
-    visibility: visible !important;
-}
-
-/* --------------------------------------------------------------------------
- * Admonitions — clean, minimal, no icons
- * -------------------------------------------------------------------------- */
-
-.admonition {
-    margin: 1.25rem 0;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    border-left: 3px solid;
-    background-color: var(--lenz-surface);
-    border-color: var(--lenz-border);
-    box-shadow: none;
-}
-
-.admonition > .admonition-title {
-    margin: -0.75rem -1rem 0.5rem -1rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--lenz-text-muted);
-    background: transparent;
-    position: relative;
-}
-
-.admonition > .admonition-title::after {
-    display: none !important;
-}
-
-.admonition > p:not(.admonition-title) {
-    margin: 0;
-    color: var(--lenz-text);
-}
-
-.admonition.note,
-.admonition.tip,
-.admonition.hint {
-    background-color: var(--lenz-info-soft);
-    border-color: var(--lenz-info);
-}
-
-.admonition.note > .admonition-title,
-.admonition.tip > .admonition-title,
-.admonition.hint > .admonition-title {
-    color: var(--lenz-info);
-}
-
-.admonition.warning,
-.admonition.attention,
-.admonition.caution {
-    background-color: var(--lenz-warn-soft);
-    border-color: var(--lenz-warn);
-}
-
-.admonition.warning > .admonition-title,
-.admonition.attention > .admonition-title,
-.admonition.caution > .admonition-title {
-    color: var(--lenz-warn);
-}
-
-.admonition.danger,
-.admonition.error {
-    background-color: var(--lenz-bad-soft);
-    border-color: var(--lenz-bad);
-}
-
-.admonition.danger > .admonition-title,
-.admonition.error > .admonition-title {
-    color: var(--lenz-bad);
-}
-
-.admonition.important,
-.admonition.seealso {
-    background-color: var(--lenz-accent-soft);
-    border-color: var(--lenz-accent);
-}
-
-.admonition.important > .admonition-title,
-.admonition.seealso > .admonition-title {
-    color: var(--lenz-accent);
+    --pst-color-table-heading-bg: transparent;
+    --pst-color-table-row-zebra-high-bg: var(--lenz-bg);
+    --pst-color-table-row-zebra-low-bg: var(--lenz-bg);
 }
 """
     with open(os.path.join(static_dir, "custom.css"), "w") as f:
