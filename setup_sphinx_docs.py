@@ -93,6 +93,7 @@ extensions = [
 html_theme = 'pydata_sphinx_theme'
 html_static_path = ['_static']
 html_css_files = ['custom.css']
+html_js_files = ['custom.js']
 html_favicon = '_static/favicon.ico'
 
 # Set Pygments style for code highlighting
@@ -202,6 +203,18 @@ html[data-theme="dark"] {
     --lenz-warn-soft: #2a1f0c;
     --lenz-info: #38bdf8;
     --lenz-info-soft: #0c2433;
+}
+
+/* --------------------------------------------------------------------------
+ * Global — smooth scrolling for anchor links and programmatic scrolls
+ * -------------------------------------------------------------------------- */
+
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
 }
 
 /* --------------------------------------------------------------------------
@@ -852,6 +865,69 @@ a.headerlink:hover {
 }
 
 /* --------------------------------------------------------------------------
+ * Back-to-top button — bottom-right, soft pill, subtle shadow
+ * -------------------------------------------------------------------------- */
+
+#pst-back-to-top {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    top: auto;
+    left: auto;
+    transform: none;
+    z-index: 1080;
+
+    background-color: var(--lenz-bg);
+    color: var(--lenz-text-soft);
+    border: 1px solid var(--lenz-border-strong);
+    border-radius: 999px;
+    padding: 0.5rem 0.95rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: color 0.15s ease, border-color 0.15s ease,
+                box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+#pst-back-to-top:hover {
+    color: var(--lenz-accent);
+    border-color: var(--lenz-accent);
+    background-color: var(--lenz-bg);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+#pst-back-to-top:focus-visible {
+    outline: 2px solid var(--lenz-accent);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+#pst-back-to-top .svg-inline--fa,
+#pst-back-to-top .fa-arrow-up {
+    margin-right: 0.45em;
+    font-size: 0.85em;
+    vertical-align: -1px;
+}
+
+html[data-theme="dark"] #pst-back-to-top {
+    background-color: var(--lenz-surface);
+    color: var(--lenz-text-soft);
+    border-color: var(--lenz-border-strong);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] #pst-back-to-top:hover {
+    background-color: var(--lenz-surface);
+    color: var(--lenz-accent);
+    border-color: var(--lenz-accent);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* --------------------------------------------------------------------------
  * Selection
  * -------------------------------------------------------------------------- */
 
@@ -947,6 +1023,28 @@ html[data-theme="dark"] {
     with open(os.path.join(static_dir, "custom.css"), "w") as f:
         f.write(custom_css)
     print("Created/updated custom.css with PyData Sphinx Theme styles")
+
+    # Custom JS — smooth-scroll for the back-to-top button
+    custom_js = """(function () {
+    function bindBackToTop() {
+        var btn = document.getElementById('pst-back-to-top');
+        if (!btn) return;
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindBackToTop);
+    } else {
+        bindBackToTop();
+    }
+})();
+"""
+    with open(os.path.join(static_dir, "custom.js"), "w") as f:
+        f.write(custom_js)
+    print("Created/updated custom.js with smooth-scroll handler")
 
     # Copy favicon.ico to _static directory
     favicon_file = ["favicon.ico"]
