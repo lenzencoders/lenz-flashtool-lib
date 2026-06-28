@@ -27,24 +27,25 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=ce421a57" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=317ef3d1" />
   
   <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
 
     <script src="_static/documentation_options.js?v=8618f531"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'utils';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -53,14 +54,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
@@ -92,7 +97,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -373,6 +378,7 @@
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
+
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
@@ -466,281 +472,396 @@
 </dl>
 <dl class="py class">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lenz_flashtool.utils.</span></span><span class="sig-name descname"><span class="pre">TermColors</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lenz_flashtool.utils.</span></span><span class="sig-name descname"><span class="pre">TermColors</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BOLD">
-<span class="sig-name descname"><span class="pre">BOLD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[1m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BOLD" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BOLD</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[1m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BOLD" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundBlack">
-<span class="sig-name descname"><span class="pre">BackgroundBlack</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[40m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundBlack" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundBlack</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[40m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundBlack" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundBlue">
-<span class="sig-name descname"><span class="pre">BackgroundBlue</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[44m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundBlue" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundBlue</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[44m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundBlue" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundCyan">
-<span class="sig-name descname"><span class="pre">BackgroundCyan</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[46m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundCyan" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundCyan</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[46m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundCyan" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundDarkGray">
-<span class="sig-name descname"><span class="pre">BackgroundDarkGray</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[100m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundDarkGray" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundDarkGray</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[100m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundDarkGray" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundDefault">
-<span class="sig-name descname"><span class="pre">BackgroundDefault</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[49m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundDefault" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundDefault</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[49m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundDefault" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundGreen">
-<span class="sig-name descname"><span class="pre">BackgroundGreen</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[42m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundGreen" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundGreen</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[42m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundGreen" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundLightBlue">
-<span class="sig-name descname"><span class="pre">BackgroundLightBlue</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[104m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightBlue" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundLightBlue</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[104m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightBlue" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundLightCyan">
-<span class="sig-name descname"><span class="pre">BackgroundLightCyan</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[106m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightCyan" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundLightCyan</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[106m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightCyan" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundLightGray">
-<span class="sig-name descname"><span class="pre">BackgroundLightGray</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[47m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightGray" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundLightGray</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[47m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightGray" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundLightGreen">
-<span class="sig-name descname"><span class="pre">BackgroundLightGreen</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[102m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightGreen" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundLightGreen</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[102m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightGreen" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundLightMagenta">
-<span class="sig-name descname"><span class="pre">BackgroundLightMagenta</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[105m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightMagenta" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundLightMagenta</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[105m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightMagenta" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundLightRed">
-<span class="sig-name descname"><span class="pre">BackgroundLightRed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[101m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightRed" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundLightRed</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[101m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightRed" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundLightYellow">
-<span class="sig-name descname"><span class="pre">BackgroundLightYellow</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[103m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightYellow" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundLightYellow</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[103m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundLightYellow" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundMagenta">
-<span class="sig-name descname"><span class="pre">BackgroundMagenta</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[45m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundMagenta" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundMagenta</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[45m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundMagenta" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundRed">
-<span class="sig-name descname"><span class="pre">BackgroundRed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[41m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundRed" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundRed</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[41m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundRed" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundWhite">
-<span class="sig-name descname"><span class="pre">BackgroundWhite</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[107m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundWhite" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundWhite</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[107m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundWhite" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.BackgroundYellow">
-<span class="sig-name descname"><span class="pre">BackgroundYellow</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[43m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundYellow" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BackgroundYellow</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[43m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.BackgroundYellow" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Black">
-<span class="sig-name descname"><span class="pre">Black</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[30m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Black" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Black</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[30m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Black" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Blink">
-<span class="sig-name descname"><span class="pre">Blink</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[5m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Blink" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Blink</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[5m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Blink" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Blue">
-<span class="sig-name descname"><span class="pre">Blue</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[34m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Blue" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Blue</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[34m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Blue" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Bold">
-<span class="sig-name descname"><span class="pre">Bold</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[1m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Bold" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Bold</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[1m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Bold" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Cyan">
-<span class="sig-name descname"><span class="pre">Cyan</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[36m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Cyan" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Cyan</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[36m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Cyan" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.DarkGray">
-<span class="sig-name descname"><span class="pre">DarkGray</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[90m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.DarkGray" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">DarkGray</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[90m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.DarkGray" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Default">
-<span class="sig-name descname"><span class="pre">Default</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[39m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Default" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Default</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[39m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Default" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Dim">
-<span class="sig-name descname"><span class="pre">Dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[2m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Dim" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Dim</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[2m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Dim" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.ENDC">
-<span class="sig-name descname"><span class="pre">ENDC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[0m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ENDC" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">ENDC</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[0m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ENDC" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.FAIL">
-<span class="sig-name descname"><span class="pre">FAIL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[91m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.FAIL" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">FAIL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[91m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.FAIL" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.GRAY">
-<span class="sig-name descname"><span class="pre">GRAY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[90m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.GRAY" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">GRAY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[90m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.GRAY" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Green">
-<span class="sig-name descname"><span class="pre">Green</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[32m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Green" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Green</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[32m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Green" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.HEADER">
-<span class="sig-name descname"><span class="pre">HEADER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[95m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.HEADER" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">HEADER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[95m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.HEADER" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Hidden">
-<span class="sig-name descname"><span class="pre">Hidden</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[8m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Hidden" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Hidden</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[8m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Hidden" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.LightBlue">
-<span class="sig-name descname"><span class="pre">LightBlue</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[94m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightBlue" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">LightBlue</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[94m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightBlue" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.LightCyan">
-<span class="sig-name descname"><span class="pre">LightCyan</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[96m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightCyan" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">LightCyan</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[96m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightCyan" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.LightGray">
-<span class="sig-name descname"><span class="pre">LightGray</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[37m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightGray" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">LightGray</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[37m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightGray" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.LightGreen">
-<span class="sig-name descname"><span class="pre">LightGreen</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[92m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightGreen" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">LightGreen</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[92m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightGreen" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.LightMagenta">
-<span class="sig-name descname"><span class="pre">LightMagenta</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[95m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightMagenta" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">LightMagenta</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[95m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightMagenta" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.LightRed">
-<span class="sig-name descname"><span class="pre">LightRed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[91m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightRed" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">LightRed</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[91m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightRed" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.LightYellow">
-<span class="sig-name descname"><span class="pre">LightYellow</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[93m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightYellow" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">LightYellow</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[93m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.LightYellow" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Magenta">
-<span class="sig-name descname"><span class="pre">Magenta</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[35m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Magenta" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Magenta</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[35m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Magenta" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.OKBLUE">
-<span class="sig-name descname"><span class="pre">OKBLUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[94m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.OKBLUE" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">OKBLUE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[94m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.OKBLUE" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.OKGREEN">
-<span class="sig-name descname"><span class="pre">OKGREEN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[92m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.OKGREEN" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">OKGREEN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[92m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.OKGREEN" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelAquamarine">
+<span class="sig-name descname"><span class="pre">PastelAquamarine</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;116m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelAquamarine" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelBabyBlue">
+<span class="sig-name descname"><span class="pre">PastelBabyBlue</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;153m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelBabyBlue" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelBlush">
+<span class="sig-name descname"><span class="pre">PastelBlush</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;224m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelBlush" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelButtercup">
+<span class="sig-name descname"><span class="pre">PastelButtercup</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;222m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelButtercup" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelCoral">
+<span class="sig-name descname"><span class="pre">PastelCoral</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;216m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelCoral" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelDarkGray">
+<span class="sig-name descname"><span class="pre">PastelDarkGray</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;245m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelDarkGray" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelDustyPink">
+<span class="sig-name descname"><span class="pre">PastelDustyPink</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;181m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelDustyPink" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelDustyRose">
+<span class="sig-name descname"><span class="pre">PastelDustyRose</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;137m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelDustyRose" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelGray">
+<span class="sig-name descname"><span class="pre">PastelGray</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;253m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelGray" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelKhaki">
+<span class="sig-name descname"><span class="pre">PastelKhaki</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;186m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelKhaki" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelLavender">
+<span class="sig-name descname"><span class="pre">PastelLavender</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;139m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelLavender" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelLemon">
+<span class="sig-name descname"><span class="pre">PastelLemon</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;229m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelLemon" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelOrange">
+<span class="sig-name descname"><span class="pre">PastelOrange</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;208m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelOrange" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelOrchid">
+<span class="sig-name descname"><span class="pre">PastelOrchid</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;182m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelOrchid" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelPeriwinkle">
+<span class="sig-name descname"><span class="pre">PastelPeriwinkle</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;146m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelPeriwinkle" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelPink">
+<span class="sig-name descname"><span class="pre">PastelPink</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;174m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelPink" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelPowderBlue">
+<span class="sig-name descname"><span class="pre">PastelPowderBlue</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;152m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelPowderBlue" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelRose">
+<span class="sig-name descname"><span class="pre">PastelRose</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;217m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelRose" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelSage">
+<span class="sig-name descname"><span class="pre">PastelSage</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;150m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelSage" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelSalmon">
+<span class="sig-name descname"><span class="pre">PastelSalmon</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;210m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelSalmon" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelSand">
+<span class="sig-name descname"><span class="pre">PastelSand</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;179m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelSand" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelSeafoam">
+<span class="sig-name descname"><span class="pre">PastelSeafoam</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;114m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelSeafoam" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.PastelSilver">
+<span class="sig-name descname"><span class="pre">PastelSilver</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[38;5;188m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.PastelSilver" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Red">
-<span class="sig-name descname"><span class="pre">Red</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[31m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Red" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Red</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[31m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Red" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.ResetBlink">
-<span class="sig-name descname"><span class="pre">ResetBlink</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[25m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetBlink" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">ResetBlink</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[25m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetBlink" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.ResetBold">
-<span class="sig-name descname"><span class="pre">ResetBold</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[21m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetBold" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">ResetBold</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[21m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetBold" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.ResetDim">
-<span class="sig-name descname"><span class="pre">ResetDim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[22m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetDim" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">ResetDim</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[22m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetDim" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.ResetHidden">
-<span class="sig-name descname"><span class="pre">ResetHidden</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[28m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetHidden" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">ResetHidden</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[28m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetHidden" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.ResetReverse">
-<span class="sig-name descname"><span class="pre">ResetReverse</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[27m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetReverse" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">ResetReverse</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[27m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetReverse" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.ResetUnderlined">
-<span class="sig-name descname"><span class="pre">ResetUnderlined</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[24m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetUnderlined" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">ResetUnderlined</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[24m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.ResetUnderlined" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Reverse">
-<span class="sig-name descname"><span class="pre">Reverse</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[7m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Reverse" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Reverse</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[7m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Reverse" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.UNDERLINE">
-<span class="sig-name descname"><span class="pre">UNDERLINE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[4m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.UNDERLINE" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">UNDERLINE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[4m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.UNDERLINE" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Underlined">
-<span class="sig-name descname"><span class="pre">Underlined</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[4m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Underlined" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Underlined</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[4m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Underlined" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.WARNING">
-<span class="sig-name descname"><span class="pre">WARNING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[93m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.WARNING" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">WARNING</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[93m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.WARNING" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.White">
-<span class="sig-name descname"><span class="pre">White</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[97m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.White" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">White</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[97m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.White" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lenz_flashtool.utils.TermColors.Yellow">
-<span class="sig-name descname"><span class="pre">Yellow</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[33m'</span></em><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Yellow" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">Yellow</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[33m'</span></span><a class="headerlink" href="#lenz_flashtool.utils.TermColors.Yellow" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -774,16 +895,16 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span>) – Input data to visualize (list or numpy array of numerical values)</p></li>
-<li><p><strong>filename</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Name for the output file (including extension). If None, plot won’t be saved.</p></li>
-<li><p><strong>directory</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Target directory for saving. If None, uses current working directory.</p></li>
+<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Input data to visualize (list or numpy array of numerical values)</p></li>
+<li><p><strong>filename</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Name for the output file (including extension). If None, plot won’t be saved.</p></li>
+<li><p><strong>directory</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Target directory for saving. If None, uses current working directory.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Displays interactive plot and optionally saves to file.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -800,10 +921,10 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span>) – First dataset (list or numpy array)</p></li>
-<li><p><strong>b</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span>) – Second dataset (list or numpy array)</p></li>
-<li><p><strong>filename</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Output filename (including extension). None prevents saving.</p></li>
-<li><p><strong>directory</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Target directory. None uses current directory.</p></li>
+<li><p><strong>a</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – First dataset (list or numpy array)</p></li>
+<li><p><strong>b</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Second dataset (list or numpy array)</p></li>
+<li><p><strong>filename</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Output filename (including extension). None prevents saving.</p></li>
+<li><p><strong>directory</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Target directory. None uses current directory.</p></li>
 <li><p><strong>label1</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Legend label for first dataset</p></li>
 <li><p><strong>label2</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Legend label for second dataset</p></li>
 </ul>
@@ -812,7 +933,7 @@
 <dd class="field-even"><p>Displays interactive comparison plot</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -864,8 +985,8 @@
     class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> On this page
   </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors"><code class="docutils literal notranslate"><span class="pre">TermColors</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.BOLD"><code class="docutils literal notranslate"><span class="pre">TermColors.BOLD</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.BackgroundBlack"><code class="docutils literal notranslate"><span class="pre">TermColors.BackgroundBlack</span></code></a></li>
@@ -909,6 +1030,29 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.Magenta"><code class="docutils literal notranslate"><span class="pre">TermColors.Magenta</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.OKBLUE"><code class="docutils literal notranslate"><span class="pre">TermColors.OKBLUE</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.OKGREEN"><code class="docutils literal notranslate"><span class="pre">TermColors.OKGREEN</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelAquamarine"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelAquamarine</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelBabyBlue"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelBabyBlue</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelBlush"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelBlush</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelButtercup"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelButtercup</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelCoral"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelCoral</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelDarkGray"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelDarkGray</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelDustyPink"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelDustyPink</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelDustyRose"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelDustyRose</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelGray"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelGray</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelKhaki"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelKhaki</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelLavender"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelLavender</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelLemon"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelLemon</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelOrange"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelOrange</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelOrchid"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelOrchid</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelPeriwinkle"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelPeriwinkle</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelPink"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelPink</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelPowderBlue"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelPowderBlue</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelRose"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelRose</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelSage"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelSage</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelSalmon"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelSalmon</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelSand"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelSand</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelSeafoam"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelSeafoam</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.PastelSilver"><code class="docutils literal notranslate"><span class="pre">TermColors.PastelSilver</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.Red"><code class="docutils literal notranslate"><span class="pre">TermColors.Red</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.ResetBlink"><code class="docutils literal notranslate"><span class="pre">TermColors.ResetBlink</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.utils.TermColors.ResetBold"><code class="docutils literal notranslate"><span class="pre">TermColors.ResetBold</span></code></a></li>
@@ -931,13 +1075,13 @@
   </nav></div>
 
   <div class="sidebar-secondary-item">
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/utils.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div></div>
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/utils.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
 
 </div></div>
               
@@ -952,8 +1096,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -964,7 +1108,7 @@
 
   <p class="copyright">
     
-      © Copyright 2025, LENZ Encoders.
+      © Copyright 2026, LENZ Encoders.
       <br/>
     
   </p>
@@ -973,7 +1117,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     <br/>
   </p>
 </div>
@@ -987,7 +1131,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
 </p></div>
       
     </div>

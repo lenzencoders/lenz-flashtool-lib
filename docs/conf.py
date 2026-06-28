@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'lenz-flashtool'
-copyright = '2025, LENZ Encoders'
+copyright = '2026, LENZ Encoders'
 author = 'LENZ Encoders'
 release = '0.1.9'
 

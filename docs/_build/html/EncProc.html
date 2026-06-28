@@ -27,24 +27,25 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=ce421a57" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=317ef3d1" />
   
   <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
 
     <script src="_static/documentation_options.js?v=8618f531"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'EncProc';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -53,14 +54,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
@@ -92,7 +97,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -373,6 +378,7 @@
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
+
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
@@ -487,18 +493,18 @@ for motor-driven systems but requires a valid <cite>motor_harm</cite> value.</p>
 </dl>
 <dl class="py class">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lenz_flashtool.encproc.</span></span><span class="sig-name descname"><span class="pre">LenzEncoderProcessor</span></span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lenz_flashtool.encproc.</span></span><span class="sig-name descname"><span class="pre">LenzEncoderProcessor</span></span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Main class for LENZ encoder signal processing operations.</p>
 <p>Provides static methods for differential signal calculation, compensation table generation,
 harmonic analysis, and calibration routines for LENZ encoders.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.analyze_harmonics">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">analyze_harmonics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff_table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.analyze_harmonics" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">analyze_harmonics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff_table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.analyze_harmonics" title="Link to this definition">#</a></dt>
 <dd><p>Analyzes frequency components of the difference table using FFT.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>diff_table</strong> (<em>np.array</em>) – Difference table array.</p>
+<dd class="field-odd"><p><strong>diff_table</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Difference table array.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
@@ -509,34 +515,34 @@ harmonic analysis, and calibration routines for LENZ encoders.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tuple containing</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.as_filt">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">as_filt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.as_filt" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">as_filt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.as_filt" title="Link to this definition">#</a></dt>
 <dd><p>Applies a custom filter to smooth the data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.array</em>) – Input data to filter.</p></li>
-<li><p><strong>depth</strong> (<em>int</em>) – Filter depth parameter</p></li>
+<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Input data to filter.</p></li>
+<li><p><strong>depth</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Filter depth parameter</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Filtered data</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.array</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.calc_diff">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">calc_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.calc_diff" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">calc_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.calc_diff" title="Link to this definition">#</a></dt>
 <dd><p>Computes the differential signal between two encoder readings with scaling.</p>
 <p>This function calculates the difference between two encoder signals, applies mean centering,
 and scales the result according to the coarse reduction factor. The output represents
@@ -560,24 +566,24 @@ the relative error between the two encoders, normalized.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.clip_to_int8">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clip_to_int8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.clip_to_int8" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">clip_to_int8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.clip_to_int8" title="Link to this definition">#</a></dt>
 <dd><p>Clips and converts data to 8-bit integers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>np.array</em>) – Input data.</p>
+<dd class="field-odd"><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Input data.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Clipped and converted data.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.array</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.comp_diff">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">comp_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff_table_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.comp_diff" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">comp_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff_table_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.comp_diff" title="Link to this definition">#</a></dt>
 <dd><p>Compensates encoder data using a difference table for error correction.</p>
 <p>This function applies a compensation table to raw encoder data to correct
 systematic errors, using linear interpolation between table entries.</p>
@@ -593,14 +599,14 @@ systematic errors, using linear interpolation between table entries.</p>
 <dd class="field-even"><p>Compensated encoder data (24-bit values as int32)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.compute_difftable">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_difftable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lenz_fix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.compute_difftable" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">compute_difftable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lenz_fix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.compute_difftable" title="Link to this definition">#</a></dt>
 <dd><p>Computes a difference compensation table by averaging error values at each encoder position.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -618,14 +624,14 @@ systematic errors, using linear interpolation between table entries.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.diff_gen">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">diff_gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enc_filt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_gen" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">diff_gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enc_filt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_gen" title="Link to this definition">#</a></dt>
 <dd><p>Generates difference signal between filtered and raw encoder data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -639,14 +645,14 @@ systematic errors, using linear interpolation between table entries.</p>
 <dd class="field-even"><p>Difference signal (double)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">diff_table_gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_fix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">diff_table_gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_fix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen" title="Link to this definition">#</a></dt>
 <dd><p>Generates a difference compensation table from error measurements.</p>
 <p>The table is created by averaging error measurements at each position,
 then applying FFT-based filtering to remove noise.</p>
@@ -662,14 +668,14 @@ then applying FFT-based filtering to remove noise.</p>
 <dd class="field-even"><p>Generated difference table (int16 values)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen_motor_harm">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">diff_table_gen_motor_harm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_fix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">motor_harm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen_motor_harm" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">diff_table_gen_motor_harm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_fix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">motor_harm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.diff_table_gen_motor_harm" title="Link to this definition">#</a></dt>
 <dd><p>Generates difference table with additional motor harmonic suppression.</p>
 <p>Similar to DifTableGen but specifically removes motor-related harmonics
 from the compensation table.</p>
@@ -686,14 +692,14 @@ from the compensation table.</p>
 <dd class="field-even"><p>Generated difference table with motor harmonics removed (int16)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.ext_gen">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ext_gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_in</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.ext_gen" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ext_gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_in</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.ext_gen" title="Link to this definition">#</a></dt>
 <dd><p>Extends 24-bit encoder data to 32-bit by handling overflow correctly.</p>
 <p>This function processes raw 24-bit encoder data by maintaining proper sign extension
 when converting to 32-bit values, ensuring correct handling of overflow cases.</p>
@@ -705,34 +711,34 @@ when converting to 32-bit values, ensuring correct handling of overflow cases.</
 <dd class="field-even"><p>Array of extended 32-bit encoder values with proper overflow handling</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.extrapolate">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extrapolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.extrapolate" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">extrapolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.extrapolate" title="Link to this definition">#</a></dt>
 <dd><p>Extrapolates data to handle discontinuities or wrap-around effects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.array</em>) – Input data to extrapolate.</p></li>
-<li><p><strong>res</strong> (<em>int</em>) – Bit resolution for extrapolation.</p></li>
+<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – Input data to extrapolate.</p></li>
+<li><p><strong>res</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Bit resolution for extrapolation.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Extrapolated data.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.array</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.filt_enc">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">filt_enc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.filt_enc" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">filt_enc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.filt_enc" title="Link to this definition">#</a></dt>
 <dd><p>Applies a bidirectional moving average filter to encoder data.</p>
 <p>The filter processes data both forwards and backwards to minimize phase distortion,
 then averages both results for the final output.</p>
@@ -747,14 +753,14 @@ then averages both results for the final output.</p>
 <dd class="field-even"><p>Filtered encoder data (int32 values)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lenz_cal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">lenz_cal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal" title="Link to this definition">#</a></dt>
 <dd><p>Main calibration routine for LENZ encoder compensation.</p>
 <p>Performs a two-stage calibration process to generate a final compensation table.</p>
 <dl class="field-list simple">
@@ -768,14 +774,14 @@ then averages both results for the final output.</p>
 <dd class="field-even"><p>Final compensation table (int8 values)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal_motor_harm">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lenz_cal_motor_harm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">motor_harm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal_motor_harm" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">lenz_cal_motor_harm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coarse_red</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">motor_harm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lenz_flashtool.encproc.LenzEncoderProcessor.lenz_cal_motor_harm" title="Link to this definition">#</a></dt>
 <dd><p>LENZ encoder calibration with additional motor harmonic suppression.</p>
 <p>Similar to lenz_cal method but includes motor harmonic removal in the compensation table.</p>
 <dl class="field-list simple">
@@ -790,7 +796,7 @@ then averages both results for the final output.</p>
 <dd class="field-even"><p>Final compensation table with motor harmonics removed (int8)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -844,8 +850,8 @@ then averages both results for the final output.</p>
     class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> On this page
   </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.analyze_harmonics"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.analyze_harmonics()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lenz_flashtool.encproc.LenzEncoderProcessor.as_filt"><code class="docutils literal notranslate"><span class="pre">LenzEncoderProcessor.as_filt()</span></code></a></li>
@@ -867,13 +873,13 @@ then averages both results for the final output.</p>
   </nav></div>
 
   <div class="sidebar-secondary-item">
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/EncProc.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div></div>
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/EncProc.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
 
 </div></div>
               
@@ -888,8 +894,8 @@ then averages both results for the final output.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -900,7 +906,7 @@ then averages both results for the final output.</p>
 
   <p class="copyright">
     
-      © Copyright 2025, LENZ Encoders.
+      © Copyright 2026, LENZ Encoders.
       <br/>
     
   </p>
@@ -909,7 +915,7 @@ then averages both results for the final output.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     <br/>
   </p>
 </div>
@@ -923,7 +929,7 @@ then averages both results for the final output.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
 </p></div>
       
     </div>

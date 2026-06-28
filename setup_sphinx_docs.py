@@ -96,7 +96,7 @@ html_css_files = ['custom.css']
 html_favicon = '_static/favicon.ico'
 
 # Set Pygments style for code highlighting
-pygments_style = 'monokai'
+pygments_style = 'default'
 pygments_dark_style = 'monokai'
 
 # Theme customization
@@ -133,144 +133,577 @@ html_sidebars = {{
 
     custom_css = """
 /* docs/_static/custom.css */
-/* Add gradient to headers */
-h1, h2, h3 {
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-image: linear-gradient(90deg, #6c034e, #3f90c9); /* Purple to blue gradient */
-    display: inline-block; /* Needed for gradient to work properly */
+/* LENZ Encoders — strict, modern tech documentation palette */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@font-face {
+    font-family: 'Inconsolata LGC';
+    src: local('Inconsolata LGC'), local('InconsolataLGC');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
 }
 
-/* Dark mode gradient */
-html[data-theme="dark"] h1,
-html[data-theme="dark"] h2,
-html[data-theme="dark"] h3 {
-    # background-image: linear-gradient(90deg, #4cb5ff, #912583); /* Blue to purple gradient */
-    # background-image: linear-gradient(102deg, #e5b6ff -1%, #8e9fef 99%);
-    background-image: linear-gradient(98deg, #2aa2c1, #aebcff);
-
+@font-face {
+    font-family: 'Inconsolata LGC';
+    src: local('Inconsolata LGC Bold'), local('InconsolataLGC-Bold');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
 }
 
-/* Fallback for browsers that don't support gradient text */
-@supports not (-webkit-background-clip: text) {
-    h1, h2, h3 {
-        color: #6c034e; /* Fallback to primary color */
-    }
-    html[data-theme="dark"] h1,
-    html[data-theme="dark"] h2,
-    html[data-theme="dark"] h3 {
-        color: #4cb5ff; /* Fallback for dark mode */
-    }
+@font-face {
+    font-family: 'Inconsolata LGC';
+    src: local('Inconsolata LGC Italic'), local('InconsolataLGC-Italic');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
 }
 
-html[data-theme="light"] {
-    --pst-color-primary: #6c034e;
+/* --------------------------------------------------------------------------
+ * LENZ design tokens
+ * -------------------------------------------------------------------------- */
+
+:root {
+    --lenz-bg: #ffffff;
+    --lenz-surface: #f7f8fa;
+    --lenz-surface-hover: #eff1f4;
+    --lenz-text: #111418;
+    --lenz-text-muted: #5c6370;
+    --lenz-accent: #2563eb;
+    --lenz-accent-dim: #1d4ed8;
+    --lenz-accent-soft: #dbeafe;
+    --lenz-border: #e1e4e8;
+    --lenz-border-muted: #f0f1f4;
+    --lenz-good: #16a34a;
+    --lenz-good-soft: #dcfce7;
+    --lenz-bad: #dc2626;
+    --lenz-bad-soft: #fee2e2;
+    --lenz-warn: #d97706;
+    --lenz-warn-soft: #fef3c7;
+    --lenz-info: #0284c7;
+    --lenz-info-soft: #e0f2fe;
+    --lenz-code-bg: #f6f8fa;
 }
 
 html[data-theme="dark"] {
-    --pst-color-primary: #4cb5ff;
+    --lenz-bg: #0a0b0d;
+    --lenz-surface: #13151a;
+    --lenz-surface-hover: #1a1c23;
+    --lenz-text: #f0f1f4;
+    --lenz-text-muted: #8a919c;
+    --lenz-accent: #60a5fa;
+    --lenz-accent-dim: #3b82f6;
+    --lenz-accent-soft: #1e3a8a;
+    --lenz-border: #252a33;
+    --lenz-border-muted: #1a1c23;
+    --lenz-good: #34d399;
+    --lenz-good-soft: #064e3b;
+    --lenz-bad: #f87171;
+    --lenz-bad-soft: #450a0a;
+    --lenz-warn: #fbbf24;
+    --lenz-warn-soft: #451a03;
+    --lenz-info: #38bdf8;
+    --lenz-info-soft: #0c4a6e;
+    --lenz-code-bg: #0d0d0f;
 }
 
-/* Style for code blocks to make them stand out */
-.highlight {
-    background: #f8f8f8; /* Light gray background */
-    padding: 10px;
-    margin: 10px 0;
-    font-family: 'Fira Code', 'Consolas', monospace; /* Modern monospace font */
+/* --------------------------------------------------------------------------
+ * Typography
+ * -------------------------------------------------------------------------- */
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.65;
+    font-size: 16px;
+    color: var(--lenz-text);
+    background-color: var(--lenz-bg);
 }
 
-.sig-name {
-    color: #912583;
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--lenz-text);
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: unset;
+    display: block;
 }
 
-html[data-theme="dark"] dt:target, span.highlighted {
-    background-color: #2d2337;
+h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
 }
 
-html[data-theme="dark"] .highlight {
-    background: #14181e; /* Dark background for dark mode */
+h2 {
+    font-size: 1.4rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--lenz-border);
 }
 
-/* Ensure code text is readable */
-.highlight pre {
-    color: #333333; /* Dark text for light mode */
-    line-height: 1.5;
+h3 {
+    font-size: 1.1rem;
+    margin-top: 1.75rem;
+    margin-bottom: 0.75rem;
+    color: var(--lenz-text);
 }
 
-html[data-theme="dark"] .highlight pre {
-    color: #f8f8f8; /* Light text for dark mode */
+p {
+    color: var(--lenz-text-muted);
+    margin-bottom: 1rem;
 }
 
-/* Accent specific Pygments classes for keywords, strings, etc. */
-.highlight .k { color: #D81B60; font-weight: bold; } /* Keywords (e.g., def, class) */
-.highlight .s { color: #43A047; } /* Strings */
-.highlight .c { color: #757575; font-style: italic; } /* Comments */
-.highlight .n { color: #0277BD; } /* Names (e.g., variables) */
-
-html[data-theme="dark"] .highlight .k { color: #F06292; } /* Keywords in dark mode */
-html[data-theme="dark"] .highlight .s { color: #66BB6A; } /* Strings in dark mode */
-html[data-theme="dark"] .highlight .c { color: #B0BEC5; } /* Comments in dark mode */
-html[data-theme="dark"] .highlight .n { color: #4FC3F7; } /* Names in dark mode */
+p strong {
+    color: var(--lenz-text);
+}
 
 a {
-    transition: color 0.3s ease;
-    color: #3f90c9;
+    color: var(--lenz-accent);
+    text-decoration: none;
+    transition: color 0.15s ease;
 }
-a>code {
-    color: #3f90c9;
-}
+
 a:hover {
-    color: #FFA726; /* Warm orange on hover */
-    text-decoration: underline; /* Standard underline */
+    color: var(--lenz-accent-dim);
+    text-decoration: underline;
 }
 
-/* Sidebar link styles */
-.bd-sidebar .nav-depth-0 .nav-item .nav-link {
-    font-weight: bold;
-    color: #37474F; /* Dark slate gray for light mode */
-    border-left: 4px solid #00b0ff; /* Blue sidebar highlight */
+a > code {
+    color: inherit;
 }
 
-html[data-theme="dark"] .bd-sidebar .nav-depth-0 .nav-item .nav-link {
-    color: #CFD8DC; /* Soft off-white for dark mode */
-    border-left: 4px solid #4fc3f7; /* Light blue for dark mode */
+/* --------------------------------------------------------------------------
+ * Code
+ * -------------------------------------------------------------------------- */
+
+code, pre, .highlight {
+    font-family: 'JetBrains Mono', 'Inconsolata LGC', 'Inconsolata', 'Fira Code', 'Consolas', monospace;
+    font-size: 14px;
 }
 
-.bd-sidebar .nav-depth-0 .nav-item .nav-link:hover {
-    color: #FFA726; /* Warm orange on hover */
+code {
+    color: var(--lenz-text);
+    background-color: var(--lenz-code-bg);
+    border: 1px solid var(--lenz-border);
+    border-radius: 4px;
+    padding: 0.15em 0.35em;
 }
 
-/* Ensure sidebar visibility */
+.highlight {
+    background: var(--lenz-code-bg);
+    border: 1px solid var(--lenz-border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.highlight pre {
+    color: var(--lenz-text);
+    line-height: 1.65;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+ * Syntax highlighting — Kimi / GitHub-style palette
+ * -------------------------------------------------------------------------- */
+
+/* Light mode (GitHub-light inspired) */
+.highlight .k,
+.highlight .kc,
+.highlight .kd,
+.highlight .kn,
+.highlight .kp,
+.highlight .kr,
+.highlight .kt { color: #cf222e; font-weight: 500; }
+
+.highlight .s,
+.highlight .s1,
+.highlight .s2,
+.highlight .sb,
+.highlight .sc,
+.highlight .sd,
+.highlight .se,
+.highlight .sh,
+.highlight .si,
+.highlight .sr,
+.highlight .sx,
+.highlight .ss { color: #0a3069; }
+
+.highlight .c,
+.highlight .c1,
+.highlight .cm,
+.highlight .cp,
+.highlight .cs { color: #6e7781; font-style: italic; }
+
+.highlight .n  { color: var(--lenz-text); }
+.highlight .na { color: #1f2328; }
+.highlight .nb { color: #cf222e; }
+.highlight .nc { color: #953800; }
+.highlight .nd { color: #8250df; }
+.highlight .ne { color: #953800; }
+.highlight .nf { color: #8250df; }
+.highlight .ni { color: #1f2328; }
+.highlight .nn { color: #953800; }
+.highlight .no { color: #953800; }
+.highlight .nt { color: #0550ae; }
+.highlight .nv { color: #1f2328; }
+.highlight .ow { color: #cf222e; }
+.highlight .bp { color: #cf222e; }
+.highlight .fm { color: #8250df; }
+.highlight .vc { color: #1f2328; }
+.highlight .vg { color: #1f2328; }
+.highlight .vi { color: #1f2328; }
+
+.highlight .m,
+.highlight .mb,
+.highlight .mf,
+.highlight .mh,
+.highlight .mi,
+.highlight .mo { color: #0550ae; }
+
+.highlight .o,
+.highlight .p  { color: #59636e; }
+
+/* Dark mode (Kimi / GitHub-dark inspired) */
+html[data-theme="dark"] .highlight .k,
+html[data-theme="dark"] .highlight .kc,
+html[data-theme="dark"] .highlight .kd,
+html[data-theme="dark"] .highlight .kn,
+html[data-theme="dark"] .highlight .kp,
+html[data-theme="dark"] .highlight .kr,
+html[data-theme="dark"] .highlight .kt { color: #7dd3fc; font-weight: 500; }
+
+html[data-theme="dark"] .highlight .s,
+html[data-theme="dark"] .highlight .s1,
+html[data-theme="dark"] .highlight .s2,
+html[data-theme="dark"] .highlight .sb,
+html[data-theme="dark"] .highlight .sc,
+html[data-theme="dark"] .highlight .sd,
+html[data-theme="dark"] .highlight .se,
+html[data-theme="dark"] .highlight .sh,
+html[data-theme="dark"] .highlight .si,
+html[data-theme="dark"] .highlight .sr,
+html[data-theme="dark"] .highlight .sx,
+html[data-theme="dark"] .highlight .ss { color: #7ee787; }
+
+html[data-theme="dark"] .highlight .c,
+html[data-theme="dark"] .highlight .c1,
+html[data-theme="dark"] .highlight .cm,
+html[data-theme="dark"] .highlight .cp,
+html[data-theme="dark"] .highlight .cs { color: #6e7681; font-style: italic; }
+
+html[data-theme="dark"] .highlight .n  { color: #e6edf3; }
+html[data-theme="dark"] .highlight .na { color: #e6edf3; }
+html[data-theme="dark"] .highlight .nb { color: #ff7b72; }
+html[data-theme="dark"] .highlight .nc { color: #ffa657; }
+html[data-theme="dark"] .highlight .nd { color: #d2a8ff; }
+html[data-theme="dark"] .highlight .ne { color: #ffa657; }
+html[data-theme="dark"] .highlight .nf { color: #d2a8ff; }
+html[data-theme="dark"] .highlight .ni { color: #e6edf3; }
+html[data-theme="dark"] .highlight .nn { color: #ffa657; }
+html[data-theme="dark"] .highlight .no { color: #ffa657; }
+html[data-theme="dark"] .highlight .nt { color: #79c0ff; }
+html[data-theme="dark"] .highlight .nv { color: #e6edf3; }
+html[data-theme="dark"] .highlight .ow { color: #ff7b72; }
+html[data-theme="dark"] .highlight .bp { color: #ff7b72; }
+html[data-theme="dark"] .highlight .fm { color: #d2a8ff; }
+html[data-theme="dark"] .highlight .vc { color: #e6edf3; }
+html[data-theme="dark"] .highlight .vg { color: #e6edf3; }
+html[data-theme="dark"] .highlight .vi { color: #e6edf3; }
+
+html[data-theme="dark"] .highlight .m,
+html[data-theme="dark"] .highlight .mb,
+html[data-theme="dark"] .highlight .mf,
+html[data-theme="dark"] .highlight .mh,
+html[data-theme="dark"] .highlight .mi,
+html[data-theme="dark"] .highlight .mo { color: #79c0ff; }
+
+html[data-theme="dark"] .highlight .o,
+html[data-theme="dark"] .highlight .p  { color: #8b949e; }
+
+/* --------------------------------------------------------------------------
+ * API / signatures
+ * -------------------------------------------------------------------------- */
+
+.sig-name {
+    color: var(--lenz-accent);
+    font-weight: 600;
+}
+
+.sig-param .o,
+.sig-param .default_value {
+    color: var(--lenz-text-muted);
+}
+
+/* --------------------------------------------------------------------------
+ * Sidebar
+ * -------------------------------------------------------------------------- */
+
+.bd-sidebar .nav-link {
+    color: var(--lenz-text-muted);
+    border-left: 2px solid transparent;
+    border-radius: 0 4px 4px 0;
+    padding-left: 0.75rem;
+    font-weight: 400;
+    transition: all 0.15s ease;
+}
+
+.bd-sidebar .nav-link:hover {
+    color: var(--lenz-text);
+    background-color: var(--lenz-surface-hover);
+    border-left-color: var(--lenz-border);
+}
+
+.bd-sidebar .nav-link.active {
+    color: var(--lenz-accent);
+    background-color: var(--lenz-surface);
+    border-left-color: var(--lenz-accent);
+    font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+ * Target / highlight states — override the ugly PyData default
+ * -------------------------------------------------------------------------- */
+
+dt:target,
+span.highlighted,
+.viewcode-block:target,
+:target > :is(h1, h2, h3, h4, h5, h6) {
+    background-color: var(--lenz-surface-hover);
+}
+
+/* --------------------------------------------------------------------------
+ * PyData theme semantic color overrides — strict, modern tech palette
+ * -------------------------------------------------------------------------- */
+
+html[data-theme="light"] {
+    --pst-color-primary: var(--lenz-accent);
+    --pst-color-primary-bg: var(--lenz-accent-soft);
+    --pst-color-secondary: var(--lenz-text-muted);
+    --pst-color-secondary-bg: var(--lenz-surface);
+    --pst-color-accent: var(--lenz-accent);
+    --pst-color-accent-bg: var(--lenz-accent-soft);
+    --pst-color-info: var(--lenz-info);
+    --pst-color-info-bg: var(--lenz-info-soft);
+    --pst-color-warning: var(--lenz-warn);
+    --pst-color-warning-bg: var(--lenz-warn-soft);
+    --pst-color-success: var(--lenz-good);
+    --pst-color-success-bg: var(--lenz-good-soft);
+    --pst-color-attention: var(--lenz-warn);
+    --pst-color-attention-bg: var(--lenz-warn-soft);
+    --pst-color-danger: var(--lenz-bad);
+    --pst-color-danger-bg: var(--lenz-bad-soft);
+    --pst-color-text-base: var(--lenz-text);
+    --pst-color-text-muted: var(--lenz-text-muted);
+    --pst-color-shadow: rgba(0, 0, 0, 0.08);
+    --pst-color-border: var(--lenz-border);
+    --pst-color-border-muted: var(--lenz-border-muted);
+    --pst-color-blockquote-notch: var(--lenz-border);
+    --pst-color-inline-code: var(--lenz-text);
+    --pst-color-link-higher-contrast: var(--lenz-accent-dim);
+    --pst-color-target: var(--lenz-surface-hover);
+    --pst-color-table: var(--lenz-text);
+    --pst-color-table-row-hover-bg: var(--lenz-surface-hover);
+    --pst-color-table-inner-border: var(--lenz-border);
+    --pst-color-background: var(--lenz-bg);
+    --pst-color-on-background: var(--lenz-bg);
+    --pst-color-surface: var(--lenz-surface);
+    --pst-color-on-surface: var(--lenz-text);
+    --pst-color-heading: var(--lenz-text);
+    --pst-color-link: var(--lenz-accent);
+    --pst-color-link-hover: var(--lenz-accent-dim);
+    --pst-color-table-outer-border: var(--lenz-border);
+    --pst-color-table-heading-bg: var(--lenz-surface);
+    --pst-color-table-row-zebra-high-bg: var(--lenz-bg);
+    --pst-color-table-row-zebra-low-bg: var(--lenz-surface);
+}
+
+html[data-theme="dark"] {
+    --pst-color-primary: var(--lenz-accent);
+    --pst-color-primary-bg: var(--lenz-accent-soft);
+    --pst-color-secondary: var(--lenz-text-muted);
+    --pst-color-secondary-bg: var(--lenz-surface-hover);
+    --pst-color-accent: var(--lenz-accent);
+    --pst-color-accent-bg: var(--lenz-accent-soft);
+    --pst-color-info: var(--lenz-info);
+    --pst-color-info-bg: var(--lenz-info-soft);
+    --pst-color-warning: var(--lenz-warn);
+    --pst-color-warning-bg: var(--lenz-warn-soft);
+    --pst-color-success: var(--lenz-good);
+    --pst-color-success-bg: var(--lenz-good-soft);
+    --pst-color-attention: var(--lenz-warn);
+    --pst-color-attention-bg: var(--lenz-warn-soft);
+    --pst-color-danger: var(--lenz-bad);
+    --pst-color-danger-bg: var(--lenz-bad-soft);
+    --pst-color-text-base: var(--lenz-text);
+    --pst-color-text-muted: var(--lenz-text-muted);
+    --pst-color-shadow: rgba(0, 0, 0, 0.35);
+    --pst-color-border: var(--lenz-border);
+    --pst-color-border-muted: var(--lenz-border-muted);
+    --pst-color-blockquote-notch: var(--lenz-border);
+    --pst-color-inline-code: var(--lenz-text);
+    --pst-color-link-higher-contrast: var(--lenz-accent);
+    --pst-color-target: var(--lenz-surface-hover);
+    --pst-color-table: var(--lenz-text);
+    --pst-color-table-row-hover-bg: var(--lenz-surface-hover);
+    --pst-color-table-inner-border: var(--lenz-border);
+    --pst-color-background: var(--lenz-bg);
+    --pst-color-on-background: var(--lenz-surface);
+    --pst-color-surface: var(--lenz-surface);
+    --pst-color-on-surface: var(--lenz-text);
+    --pst-color-heading: var(--lenz-text);
+    --pst-color-link: var(--lenz-accent);
+    --pst-color-link-hover: var(--lenz-accent-dim);
+    --pst-color-table-outer-border: var(--lenz-border);
+    --pst-color-table-heading-bg: var(--lenz-surface);
+    --pst-color-table-row-zebra-high-bg: var(--lenz-surface-hover);
+    --pst-color-table-row-zebra-low-bg: var(--lenz-surface);
+}
+
+/* --------------------------------------------------------------------------
+ * Hide noisy TOC headings
+ * -------------------------------------------------------------------------- */
+
+.bd-sidebar .nav > li > a.nav-link.toc-heading,
+.bd-sidebar-primary h3,
+nav.bd-links p.bd-links__title,
+nav.bd-links p.caption {
+    display: none;
+}
+
+/* --------------------------------------------------------------------------
+ * Tables
+ * -------------------------------------------------------------------------- */
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
+}
+
+th, td {
+    text-align: left;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--lenz-border);
+}
+
+th {
+    color: var(--lenz-text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.03em;
+}
+
+td {
+    color: var(--lenz-text);
+}
+
+/* --------------------------------------------------------------------------
+ * Misc
+ * -------------------------------------------------------------------------- */
+
+em {
+    font-style: italic;
+}
+
 .bd-sidebar {
     display: block !important;
     visibility: visible !important;
 }
 
-/* Hide 'Table of Contents' heading in sidebar */
-.bd-sidebar .nav > li > a.nav-link.toc-heading {
-    display: none;
-}
-.bd-sidebar-primary h3 {
-    display: none;
-}
-nav.bd-links p.bd-links__title, nav.bd-links p.caption {
-    display: none;
+/* --------------------------------------------------------------------------
+ * Admonitions — clean, minimal, no icons
+ * -------------------------------------------------------------------------- */
+
+.admonition {
+    margin: 1.25rem 0;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    border-left: 3px solid;
+    background-color: var(--lenz-surface);
+    border-color: var(--lenz-border);
+    box-shadow: none;
 }
 
-a.current.reference.internal {
-    background-color: transparent;
-    //box-shadow: inset max(3px, .1875rem, .12em) 0 0 var(--pst-color-primary);
-    color: var(--pst-color-primary);
+.admonition > .admonition-title {
+    margin: -0.75rem -1rem 0.5rem -1rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
     font-weight: 600;
-}
-html[data-theme="light"] .highlight .c1 {
-    color: #268510;
-}
-em {
-    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--lenz-text-muted);
+    background: transparent;
+    position: relative;
 }
 
+.admonition > .admonition-title::after {
+    display: none !important;
+}
+
+.admonition > p:not(.admonition-title) {
+    margin: 0;
+    color: var(--lenz-text);
+}
+
+.admonition.note,
+.admonition.tip,
+.admonition.hint {
+    background-color: var(--lenz-info-soft);
+    border-color: var(--lenz-info);
+}
+
+.admonition.note > .admonition-title,
+.admonition.tip > .admonition-title,
+.admonition.hint > .admonition-title {
+    color: var(--lenz-info);
+}
+
+.admonition.warning,
+.admonition.attention,
+.admonition.caution {
+    background-color: var(--lenz-warn-soft);
+    border-color: var(--lenz-warn);
+}
+
+.admonition.warning > .admonition-title,
+.admonition.attention > .admonition-title,
+.admonition.caution > .admonition-title {
+    color: var(--lenz-warn);
+}
+
+.admonition.danger,
+.admonition.error {
+    background-color: var(--lenz-bad-soft);
+    border-color: var(--lenz-bad);
+}
+
+.admonition.danger > .admonition-title,
+.admonition.error > .admonition-title {
+    color: var(--lenz-bad);
+}
+
+.admonition.important,
+.admonition.seealso {
+    background-color: var(--lenz-accent-soft);
+    border-color: var(--lenz-accent);
+}
+
+.admonition.important > .admonition-title,
+.admonition.seealso > .admonition-title {
+    color: var(--lenz-accent);
+}
 """
     with open(os.path.join(static_dir, "custom.css"), "w") as f:
         f.write(custom_css)
