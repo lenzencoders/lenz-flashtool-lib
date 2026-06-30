@@ -4,7 +4,6 @@ build-backend = "hatchling.build"
 
 [project]
 name = "lenz-flashtool"
-version = "0.1.9"
 description = "FlashTool library for BiSS C Firmware Update and Calibration by LENZ Encoders"
 readme = "README.md"
 authors = [{name = "LENZ ENCODERS", email = "devs@lenzencoders.com"}]
@@ -70,6 +69,12 @@ include = [
 exclude = [
     "**/__pycache__",
     "**/*.pyc"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["lenz_flashtool"]
+artifacts = [
+    "completions/**/*",
 ]
 
 [tool.hatch.version]
