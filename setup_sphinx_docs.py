@@ -1362,7 +1362,7 @@ if __name__ == "__main__":
     setup_sphinx_project(
         project_name="lenz-flashtool",
         author="LENZ Encoders",
-        version="0.1.9",
+        version="0.2.0",
         module_name="lenz_flashtool",
         submodules=["flashtool", "biss", "encproc", "utils", "testing", "cli"]
     )
