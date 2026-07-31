@@ -5,7 +5,7 @@ LENZ BiSS Protocol Implementation
 Provides BiSS encoder protocol standarts and utilities.
 
 Author:
-    LENZ ENCODERS, 2020-2025
+    LENZ ENCODERS, 2020-2026
 """
 
 #
@@ -19,6 +19,7 @@ Author:
 
 from .uart import UartCmd, UartBootloaderSeq
 from .core import FlashTool
+from .encoder_control import RESOLUTION_MAP
 from .logging import init_logging
 from .hex_utils import get_nonce, generate_hex_line, calculate_checksum, _readhex, dif2hex, prep_hex, read_hex_file_irs
 from .errors import FlashToolError, UARTErrorType, UARTErrorCode, BiSSFaultState
@@ -28,6 +29,7 @@ __all__ = [
     'UartCmd',
     'UartBootloaderSeq',
     'FlashTool',
+    'RESOLUTION_MAP',
     'init_logging',
     'generate_hex_line',
     'calculate_checksum',

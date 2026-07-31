@@ -7,9 +7,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'lenz-flashtool'
-copyright = '2025, LENZ Encoders'
+copyright = '2026, LENZ Encoders'
 author = 'LENZ Encoders'
-release = '0.1.9'
+release = '0.2.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -49,11 +49,12 @@ extensions = [
 html_theme = 'pydata_sphinx_theme'
 html_static_path = ['_static']
 html_css_files = ['custom.css']
+html_js_files = ['custom.js']
 html_favicon = '_static/favicon.ico'
 
-# Set Pygments style for code highlighting
-pygments_style = 'monokai'
-pygments_dark_style = 'monokai'
+# Set Pygments style for code highlighting (overridden by custom.css token colors)
+pygments_style = 'default'
+pygments_dark_style = 'github-dark'
 
 # Theme customization
 html_theme_options = {

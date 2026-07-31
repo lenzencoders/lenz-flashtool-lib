@@ -6,7 +6,7 @@ This library provides functions for interfacing with BiSS C encoders using LENZ 
 and executing calibration routines.
 
 Author:
-    LENZ ENCODERS, 2020-2025
+    LENZ ENCODERS, 2020-2026
 """
 
 #
@@ -20,13 +20,17 @@ Author:
 
 from .utils import plot, plot2, TermColors
 from .biss import (
-    ERROR_FLAGS, BISS_COMMANDSTATE, biss_commands, BiSSBank
+    ERROR_FLAGS, BISS_COMMANDSTATE, biss_commands, BiSSBank,
+    SetupLock, FlashLock, Zeroing, ClearDifLUT, AmplitudeCalibration,
+    ArcCalibration, Flashing, ClearDifFlash, FlashDifLUT, UserBankState,
+    ENCODER_STATE_FIELDS,
     )
 from .flashtool import (
     UartCmd,
     UartBootloaderSeq,
     FlashTool,
     FlashToolError,
+    RESOLUTION_MAP,
     UARTErrorType,
     UARTErrorCode,
     BiSSFaultState,
@@ -54,6 +58,19 @@ __all__ = [
     'biss_commands',
     'BiSSBank',
 
+    # EncoderState bitfield enums
+    'SetupLock',
+    'FlashLock',
+    'Zeroing',
+    'ClearDifLUT',
+    'AmplitudeCalibration',
+    'ArcCalibration',
+    'Flashing',
+    'ClearDifFlash',
+    'FlashDifLUT',
+    'UserBankState',
+    'ENCODER_STATE_FIELDS',
+
     # Command constants
     'UartCmd',
     'UartBootloaderSeq',
@@ -66,6 +83,7 @@ __all__ = [
     'BiSSFaultState',
     'MockFlashTool',
     'LenzEncoderProcessor',
+    'RESOLUTION_MAP',
 
     # Utility functions and classes
     'generate_hex_line',
@@ -87,5 +105,5 @@ __all__ = [
     'connect_and_enter_fw'
 ]
 
-__version__ = "0.1.9"
+__version__ = "0.2.0"
 __author__ = "LENZ ENCODERS"
