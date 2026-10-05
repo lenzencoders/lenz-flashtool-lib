@@ -1016,30 +1016,39 @@ class BiSSIOMixin:
         """
         max_retries = 3
 
-        for page_idx, (page_data, crc, page_num) in enumerate(zip(pages, crc_values, page_numbers), start=start_page):
-            if page_idx > end_page:
-                break
+        first_idx = start_page - 1
+        last_idx = min(end_page - 1, len(pages) - 1)
+
+        ordered_indices = [i for i in range(first_idx, last_idx + 1) if i != 0]
+        if first_idx <= 0 <= last_idx:
+            ordered_indices.append(0)
+
+        for idx in ordered_indices:
+            page_data = pages[idx]
+            crc = crc_values[idx]
+            page_num = page_numbers[idx]
+            page_idx = idx + 1
 
             retry_count = 0
             success = False
 
             while retry_count < max_retries and not success:
-                # Write CRC and page number for pages after the first
-                if page_idx > 1:
-                    self.biss_set_bank(BiSSBank.BISS_BANK_SERV)
-                    self.biss_write_word(BiSSBank.CRC32_REG_INDEX, crc)
-                    self.biss_write_word(BiSSBank.PAGENUM_REG_INDEX, page_num)
-                    time.sleep(0.01)
+                # Every page writes its own CRC and page number
+                self.biss_set_bank(BiSSBank.BISS_BANK_SERV)
+                self.biss_write_word(BiSSBank.CRC32_REG_INDEX, crc)
+                self.biss_write_word(BiSSBank.PAGENUM_REG_INDEX, page_num)
+                time.sleep(0.01)
 
                 # Send each bank in the page
                 for bank_idx, bank_data in enumerate(page_data):
                     bank_num = bank_idx + BiSSBank.BISS_USERBANK_START
-                    if bank_num == 5:  # Set bank 5 explicitly
+                    if bank_num == 5:
                         self.biss_set_bank(bank_num)
                     time.sleep(0.05)
 
                     if pbar:
-                        percent_complete(bank_idx, BiSSBank.BANKS_PER_PAGE - 1, title=f"Sending Page {page_idx}")
+                        percent_complete(bank_idx, BiSSBank.BANKS_PER_PAGE - 1,
+                                        title=f"Sending Page {page_idx}")
                     hex_line = generate_hex_line(0, UartCmd.HEX_WRITE_CMD, bank_data)
                     self.hex_line_send(hex_line)
 
