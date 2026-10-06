@@ -395,7 +395,7 @@ class BiSSCommandLine:
 
     def _read_angle_once(self) -> None:
         """Read angle"""
-        self.ft.biss_read_angle_once()
+        self.ft.read_instant_angle_packet_enc_SPI()
 
     def _read_angle_loop(self) -> None:
         """Read angle in loop"""
