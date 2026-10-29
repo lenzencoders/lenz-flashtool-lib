@@ -307,10 +307,9 @@ class EncoderControlMixin:
         logger.info(f"Selected FlashTool mode: {mode_num} - {mode_desc}")
 
         tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_FLASHTOOL_MODE, [mode_num])[1:])
-        self._port.reset_output_buffer()
-        self._port.write(tx_row)
-        self._port.flush()
-        time.sleep(0.05)
+        self._write_to_port(tx_row)
+        self._check_write_response(0.005)
+        time.sleep(0.5)
 
     def select_FlashTool_current_sensor_mode(self, mode: Literal["disable", "enable"]) -> None:
         """

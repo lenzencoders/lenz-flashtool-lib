@@ -18,8 +18,9 @@ import logging
 from typing import List, Tuple
 import numpy as np
 from ..biss import biss_crc6_calc
-from .uart import UartCmd
+from .uart import UartCmd, UartProtoConst
 from .hex_utils import calculate_checksum, generate_byte_line, generate_hex_line
+from .errors import FlashToolError
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ class DataStreamingMixin:
             print(' OK!')
         return encoder
 
-    def read_data_enc1_enc2_SPI(self, read_time: float, status: bool = True) -> Tuple[List[int], List[int]]:
+    def read_data_enc1_enc2_SPI(self, read_time: float, status: bool = True) -> Tuple[np.ndarray, np.ndarray]:
         """
         Reads data from two encoders via SPI over USB for a specified duration.
 
@@ -120,8 +121,10 @@ class DataStreamingMixin:
             >>> print(enc1[:5], enc2[:5])
             [12345, 12346, ...], [54321, 54322, ...]
         """
-        status and print('Read USB data for ', read_time, ' seconds: ', end='')
-        logger.debug('Reading USB encoder 1 and encoder 2 data for %s seconds.', read_time)
+        logger.debug('Reading USB encoder1 SPI and encoder2 SPI data for %s seconds.', read_time)                
+        if status:
+            print('Read USB data for ', read_time, ' seconds: ', end='', flush=True)
+
         size = int(read_time * 1000)
         size_l = int(size) % 256
         size_m = int(size / 256) % 256
@@ -131,48 +134,82 @@ class DataStreamingMixin:
         addr = int.from_bytes(address, 'big')
         tx_row = bytes.fromhex(generate_hex_line(addr, UartCmd.HEX_READ_ANGLE_TWO_ENC_SPI, [0])[1:])
         logger.debug("Reading CMD: %s", generate_hex_line(addr, UartCmd.HEX_READ_ANGLE_TWO_ENC_SPI, [0])[1:])
-        self._port.flushInput()
-        start_time = time.time()
+
+        cou1: List[np.ndarray] = []
+        cou2: List[np.ndarray] = []
+        enc1: List[np.ndarray] = []
+        enc2: List[np.ndarray] = []
+
         self._write_to_port(tx_row)
-        ok = 1
+        
+        ok = True
+        start_time = time.time()
         dot_time = start_time + 0.2
         new_line_time = start_time + 10
-        cou1 = []
-        cou2 = []
-        encoder1 = []
-        encoder2 = []
-        while time.time() < start_time + read_time + 1:
-            if self._port.inWaiting() > 250:
-                rx_data = np.array(list(self._port.read(245)), 'int32')
-                crc_hex = - sum(rx_data[0:244]) % 256
-                if (rx_data[0] == 240) & (rx_data[3] == 144):
-                    if crc_hex == rx_data[244]:
-                        cou1.extend(rx_data[7:244:8])
-                        encoder1.extend(rx_data[6:244:8]*65536 + rx_data[5:244:8]*256 + rx_data[4:244:8])
-                        cou2.extend(rx_data[11:244:8])
-                        encoder2.extend(rx_data[10:244:8]*65536 + rx_data[9:244:8]*256 + rx_data[8:244:8])
+        
+        try:
+            first_frame = self._read_first_frame(timeout=3.0)
+
+            expected_cmd = UartCmd.HEX_READ_ANGLE_TWO_ENC_SPI + 0x10
+            if first_frame[3] != expected_cmd:
+                raise FlashToolError(
+                    f"Unexpected command in first stream frame: "
+                    f"0x{first_frame[3]:02X}, expected 0x{expected_cmd:02X}"
+                )
+
+            rx_data = np.frombuffer(first_frame, dtype=np.uint8).astype(np.int64)
+            enc1.append(rx_data[6:244:8] * 65536 + rx_data[5:244:8] * 256 + rx_data[4:244:8])
+            enc2.append(rx_data[10:244:8] * 65536 + rx_data[9:244:8] * 256 + rx_data[8:244:8])
+
+            if (rx_data[1] == 0) and (rx_data[2] == 0):
+                if status:
+                    print(' OK!', flush=True)
+                enc1_array = (np.concatenate(enc1) if enc1 else np.empty(0, dtype=np.int64)).astype(np.int32, copy=False)
+                enc2_array = (np.concatenate(enc2) if enc2 else np.empty(0, dtype=np.int64)).astype(np.int32, copy=False)
+                return enc1_array, enc2_array
+
+            while time.time() < start_time + read_time + 1:
+                if self._port.inWaiting() > 250:
+                    rx_data = np.array(list(self._port.read(245)), dtype=np.int64)
+                    crc_hex = (-int(rx_data[:244].sum())) % 256
+
+                    if (rx_data[0] == 240) and (rx_data[3] == expected_cmd):
+                        if crc_hex == int(rx_data[244]):
+                            enc1.append(rx_data[6:244:8] * 65536 + rx_data[5:244:8] * 256 + rx_data[4:244:8])
+                            enc2.append(rx_data[10:244:8] * 65536 + rx_data[9:244:8] * 256 + rx_data[8:244:8])
+                        else:
+                            ok = False
+                            raise FlashToolError("HEX CheckSum ERROR!")
                     else:
-                        print('HEX CheckSum ERROR!')
-                        ok = 0
+                        ok = False
+                        raise FlashToolError("HEX Command ERROR!")
+
+                    if (rx_data[1] == 0) and (rx_data[2] == 0):
                         break
                 else:
-                    print('HEX Command ERROR!')
-                    ok = 0
-                    break
-                if (rx_data[1] == 0) & (rx_data[2] == 0):
-                    break
-            else:
-                time.sleep(0.001)
-            if time.time() > new_line_time:
-                new_line_time = new_line_time + 10
-                status and print('\n', end='')
+                    time.sleep(0.01)
 
-            elif time.time() > dot_time:
-                dot_time = dot_time + 0.5
-                status and print('.', end='')
-        if ok:
-            status and print(' OK!')
-        return encoder1, encoder2
+                if time.time() > new_line_time:
+                    new_line_time += 10
+                    if status:
+                        print(flush=True)
+                elif time.time() > dot_time:
+                    dot_time += 0.5
+                    if status:
+                        print('.', end='', flush=True)
+
+            if ok and status:
+                print(' OK!', flush=True)
+
+        except FlashToolError:
+            if status:
+                print(' ERROR!', flush=True)
+            raise
+
+        enc1_array = (np.concatenate(enc1) if enc1 else np.empty(0, dtype=np.int64)).astype(np.int32, copy=False)
+        enc2_array = (np.concatenate(enc2) if enc2 else np.empty(0, dtype=np.int64)).astype(np.int32, copy=False)
+
+        return enc1_array, enc2_array
 
     def read_data_enc1_AB_enc2_SPI(self, read_time: float, status: bool = True) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -246,6 +283,112 @@ class DataStreamingMixin:
             logger.error(str(e))
             return np.array([], dtype='int32'), np.array([], dtype='int32')
 
+    def read_data_enc1_ab_enc2_uart(self, read_time: float, status: bool = True) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Read data from Encoder1 AB and Encoder2 (ILS) UART over USB for a specified duration.
+
+        Data frame: 6 bytes
+            0 byte  1 byte  2 byte  3 byte  4 byte  5 byte
+            Enc2    *256    *65536  Cou     Enc1    *256
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]:
+                - enc2: 1-D int32 array with Encoder2 readings.
+                - enc1: 1-D int32 array with Encoder1 readings.
+
+        Raises:
+            FlashToolError: if the firmware reports an error before the stream
+                starts (e.g. INVALID_MODE, QUEUE_FULL, BiSS fault). The caller
+                may treat this as a hard failure or a soft "stream not started"
+                depending on the use case.
+        """
+        logger.debug('Reading USB encoder1 AB and encoder2 UART data for %s seconds.', read_time)
+        if status:
+            print('Read USB data for ', read_time, ' seconds: ', end='', flush=True)
+
+        size = int(read_time * 750)
+        size_l = size % 256
+        size_m = (size // 256) % 256
+        address = bytes([size_m, size_l])
+        addr = int.from_bytes(address, 'big')
+        tx_row = bytes.fromhex(generate_hex_line(addr, UartCmd.HEX_READ_ANGLE_TWO_ENC_AB_UART, [0])[1:])
+
+        self._write_to_port(tx_row)
+
+        enc1: List[int] = []
+        enc2: List[int] = []
+        ok = True
+        start_time = time.time()
+        dot_time = start_time + 0.2
+        new_line_time = start_time + 10
+
+        try:
+            first_frame = self._read_first_frame(timeout=1.0)
+
+            first_len = first_frame[0]
+            if first_len == 0xF0:   # 240-byte stream frame
+                rx_data = np.frombuffer(first_frame, dtype=np.uint8).astype(np.int64)
+                expected_cmd = UartCmd.HEX_READ_ANGLE_TWO_ENC_AB_UART + 0x10
+                if rx_data[3] != expected_cmd:
+                    raise FlashToolError(
+                        f"Unexpected command in first stream frame: "
+                        f"0x{int(rx_data[3]):02X}, expected 0x{expected_cmd:02X}"
+                    )
+                enc2.append(rx_data[6:244:6] * 65536 + rx_data[5:244:6] * 256 + rx_data[4:244:6])
+                enc1.append(rx_data[9:244:6] * 256 + rx_data[8:244:6])
+
+                if (rx_data[1] == 0) and (rx_data[2] == 0):
+                    return (
+                        np.concatenate(enc1).astype(np.int32, copy=False),
+                        np.concatenate(enc2).astype(np.int32, copy=False),
+                    )
+
+            while time.time() < start_time + read_time + 1:
+                if self._port.inWaiting() > 250:
+                    rx_data = np.array(list(self._port.read(245)), dtype=np.int64)
+
+                    crc_hex = (-int(rx_data[:244].sum())) % 256
+
+                    if (rx_data[0] == 240) and (
+                        rx_data[3] == UartCmd.HEX_READ_ANGLE_TWO_ENC_AB_UART + 0x10
+                    ):
+                        if crc_hex == int(rx_data[244]):
+                            enc2.append(rx_data[6:244:6] * 65536 + rx_data[5:244:6] * 256 + rx_data[4:244:6])
+                            enc1.append(rx_data[9:244:6] * 256 + rx_data[8:244:6])
+                        else:
+                            ok = False
+                            raise FlashToolError("HEX CheckSum ERROR!")
+                    else:
+                        ok = False
+                        raise FlashToolError("HEX Command ERROR!")
+
+                    if (rx_data[1] == 0) and (rx_data[2] == 0):
+                        break
+                else:
+                    time.sleep(0.001)
+
+                if time.time() > new_line_time:
+                    new_line_time += 10
+                    if status:
+                        print(flush=True)
+                elif time.time() > dot_time:
+                    dot_time += 0.5
+                    if status:
+                        print('.', end='', flush=True)
+
+            if ok and status:
+                print(' OK!', flush=True)
+
+        except FlashToolError:
+            if status:
+                print(' ERROR!', flush=True)
+            raise
+
+        enc1_array = (np.concatenate(enc1) if enc1 else np.empty(0, dtype=np.int64)).astype(np.int32, copy=False)
+        enc2_array = (np.concatenate(enc2) if enc2 else np.empty(0, dtype=np.int64)).astype(np.int32, copy=False)
+
+        return enc1_array, enc2_array
+    
     def read_enc2_current(self) -> tuple[str, float] | bool:
         """
         Read current of the encoder on channel 2.
@@ -262,10 +405,10 @@ class DataStreamingMixin:
         try:
             self._port.reset_output_buffer()
             self._port.reset_input_buffer()
-            self._port.write(generate_byte_line(0, UartCmd.HEX_READ_ENC2_CURRENT, list(range(UartCmd.RX_DATA_LENGTH_CURRENT))))
+            self._port.write(generate_byte_line(0, UartCmd.HEX_READ_ENC2_CURRENT, list(range(UartProtoConst.RX_DATA_LENGTH_CURRENT))))
             self._port.flush()
 
-            enc_ans = self._port.read(UartCmd.RX_DATA_LENGTH_CURRENT + UartCmd.PKG_INFO_LENGTH)
+            enc_ans = self._port.read(UartProtoConst.RX_DATA_LENGTH_CURRENT + UartProtoConst.PKG_INFO_LENGTH)
 
             logger.debug(enc_ans.hex())
 
@@ -275,8 +418,8 @@ class DataStreamingMixin:
 
             enc_data_np = np.array(list(enc_ans), dtype='uint8')
 
-            if (enc_data_np[0] != enc_data_np.size - UartCmd.PKG_INFO_LENGTH) or \
-               (enc_data_np[3] != UartCmd.HEX_READ_ENC2_CURRENT + UartCmd.CMD_VAL_ADD):
+            if (enc_data_np[0] != enc_data_np.size - UartProtoConst.PKG_INFO_LENGTH) or \
+               (enc_data_np[3] != UartCmd.HEX_READ_ENC2_CURRENT + UartProtoConst.CMD_VAL_ADD):
                 logger.error("Invalid response structure from encoder!")
                 return False
 
@@ -287,7 +430,7 @@ class DataStreamingMixin:
 
             logger.debug("CRC check passed.")
 
-            enc2_current = enc_ans[4:4+UartCmd.RX_DATA_LENGTH_CURRENT]
+            enc2_current = enc_ans[4:4+UartProtoConst.RX_DATA_LENGTH_CURRENT]
 
             data_hex = enc2_current.hex()
 
@@ -332,7 +475,7 @@ class DataStreamingMixin:
             ))
             self._port.flush()
 
-            enc_ans = self._port.read(RX_DATA_LENGTH + UartCmd.PKG_INFO_LENGTH)
+            enc_ans = self._port.read(RX_DATA_LENGTH + UartProtoConst.PKG_INFO_LENGTH)
 
             if not enc_ans:
                 logger.error("No response from encoder!")
@@ -340,8 +483,8 @@ class DataStreamingMixin:
 
             enc_data_np = np.array(list(enc_ans), dtype='uint8')
 
-            if (enc_data_np[0] != enc_data_np.size - UartCmd.PKG_INFO_LENGTH) or \
-               (enc_data_np[3] != UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI + UartCmd.CMD_VAL_ADD):
+            if (enc_data_np[0] != enc_data_np.size - UartProtoConst.PKG_INFO_LENGTH) or \
+               (enc_data_np[3] != UartCmd.HEX_READ_INSTANT_ANGLE_ENC_SPI + UartProtoConst.CMD_VAL_ADD):
                 logger.error("Invalid response structure from encoder!")
                 return False
 
@@ -428,7 +571,7 @@ class DataStreamingMixin:
             ))
             self._port.flush()
 
-            enc_ans = self._port.read(RX_DATA_LENGTH + UartCmd.PKG_INFO_LENGTH)
+            enc_ans = self._port.read(RX_DATA_LENGTH + UartProtoConst.PKG_INFO_LENGTH)
 
             if not enc_ans:
                 logger.error("No response from encoder!")
@@ -436,8 +579,8 @@ class DataStreamingMixin:
 
             enc_data_np = np.array(list(enc_ans), dtype='uint8')
 
-            if (enc_data_np[0] != enc_data_np.size - UartCmd.PKG_INFO_LENGTH) or \
-               (enc_data_np[3] != UartCmd.HEX_READ_INSTANT_ANGLE_PACKET_ENC_SPI + UartCmd.CMD_VAL_ADD):
+            if (enc_data_np[0] != enc_data_np.size - UartProtoConst.PKG_INFO_LENGTH) or \
+               (enc_data_np[3] != UartCmd.HEX_READ_INSTANT_ANGLE_PACKET_ENC_SPI + UartProtoConst.CMD_VAL_ADD):
                 logger.error("Invalid response structure from encoder!")
                 return False
 

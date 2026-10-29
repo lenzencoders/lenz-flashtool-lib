@@ -24,7 +24,7 @@ from ..biss import (
 )
 from ..biss.encoder_state import ENCODER_STATE_FIELDS
 from .uart import UartCmd
-from .errors import FlashToolError
+from .errors import FlashToolError, UARTErrorType, UARTErrorCode, BiSSFaultState
 from .hex_utils import (
     calculate_checksum,
     generate_byte_line,
@@ -83,6 +83,7 @@ class BiSSIOMixin:
             command_code: int = biss_commands[command][0]
             command_list: list[int] = [command_code & 0xFF, (command_code >> 8) & 0xFF]
             self._write_to_port(generate_byte_line(BiSSBank.CMD_REG_INDEX, UartCmd.HEX_WRITE_CMD, command_list))
+            self._check_write_response(0.005)
             logger.debug("Sending BiSS %s command (%s)", command, hex(command_code))
             time.sleep(0.01)
         else:
@@ -110,7 +111,10 @@ class BiSSIOMixin:
             if not 0 <= bank_num <= 255:
                 raise ValueError(f"Bank {bank_num} out of range (0-255)")
             logger.debug('Setting bank %s', bank_num)
+            frame = generate_byte_line(BiSSBank.BSEL_REG_INDEX, UartCmd.HEX_WRITE_CMD, [bank_num])
+            logger.debug(f"{frame.hex(' ')}")
             self._write_to_port(generate_byte_line(BiSSBank.BSEL_REG_INDEX, UartCmd.HEX_WRITE_CMD, [bank_num]))
+            self._check_write_response(0.005)
         except (ValueError, TypeError) as e:
             logger.error("Validation error in biss_set_bank: %s", str(e))
             raise
@@ -139,12 +143,12 @@ class BiSSIOMixin:
         try:
             if not 0 <= addr <= 127:
                 raise ValueError(f"Address {addr} out of range (0-127)")
-
             if not isinstance(data, int):
                 raise TypeError(f"Data {data} is not an integer (got {type(data)})")
             if data < 0:
                 raise ValueError(f"Data {data} is negative")
             self._write_to_port(generate_byte_line(addr, UartCmd.HEX_WRITE_CMD, [data]))
+            self._check_write_response()
         except (ValueError, TypeError) as e:
             logger.error("Validation error in biss_write: %s", str(e))
             raise
@@ -251,10 +255,8 @@ class BiSSIOMixin:
 
             if isinstance(word, np.ndarray):
                 byte_list = list(word.tobytes())
-
             elif isinstance(word, bytearray):
                 byte_list = list(word)
-
             else:
                 for w in words:
                     try:
@@ -271,7 +273,7 @@ class BiSSIOMixin:
                 logger.debug("Sending word %s with starting index %s", word, addr)
 
             self._write_to_port(generate_byte_line(addr, UartCmd.HEX_WRITE_CMD, reversed_bytes))
-
+            self._check_write_response(0.005)
         except (ValueError, TypeError) as e:
             logger.error("Validation error in biss_write_word: %s", str(e))
             raise
@@ -295,27 +297,11 @@ class BiSSIOMixin:
             >>> print(flags)
             array([0x01, 0x00], dtype=uint8)
         """
-        self._write_to_port(generate_byte_line(BiSSBank.STATE_FLAG_REG_INDEX, UartCmd.HEX_READ_CMD, [1, 2]))
-        self._port.reset_input_buffer()
-        time.sleep(0.01)
-
-        if self._port.in_waiting >= 1:
-            biss_data = self._port.read(7)
-            biss_value = int.from_bytes(biss_data, byteorder='big', signed=False)
-            if (calculate_checksum(biss_data[0:-1].hex())) == (biss_data[-1]):
-                crc_res = "OK"
-            else:
-                crc_res = "FALSE"
-                logger.error(f"Received BiSS Data: {biss_value:#010x}, \
-                              checksum calculated {calculate_checksum(biss_data[0:-1].hex())}, \
-                              in data {(biss_data[-1])}, \tres = {crc_res}")
-                raise FlashToolError('checksum validation failed for state flags.')
-            logger.debug("Received BiSS Data: %s", np.array(list(biss_data[:-1]), 'uint8'))
-            logger.debug(f"Received BiSS Data: {biss_value:#010x}, \
-                          checksum calculated {calculate_checksum(biss_data[0:-1].hex())}, \
-                          in data {(biss_data[-1])}, \tres = {crc_res}")
-            return (np.array(list(biss_data[4:-1]), 'uint8'))
-        raise FlashToolError('No answer from encoder.')
+        self._write_to_port(generate_byte_line(BiSSBank.STATE_FLAG_REG_INDEX, UartCmd.HEX_READ_CMD, list(range(2))))
+        biss_data = self._read_biss_response(expected_length=2, timeout=1.0)
+        state_flags = np.frombuffer(biss_data[4:-1], dtype=np.uint8).copy()
+        logger.debug(f"State flags: {state_flags}")
+        return state_flags
 
     def biss_read_registers(self, bissbank: int) -> None:
         """
@@ -338,25 +324,14 @@ class BiSSIOMixin:
             ...
         """
         self.biss_set_bank(bissbank)
-        self._port.reset_input_buffer()
-        self._write_to_port(
-                            generate_byte_line(0, UartCmd.HEX_READ_CMD,
-                                               [item for item in list(range(BiSSBank.REGISTER_PLUS_FIXED_BANK_SIZE))]))
-        time.sleep(0.1)
+        register_count = BiSSBank.REGISTER_PLUS_FIXED_BANK_SIZE
+        self._write_to_port(generate_byte_line(0, UartCmd.HEX_READ_CMD, list(range(register_count))))
+        biss_data = self._read_biss_response(expected_length=register_count, timeout=1.0)
+        registers = np.frombuffer(biss_data[4:-1], dtype=np.uint8).copy()
 
-        if self._port.in_waiting >= 4:
-            biss_data = self._port.read(BiSSBank.REGISTER_PLUS_FIXED_BANK_SIZE + 5)  # len, addr, addr, cmd, crc
-            biss_value = int.from_bytes(biss_data, byteorder='big', signed=False)
-            if (calculate_checksum(biss_data[0:-1].hex())) == (biss_data[-1]):
-                crc_res = "OK"
-            else:
-                crc_res = "FALSE"
-                logger.error(f"Received BiSS Data: {biss_value:#010x}, \
-                            checksum calculated {calculate_checksum(biss_data[0:-1].hex())}, \
-                            in data {(biss_data[-1])}, \tres = {crc_res}")
-            logger.info("BiSS registers:")
-            logger.info(np.array(list(biss_data[4:68]), 'uint8'))
-            logger.info(np.array(list(biss_data[68:-1]), 'uint8'))
+        logger.info("BiSS registers:")
+        logger.info(registers[:64])
+        logger.info(registers[64:])
 
     def biss_read_snum(self) -> Optional[Tuple[str, str, str, str]]:
         """
@@ -379,11 +354,10 @@ class BiSSIOMixin:
             ('0100', '12345678', '20230101', '0200')
         """
         try:
-            self._write_to_port(generate_byte_line(BiSSBank.FIXED_ADDRESSES_START_INDEX, UartCmd.HEX_READ_CMD, list(range(64))))
-            self._port.reset_input_buffer()
-            time.sleep(0.1)
+            self._write_to_port(generate_byte_line(BiSSBank.FIXED_ADDRESSES_START_INDEX, UartCmd.HEX_READ_CMD, list(range(BiSSBank.FIXED_BANK_SIZE))))
+            biss_data = self._read_biss_response(expected_length=BiSSBank.FIXED_BANK_SIZE, timeout=1.0)
+            enc_ver_answ_uint8 = np.frombuffer(biss_data[4:-1], dtype=np.uint8).copy()
             cor = BiSSBank.FIXED_ADDRESSES_START_INDEX
-            enc_ver_answ_uint8 = self.port_read(BiSSBank.FIXED_BANK_SIZE)
             ans = bytes_to_hex_str(enc_ver_answ_uint8)
             # *2 in indexes is for bytes,
             endict = {'Bootloader':  ans[(BiSSBank.BOOTLOADER_VER_REG_INDEX-cor)*2:
@@ -452,18 +426,16 @@ class BiSSIOMixin:
         """
         try:
             self._write_to_port(generate_byte_line(BiSSBank.FIXED_ADDRESSES_START_INDEX, UartCmd.HEX_READ_CMD, list(range(64))))
-            time.sleep(0.1)
-            enc_ver_answ_uint8 = self.port_read(BiSSBank.FIXED_BANK_SIZE)
-            enc_ver_answ = bytes_to_hex_str(enc_ver_answ_uint8[4:])
+            biss_data = self._read_biss_response(expected_length=BiSSBank.FIXED_BANK_SIZE,timeout=1.0)
+            enc_ver_answ_uint8 = np.frombuffer(biss_data[4:-1], dtype=np.uint8).copy()
+            enc_ver_answ = bytes_to_hex_str(enc_ver_answ_uint8)
             enc_ver_dict = {'HSI':  enc_ver_answ_uint8[BiSSBank.FIRSTHARMAMP_REG_INDEX-BiSSBank.FIXED_ADDRESSES_START_INDEX]}
             logger.info('======= ENCODER DATA ========')
             logger.debug('Raw encoder answer: %s', enc_ver_answ)
             for name, val in enc_ver_dict.items():
                 logger.info(f'{str(name)}: \t {str(val)}')
             logger.info('=============================')
-            return (
-                enc_ver_dict["HSI"]
-            )
+            return (enc_ver_dict["HSI"])
         except FlashToolError as e:
             logger.error("ERROR: Can't read registers data! %s", e)
             return None
@@ -535,23 +507,162 @@ class BiSSIOMixin:
             array([0x01], dtype=uint8)
         """
         try:
-            self._write_to_port(generate_byte_line(BiSSBank.CMD_STATE_FLAG_REG_INDEX, UartCmd.HEX_READ_CMD, [1]))
-            time.sleep(0.01)
-            if self._port.in_waiting >= 1:
-                biss_data = self._port.read(6)
-                biss_value = int.from_bytes(biss_data, byteorder='big', signed=False)
-                if (calculate_checksum(biss_data[0:-1].hex())) == (biss_data[-1]):
-                    crc_res = "OK"
-                else:
-                    crc_res = "FALSE"
-                    logger.error(f"Received BiSS Data: {biss_value:#010x}, \
-                                checksum calculated {calculate_checksum(biss_data[0:-1].hex())}, \
-                                in data {(biss_data[-1])}, \tres = {crc_res}")
-                logger.debug(np.array(list(biss_data[:-1]), 'uint8'))
-                return (np.array(list(biss_data[4:-1]), 'uint8'))
+            self._write_to_port(generate_byte_line(BiSSBank.CMD_STATE_FLAG_REG_INDEX, UartCmd.HEX_READ_CMD, list(range(1))))
+            biss_data = self._read_biss_response(expected_length=1, timeout=1.0)
+            command_state = np.frombuffer(biss_data[4:-1], dtype=np.uint8).copy()
+            logger.debug(f"Command state: {command_state}")
+            return command_state
         except FlashToolError as e:
             logger.error("ERROR: Can't read command state! %s", e)
             return None
+
+    def _read_biss_response(self, expected_length: int, timeout: float = 1.0) -> bytes:
+        """Read and validate one length-prefixed HEX_READ_CMD response.
+
+        Frame format: [payload_len][addr_hi][addr_lo][cmd][payload...][crc].
+        A four-byte payload is used by the firmware for diagnostic error frames.
+        """
+        header = self._read_exact(1, timeout=timeout)
+        response_len = header[0]
+        if response_len > 128:
+            raise FlashToolError(f"Invalid BiSS response length: {response_len}")
+
+        # Fixed part after the length byte: address(2), command(1), payload, CRC(1).
+        expected_total_len = response_len + 5
+        rest = self._read_exact(expected_total_len - 1, timeout=timeout)
+        response = header + rest
+
+        logger.debug(
+            "BiSS response: requested=%d, declared=%d, received=%d, raw=%s",
+            expected_length,
+            response_len,
+            len(response),
+            response.hex(" "),
+        )
+
+        calculated_crc = calculate_checksum(response[:-1].hex())
+        if calculated_crc != response[-1]:
+            raise FlashToolError(
+                f"Checksum error in BiSS response: calculated 0x{calculated_crc:02X}, "
+                f"received 0x{response[-1]:02X}"
+            )
+
+        if response[3] == FlashToolError.UART_CMD_ERROR_FRAME:
+            self._raise_error_frame(response)
+
+        if response_len != expected_length:
+            raise FlashToolError(
+                f"requested {expected_length} bytes, "
+                f"device declared {response_len} bytes, "
+                f"raw={response.hex(' ')}"
+            )
+
+        return response
+
+    def _check_write_response(self, timeout: float = 0.05) -> None:
+        """
+        Check whether the device returned an error frame after a HEX_WRITE_CMD.
+
+        Per the UART protocol, a successful ``HEX_WRITE_CMD`` (``0x0D``) produces
+        **no response** — the device silently applies the write. However, on
+        failure the device does send a diagnostic frame with the same layout as
+        a read response::
+
+            [len=4][addr_hi][addr_lo][0xE0]
+            [offender_cmd][error_type][error_code][fault_state][crc]
+
+        Args:
+            timeout: Maximum time to wait for a potential error frame, in seconds.
+                Defaults to ``0.05`` — enough for the device to start replying,
+                small enough not to slow down normal writes.
+
+        Returns:
+            None: the method returns silently when no error frame is received.
+
+        Raises:
+            FlashToolError: If the device reports an error. The exception carries
+                ``error_type``, ``error_code`` and ``fault_state`` decoded from
+                the frame, plus a human-readable description.
+
+        Example:
+            >>> ft.biss_set_bank(164)   # device replies with BISS_FAULT_WRITE
+            Traceback (most recent call last):
+                ...
+            FlashToolError: BiSS error: error_type=0x01 (ERROR_TYPE_BISS),
+                error_code=0x04 (UART_ERROR_BISS_WRITE_FAULT: BiSS write fault),
+                fault_state=0x02 (BISS_FAULT_WRITE: BiSS write fault)
+        """
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline and self._port.in_waiting < 1:
+            time.sleep(0.001)
+
+        if self._port.in_waiting < 1:
+            return
+
+        header = self._read_exact(1, timeout=max(timeout, 0.1))
+        response_len = header[0]
+
+        expected_total = response_len + 5
+        rest = self._read_exact(expected_total - 1, timeout=max(timeout, 0.1))
+        data = header + rest
+
+        calculated_crc = calculate_checksum(data[:-1].hex())
+        if calculated_crc != data[-1]:
+            raise FlashToolError(
+                f"Checksum error in write response: "
+                f"calculated 0x{calculated_crc:02X}, received 0x{data[-1]:02X}"
+            )
+
+        if data[3] == FlashToolError.UART_CMD_ERROR_FRAME:
+            logger.debug(
+                "Error frame after WRITE_REG: offender=0x%02X, type=0x%02X, "
+                "code=0x%02X, fault=0x%02X",
+                data[4], data[5], data[6], data[7],
+            )
+            self._raise_error_frame(data)
+
+        logger.warning(
+            "Unexpected RX after WRITE_REG: "
+            "len=%d, cmd=0x%02X, raw=%s",
+            response_len,
+            data[3] if len(data) > 3 else 0,
+            data.hex(" "),
+        )
+
+        raise FlashToolError(
+            f"Unexpected response after HEX_WRITE_CMD: {data.hex(' ')}"
+        )
+
+    def _raise_error_frame(self, data: bytes) -> None:
+        """Decode and raise a firmware diagnostic error frame.
+
+        Frame:
+            [len=4][addr_hi][addr_lo][0xE0]
+            [offender_cmd][error_type][error_code][fault_state][crc]
+        """
+        if len(data) != 9 or data[0] != 4:
+            raise FlashToolError(
+                f"Invalid error frame length: declared={data[0] if data else 'N/A'}, "
+                f"received={len(data)}, raw={data.hex(' ')}"
+            )
+
+        if data[3] != FlashToolError.UART_CMD_ERROR_FRAME:
+            raise FlashToolError(
+                f"Invalid error frame command: 0x{data[3]:02X}"
+            )
+        
+        offender_cmd = data[4]
+        error_type   = data[5]
+        error_code   = data[6]
+        fault_state  = data[7]
+
+        raise FlashToolError(
+            "",
+            offender_cmd=offender_cmd,
+            error_type=UARTErrorType(error_type),
+            error_code=UARTErrorCode(error_code),
+            fault_state=BiSSFaultState(fault_state),
+        )
 
     def biss_addr_readb(self, bissbank: int, addr: int, length: int) -> np.ndarray:
         """
@@ -578,27 +689,19 @@ class BiSSIOMixin:
             >>> print(data)
             array([0x01, 0x02, 0x03, 0x04], dtype=uint8)
         """
-        self.biss_set_bank(bissbank)
-        self._port.flushInput()
-        self._write_to_port(generate_byte_line(addr, UartCmd.HEX_READ_CMD, list(range(length))))
-        time.sleep(0.01)
+        if not 0 <= bissbank <= 255:
+            raise ValueError("bissbank must be in range 0..255")
+        if not 0 <= addr <= 127:
+            raise ValueError("addr must be in range 0..127")
+        if not 1 <= length <= 128:
+            raise ValueError("length must be in range 1..128")
 
-        if self._wait_for_data(length + 1, timeout=1.0):
-            biss_data = self._port.read(length + 5)  # len, addr, addr, cmd, crc
-            biss_value = int.from_bytes(biss_data, byteorder='big', signed=False)
-            calculated_crc = calculate_checksum(biss_data[0:-1].hex())
-            if calculated_crc == biss_data[-1]:
-                crc_res = "OK"
-                logger.debug(f"Received BiSS Data: {biss_value:#010x}, checksum calculated {calculated_crc}, \
-                             in data {biss_data[-1]}, res = {crc_res}")
-            else:
-                crc_res = "FALSE"
-                logger.error(f"Received BiSS Data: {biss_value:#010x}, checksum calculated {calculated_crc}, \
-                             in data {biss_data[-1]}, res = {crc_res}")
-            logger.debug("BiSS Bank %s registers at %s:", bissbank, addr)
-            logger.debug(np.array(list(biss_data[4:-1]), 'uint8'))
-            return np.array(list(biss_data[4:-1]), 'uint8')
-        raise FlashToolError('Timeout waiting for register data.')
+        self.biss_set_bank(bissbank)
+        self._write_to_port(generate_byte_line(addr, UartCmd.HEX_READ_CMD, list(range(length))))
+        biss_data = self._read_biss_response(expected_length=length, timeout=1.0)
+        register_data = np.frombuffer(biss_data[4:-1], dtype=np.uint8).copy()
+        logger.info("Registers in bank %s at address %s:\n%s", bissbank, addr, register_data)
+        return register_data
 
     def biss_addr_read(self, addr: int, length: int) -> np.ndarray:
         """
@@ -623,25 +726,16 @@ class BiSSIOMixin:
             >>> print(data)
             array([0x01, 0x02, 0x03, 0x04], dtype=uint8)
         """
-        self._port.flushInput()
-        self._write_to_port(generate_byte_line(addr, UartCmd.HEX_READ_CMD, list(range(length))))
-        time.sleep(0.01)
+        if not isinstance(addr, int) or not 0 <= addr <= 127:
+            raise ValueError("addr must be an integer in range 0..127")
+        if not isinstance(length, int) or not 1 <= length <= 128:
+            raise ValueError("length must be an integer in range 1..128")
 
-        if self._wait_for_data(length + 1, timeout=1.0):
-            biss_data = self._port.read(length + 5)  # len, addr, addr, cmd, crc
-            biss_value = int.from_bytes(biss_data, byteorder='big', signed=False)
-            calculated_crc = calculate_checksum(biss_data[0:-1].hex())
-            if calculated_crc == biss_data[-1]:
-                crc_res = "OK"
-            else:
-                crc_res = "FALSE"
-                logger.error(f"Received BiSS Data: {biss_value:#010x}, checksum calculated {calculated_crc}, \
-                             in data {biss_data[-1]}, res = {crc_res}")
-                raise FlashToolError('checksum error.')
-            logger.debug("Registers at %s:", addr)
-            logger.debug(np.array(list(biss_data[4:-1]), 'uint8'))
-            return np.array(list(biss_data[4:-1]), 'uint8')
-        raise FlashToolError('Timeout waiting for register data.')
+        self._write_to_port(generate_byte_line(addr, UartCmd.HEX_READ_CMD, list(range(length))))
+        biss_data = self._read_biss_response(expected_length=length, timeout=1.0)
+        register_data = np.frombuffer(biss_data[4:-1], dtype=np.uint8).copy()
+        logger.debug("Registers at %s:\n%s", addr, register_data)
+        return register_data
 
     def read_encoder_flag(
         self,
@@ -784,6 +878,7 @@ class BiSSIOMixin:
         state_flags = self.biss_read_state_flags()
         error_flags_flash_pos = 1  # TODO use ERROR_FLAGS here
         crc_flag = state_flags >> error_flags_flash_pos & 1
+        logger.debug(f"Crc flag: {crc_flag}")
         return crc_flag
 
     def biss_read_flags(self) -> Tuple[list[str], list[str]]:
@@ -1029,19 +1124,20 @@ class BiSSIOMixin:
                     self.biss_set_bank(BiSSBank.BISS_BANK_SERV)
                     self.biss_write_word(BiSSBank.CRC32_REG_INDEX, crc)
                     self.biss_write_word(BiSSBank.PAGENUM_REG_INDEX, page_num)
-                    time.sleep(0.01)
+                    # time.sleep(0.01)
 
                 # Send each bank in the page
                 for bank_idx, bank_data in enumerate(page_data):
                     bank_num = bank_idx + BiSSBank.BISS_USERBANK_START
                     if bank_num == 5:  # Set bank 5 explicitly
                         self.biss_set_bank(bank_num)
-                    time.sleep(0.05)
+                    # time.sleep(0.05)
 
                     if pbar:
                         percent_complete(bank_idx, BiSSBank.BANKS_PER_PAGE - 1, title=f"Sending Page {page_idx}")
                     hex_line = generate_hex_line(0, UartCmd.HEX_WRITE_CMD, bank_data)
                     self.hex_line_send(hex_line)
+                    self._check_write_response(0.005)
 
                 time.sleep(0.3)
                 if difmode:

@@ -17,7 +17,7 @@ import logging
 from typing import Optional, Any
 import numpy as np
 from ..biss import biss_commands, BiSSBank
-from .uart import UartCmd, UartBootloaderCmd, UartBootloaderMemoryStates, UartBootloaderSeq
+from .uart import UartCmd, UartProtoConst, UartBootloaderCmd, UartBootloaderMemoryStates, UartBootloaderSeq
 from .hex_utils import generate_hex_line, HexBlockExtractor
 from ..utils.progress import percent_complete
 
@@ -429,7 +429,7 @@ class BootloaderMixin:
                 logger.error("No response from IRS encoder!")
                 return False
 
-            expected_ans = np.array(UartBootloaderSeq.UART_SEQ_ANSWER_TO_STAY_IN_BL, dtype=np.uint8)
+            expected_ans = np.array(UartBootloaderSeq.UART_SEQ_ANSWER_TO_STAY_IN_BL_IRS, dtype=np.uint8)
 
             if np.array_equal(expected_ans, enc_ans):
                 logger.info("IRS Encoder enter bootloader successfully!")
@@ -543,7 +543,7 @@ class BootloaderMixin:
             )[1:])
             self._write_to_port(tx)
 
-            enc_ans = self.port_read(len(tx) - UartCmd.PKG_INFO_LENGTH)
+            enc_ans = self.port_read(len(tx) - UartProtoConst.PKG_INFO_LENGTH)
 
             if enc_ans is None:
                 logger.error("No response from IRS encoder!")

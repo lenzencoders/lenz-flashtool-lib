@@ -10,6 +10,7 @@ from ..biss.commands import (
     biss_commands, interpret_biss_commandstate, interpret_error_flags
 )
 from ..utils.progress import percent_complete
+from ..flashtool.errors import FlashToolError, UARTErrorType, UARTErrorCode, BiSSFaultState
 
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ class MockFlashTool:
         self.__port_name = "MOCK_PORT"
         self._mock_data = {}
         self._mock_responses = {}
+        self._pending_write_error = None
         self._setup_default_mock_data()
         logger.debug(f'Mock FlashTool {self.__port_name} - Connected!')
 
@@ -156,17 +158,41 @@ class MockFlashTool:
         logger.debug(f'Mock: Uploading {hex_line} to the encoder.')
         return bytes.fromhex(hex_line[1:])
 
+    def mock_queue_error_frame(self, error_type: int, error_code: int,
+                               fault_state: int) -> None:
+        """Queue an error frame to be returned on the next write command."""
+        self._pending_write_error = {
+            'error_type': error_type,
+            'error_code': error_code,
+            'fault_state': fault_state,
+        }
+
+    def _check_write_response(self, timeout: float = 0.05) -> None:
+        """Raise FlashToolError if a queued error frame is pending."""
+        if self._pending_write_error is None:
+            return
+        err = self._pending_write_error
+        self._pending_write_error = None
+        raise FlashToolError(
+            "",
+            error_type=UARTErrorType(err['error_type']),
+            error_code=UARTErrorCode(err['error_code']),
+            fault_state=BiSSFaultState(err['fault_state']),
+        )
+
     def biss_set_bank(self, bank_num: int):
         """Mock bank selection"""
         if not 0 <= bank_num <= 255:
             raise ValueError(f"Mock: Bank {bank_num} out of range (0-255)")
         logger.debug(f'Mock: Setting bank {bank_num}')
+        self._check_write_response()
 
     def biss_write(self, addr: int, data: int):
         """Mock write operation"""
         if not 0 <= addr <= 127:
             raise ValueError(f"Mock: Address {addr} out of range (0-127)")
         logger.debug(f'Mock: Writing {data} to address {addr}')
+        self._check_write_response()
 
     def biss_write_word(self, addr: int, word: Union[int, List[int]]) -> None:
         """Mock word writing"""
@@ -178,6 +204,7 @@ class MockFlashTool:
             raise ValueError("Mock: Empty word list provided")
 
         logger.debug(f"Mock: Sending word {words} with starting index {addr}")
+        self._check_write_response()
 
     def biss_read_state_flags(self) -> np.ndarray:
         """Mock state flags reading"""
