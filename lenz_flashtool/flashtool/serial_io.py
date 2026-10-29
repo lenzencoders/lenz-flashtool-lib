@@ -99,6 +99,59 @@ class SerialIOMixin:
             time.sleep(0.01)
         return False
 
+    def _read_exact(self, size: int, timeout: float = 1.0) -> bytes:
+        if not self._wait_for_data(size, timeout):
+            data = self._port.read(self._port.in_waiting)
+            raise FlashToolError(
+                f"Timeout waiting for response: expected {size} more bytes, "
+                f"received only {len(data)}"
+            )
+
+        data = self._port.read(size)
+
+        if len(data) != size:
+            raise FlashToolError(
+                f"Incomplete response: expected {size} bytes, received {len(data)}"
+            )
+
+        return data
+
+    def _read_first_frame(self, timeout: float = 1.0) -> bytes:
+        """
+        Read one length-prefixed frame (stream, reply, or error).
+
+        The first byte is the payload length. The frame layout is:
+            [len][addr_hi][addr_lo][cmd][payload...][crc]
+
+        If the frame is a diagnostic error frame (cmd == 0xE0), this method
+        decodes it and raises ``FlashToolError`` with the offender command,
+        error type, error code and fault state. Otherwise it returns the raw
+        frame bytes (including the length byte and CRC) for the caller to
+        process.
+
+        Raises:
+            FlashToolError: on timeout, bad length, CRC mismatch, or a
+                firmware diagnostic error frame.
+        """
+        header = self._read_exact(1, timeout=timeout)
+        response_len = header[0]
+
+        # len + addr(2) + cmd(1) + payload + crc(1)
+        rest = self._read_exact(response_len + 4, timeout=timeout)
+        frame = header + rest
+
+        calculated_crc = calculate_checksum(frame[:-1].hex())
+        if calculated_crc != frame[-1]:
+            raise FlashToolError(
+                f"Checksum error in frame: calculated 0x{calculated_crc:02X}, "
+                f"received 0x{frame[-1]:02X}, raw={frame.hex(' ')}"
+            )
+
+        if frame[3] == FlashToolError.UART_CMD_ERROR_FRAME:   # 0xE0
+            self._raise_error_frame(frame)
+
+        return frame
+
     def _write_to_port(self, data: bytes) -> None:
         """
         Writes data to the serial port with unified error handling.

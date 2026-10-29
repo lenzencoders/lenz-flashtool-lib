@@ -17,7 +17,7 @@ Author:
 # |_____|_____|_| \_/____|  |_____|_| \_|\____\___/|____/|_____|_| \_|____/
 # '''
 
-from .uart import UartCmd, UartBootloaderSeq
+from .uart import UartCmd, UartProtoConst, UartBootloaderSeq
 from .core import FlashTool
 from .encoder_control import RESOLUTION_MAP
 from .logging import init_logging
@@ -27,6 +27,7 @@ from .operations import biss_send_dif, biss_send_hex, send_hex_irs_enc
 from .ft_bl_connection import connect_and_stay_in_bl, connect_and_enter_fw
 __all__ = [
     'UartCmd',
+    'UartProtoConst',
     'UartBootloaderSeq',
     'FlashTool',
     'RESOLUTION_MAP',

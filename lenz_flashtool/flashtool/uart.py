@@ -24,38 +24,6 @@ class UartCmd(IntEnum):
     channel selection, and data communication with the FlashTool hardware.
     """
 
-    PKG_INFO_LENGTH = 0x05
-    """int: Packet INFO constant structure length of 5 bytes
-
-    Packet Structure:
-        Request Packet:
-        [DUMMY_DATA_SIZE][REG_ADDR][ CMD  ][DUMMY_DATA][CHECKSUM]
-        [     1 byte    ][2 bytes ][1 byte][----------][ 1 byte ]
-
-        Response Packet:
-        [DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]
-        [     1 byte    ][2 bytes ][     1 byte    ][----------][ 1 byte ]
-
-    """
-
-    RX_DATA_LENGTH_IRS = 0xFC
-    """int: Data length for command:
-        HEX_IRS_ENC_WRITE_READ_CMD: 0x0F
-    """
-
-    RX_DATA_LENGTH_CURRENT = 0x04
-    """int: Data length for commands:
-        HEX_READ_ENC2_CURRENT: 0x12
-    """
-
-    CMD_VAL_ADD = 0x10
-    """int: Value added to CMD in the Response Packet
-
-    Response:
-        [DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]
-
-    """
-
     CMD_POWER_OFF = 0x0B
     """int: Command to power off encoder on channel 2.
 
@@ -535,6 +503,47 @@ class UartCmd(IntEnum):
 
     Example:
         >>> :010000ff0000
+    """
+
+
+class UartProtoConst(IntEnum):
+    """Protocol constants.
+
+    Frame-format values used to build and parse UART packets:
+    packet length, reply flag, and expected data lengths for specific
+    commands.
+    """
+
+    PKG_INFO_LENGTH = 0x05
+    """int: Packet INFO constant structure length of 5 bytes
+
+    Packet Structure:
+        Request Packet:
+        [DUMMY_DATA_SIZE][REG_ADDR][ CMD  ][DUMMY_DATA][CHECKSUM]
+        [     1 byte    ][2 bytes ][1 byte][----------][ 1 byte ]
+
+        Response Packet:
+        [DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]
+        [     1 byte    ][2 bytes ][     1 byte    ][----------][ 1 byte ]
+
+    """
+
+    RX_DATA_LENGTH_IRS = 0xFC
+    """int: Data length for command:
+        HEX_IRS_ENC_WRITE_READ_CMD: 0x0F
+    """
+
+    RX_DATA_LENGTH_CURRENT = 0x04
+    """int: Data length for commands:
+        HEX_READ_ENC2_CURRENT: 0x12
+    """
+
+    CMD_VAL_ADD = 0x10
+    """int: Value added to CMD in the Response Packet
+
+    Response:
+        [DUMMY_DATA_SIZE][REG_ADDR][CMD+CMD_VAL_ADD][DUMMY_DATA][CHECKSUM]
+
     """
 
 

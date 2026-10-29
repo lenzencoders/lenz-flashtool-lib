@@ -27,6 +27,7 @@ from .biss import (
     )
 from .flashtool import (
     UartCmd,
+    UartProtoConst,
     UartBootloaderSeq,
     FlashTool,
     FlashToolError,
@@ -73,6 +74,7 @@ __all__ = [
 
     # Command constants
     'UartCmd',
+    'UartProtoConst',
     'UartBootloaderSeq',
 
     # Core classes
