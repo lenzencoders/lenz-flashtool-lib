@@ -15,10 +15,13 @@ Author:
 
 import time
 import logging
-from typing import Dict, Literal
+from dataclasses import dataclass
+from typing import Dict, Literal, Optional, Tuple, List
+from datetime import datetime, timezone
 from ..biss import BiSSBank
 from .uart import UartCmd
 from .hex_utils import generate_hex_line
+from .errors import FlashToolError
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +39,229 @@ _BITS_TO_HYST_RES: Dict[int, int] = {
 }
 
 
+@dataclass(frozen=True)
+class DetectedSensor:
+    """Result of ``detect_sensor``.
+    
+    Attributes:
+        mode: FlashTool mode string (``"spi_spi"`` or ``"ab_uart"``).
+        channel: Channel string (``"channel1"`` or ``"channel2"``).
+        serial_number: Tuple ``(ver, sn, date, program)`` decoded from
+            ``biss_read_snum``. ``None`` if the sensor did not respond.
+        is_uart: ``True`` for ``ab_uart`` (UART sensor), ``False`` for
+            ``spi_spi`` (SPI sensor)
+    """
+    mode: str               # "spi_spi" | "ab_uart"
+    channel: str            # "channel1" | "channel2"
+    serial_number: Optional[Tuple[str, str, str, str]]
+    is_uart: bool           # True for ab_uart, False for spi
+
+    @property
+    def is_spi(self) -> bool:
+        """Convenience: True for SPI sensors (``spi_spi``)."""
+        return not self.is_uart
+
+    @property
+    def sn(self) -> Optional[str]:
+        """Human-readable serial number, e.g. '2K8010'."""
+        if self.serial_number is None:
+            return None
+        try:
+            raw = bytes.fromhex(self.serial_number[1])
+        except (ValueError, TypeError, IndexError):
+            return None
+        if len(raw) != 4:
+            return None
+        # First two bytes: ASCII prefix.
+        try:
+            prefix = raw[:2].decode("ascii")
+        except UnicodeDecodeError:
+            # If the prefix is not valid ASCII, fall back to hex for all bytes.
+            return raw.hex().upper()
+        # Remaining bytes: keep as uppercase hex.
+        suffix = raw[2:].hex().upper()
+        return prefix + suffix
+
+    @property
+    def mfg_date(self) -> Optional[datetime]:
+        """Manufacturing date as a UTC datetime, or None."""
+        if self.serial_number is None:
+            return None
+        try:
+            return datetime.fromtimestamp(
+                int(self.serial_number[2], 16), tz=timezone.utc
+            )
+        except (ValueError, TypeError, OSError, OverflowError):
+            return None
+
+    @property
+    def program(self) -> Optional[str]:
+        """Program version, e.g. '01.01.05.25'."""
+        if self.serial_number is None:
+            return None
+        try:
+            return ".".join(
+                f"{b:02d}" for b in bytes.fromhex(self.serial_number[3])[::-1]
+            )
+        except (ValueError, TypeError):
+            return None
+
+    @property
+    def bootloader(self) -> Optional[str]:
+        """Bootloader version, e.g. '01.00.01.00'."""
+        if self.serial_number is None:
+            return None
+        try:
+            return ".".join(
+                f"{b:02d}" for b in bytes.fromhex(self.serial_number[0])[::-1]
+            )
+        except (ValueError, TypeError):
+            return None
+
+    def __str__(self) -> str:
+        kind = "UART" if self.is_uart else "SPI"
+        if self.mfg_date is not None:
+            mfg = self.mfg_date.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            mfg = "?"
+        return (
+            f"{kind} sensor on {self.mode}/{self.channel} "
+            f"(SN={self.sn or '?'}, "
+            f"Mfg={mfg}, "
+            f"Program={self.program or '?'}, "
+            f"Bootloader={self.bootloader or '?'})"
+        )
+
+
+
+_MODE_CANDIDATES: List[Tuple[str, bool, List[str]]] = [
+    ("spi_spi", False, ["channel2", "channel1"]),
+    ("ab_uart", True,  ["channel2"]),
+]
+
 class EncoderControlMixin:
     """Mixin providing encoder power control, FlashTool reset, and mode/channel selection."""
+
+
+    def detect_sensor(
+        self,
+        status: bool = True,
+        settle_s: float = 0.5,
+        retry_per_combo: int = 2,
+        power_cycle_on_retry: bool = True,
+    ) -> Optional[DetectedSensor]:
+        """
+        Probe every (mode, channel) combination and return the first one
+        that answers ``biss_read_snum`` with a valid serial number.
+
+        Combinations tried, in order:
+            spi_spi / channel2
+            spi_spi / channel1
+            ab_uart / channel2
+
+        ``ab_uart`` is only probed on ``channel2`` — the UART sensor is
+        wired to USART2 and channel1 is not used in that mode.
+
+        On failure, the firmware is reset via ``flashtool_rst()`` and (if
+        ``power_cycle_on_retry``) the encoder on the current channel is
+        power-cycled before retrying the same combination.
+
+        Args:
+            status: If True, log each attempt at INFO level; if False, only
+                log the final result and errors.
+            settle_s: Seconds to wait after a mode switch before probing.
+            retry_per_combo: How many times to retry a single (mode, channel)
+                combination.
+            power_cycle_on_retry: If True, power-cycle the encoder on the
+                current channel after a failed attempt.
+
+        Returns:
+            DetectedSensor if a sensor was found, None otherwise. The
+            FlashTool is left in the detected mode/channel on success;
+            on failure the original mode/channel is restored.
+
+        Example:
+            >>> ft = FlashTool()
+            >>> sensor = ft.detect_sensor()
+            >>> if sensor:
+            ...     print(sensor.mode, sensor.channel, sensor.serial_number)
+            spi_spi channel2 ('0100', '12345678', '20230101', '0200')
+        """
+        logger.info("Detecting sensor...")
+
+        original_mode = getattr(self, "_current_mode", None)
+        original_channel = getattr(self, "_current_channel", None)
+
+        def _recover(channel: str) -> None:
+            """Reset the firmware and (optionally) power-cycle the encoder."""
+            try:
+                logger.debug("Recovering: firmware reset")
+                self.flashtool_rst()
+                time.sleep(0.3)
+            except Exception as exc:
+                logger.warning("Firmware reset failed: %s", exc)
+            if power_cycle_on_retry:
+                try:
+                    logger.debug("Recovering: power cycle on %s", channel)
+                    if channel == "channel1":
+                        self.encoder_ch1_power_cycle()
+                    else:
+                        self.encoder_power_cycle()
+                except Exception as exc:
+                    logger.warning("Power cycle on %s failed: %s", channel, exc)
+
+        try:
+            for mode, is_uart, channels in _MODE_CANDIDATES:
+                for channel in channels:
+                    for attempt in range(retry_per_combo):
+                        # Detailed attempt log only when `status` is on.
+                        log_attempt = logger.info if status else logger.debug
+                        log_attempt(
+                            "[%s/%s] attempt %d/%d",
+                            mode, channel, attempt + 1, retry_per_combo,
+                        )
+                        try:
+                            self.select_flashtool_mode(mode)
+                            self.select_spi_channel(channel)
+                            time.sleep(settle_s)
+
+                            sn = self.biss_read_snum()
+                            if sn is not None:
+                                sensor = DetectedSensor(
+                                    mode=mode,
+                                    channel=channel,
+                                    serial_number=sn,
+                                    is_uart=is_uart,
+                                )
+                                return sensor
+
+                            logger.debug("[%s/%s] no reply", mode, channel)
+
+                        except FlashToolError as exc:
+                            logger.debug(
+                                "[%s/%s] error: %s", mode, channel, exc,
+                            )
+
+                        if attempt + 1 < retry_per_combo:
+                            _recover(channel)
+
+            logger.warning("No sensor detected in any mode/channel")
+            return None
+
+        finally:
+            if original_mode is not None and original_channel is not None:
+                try:
+                    logger.debug(
+                        "Restoring original mode/channel: %s/%s",
+                        original_mode, original_channel,
+                    )
+                    self.select_flashtool_mode(original_mode)
+                    self.select_spi_channel(original_channel)
+                except Exception as exc:
+                    logger.warning(
+                        "Failed to restore mode/channel %s/%s: %s",
+                        original_mode, original_channel, exc,
+                    )
 
     def set_resolution_and_direction(
         self,
@@ -254,9 +478,14 @@ class EncoderControlMixin:
         logger.info(f"Selected Channel: {channel_num} - {channel_desc}")
 
         tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_SPI_CH, [channel_num])[1:])
-        self._port.reset_output_buffer()
-        self._port.write(tx_row)
-        self._port.flush()
+        self._write_to_port(tx_row)
+        try:
+            self._check_write_response(0.005)
+        except FlashToolError as exc:
+            logger.error("Channel switch to %r failed: %s", channel, exc)
+            raise
+
+        self._current_channel = channel
 
     def select_flashtool_mode(self, mode: Literal["spi_spi", "ab_uart", "spi_uart_irs", "ab_spi", "default_spi"]) -> None:
         """
@@ -308,10 +537,16 @@ class EncoderControlMixin:
 
         tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_FLASHTOOL_MODE, [mode_num])[1:])
         self._write_to_port(tx_row)
-        self._check_write_response(0.005)
         time.sleep(0.5)
+        try:
+            self._check_write_response(0.005)
+        except FlashToolError as exc:
+            logger.error("Mode switch to %r failed: %s", mode, exc)
+            raise
 
-    def select_FlashTool_current_sensor_mode(self, mode: Literal["disable", "enable"]) -> None:
+        self._current_mode = mode
+
+    def select_flashtool_current_sensor_mode(self, mode: Literal["disable", "enable"]) -> None:
         """
         Select FlashTool Current sensor mode.
 
@@ -351,9 +586,12 @@ class EncoderControlMixin:
 
         tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_FLASHTOOL_CURRENT_SENSOR_MODE, [mode_num])[1:])
         logger.debug(f"Current sensor mode command: {tx_row.hex()}")
-        self._port.reset_output_buffer()
-        self._port.write(tx_row)
-        self._port.flush()
+        self._write_to_port(tx_row)
+        try:
+            self._check_write_response(0.005)
+        except FlashToolError as exc:
+            logger.error("Current sensor mode switch to %r failed: %s", mode, exc)
+            raise
 
     def select_spi_ch1_mode(self, mode: Literal["lenz_biss", "lir_ssi", "lir_biss_21b"]) -> None:
         """

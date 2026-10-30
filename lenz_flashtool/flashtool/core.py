@@ -110,6 +110,9 @@ class FlashTool(SerialIOMixin, BiSSIOMixin, EncoderControlMixin,
         self._port = None
         self._port_name = None
 
+        self._current_mode: Optional[str] = None
+        self._current_channel: Optional[str] = None
+
         ports = serial.tools.list_ports.comports(include_links=False)
         if os.name == 'nt':
             for porti in ports:
