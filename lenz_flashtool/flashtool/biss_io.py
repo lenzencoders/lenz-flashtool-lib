@@ -561,34 +561,41 @@ class BiSSIOMixin:
 
     def _check_write_response(self, timeout: float = 0.05) -> None:
         """
-        Check whether the device returned an error frame after a HEX_WRITE_CMD.
+        Check whether the device returned an error frame after a command.
 
-        Per the UART protocol, a successful ``HEX_WRITE_CMD`` (``0x0D``) produces
-        **no response** — the device silently applies the write. However, on
-        failure the device does send a diagnostic frame with the same layout as
-        a read response::
+        This helper is called after sending **any** command that the firmware
+        may answer with a diagnostic error frame (see
+        ``UART_CommandNeedsErrorReply``). A **successful** command produces
+        **no response**; only a failure is reported, via a frame with the
+        same layout as a read response::
 
             [len=4][addr_hi][addr_lo][0xE0]
             [offender_cmd][error_type][error_code][fault_state][crc]
-
+        
         Args:
-            timeout: Maximum time to wait for a potential error frame, in seconds.
-                Defaults to ``0.05`` — enough for the device to start replying,
-                small enough not to slow down normal writes.
+            timeout: Maximum time to wait for a potential error frame, in
+                seconds. Defaults to ``0.05`` — enough for the device to
+                start replying, small enough not to slow down normal writes.
 
         Returns:
-            None: the method returns silently when no error frame is received.
+            None: the method returns silently when no error frame is
+            received (the normal, successful case).
 
         Raises:
-            FlashToolError: If the device reports an error. The exception carries
-                ``error_type``, ``error_code`` and ``fault_state`` decoded from
-                the frame, plus a human-readable description.
+            FlashToolError:
+                - If the device reports an error: the exception carries
+                ``offender_cmd``, ``error_type``, ``error_code`` and
+                ``fault_state`` decoded from the frame, plus a
+                human-readable description.
+                - If a non-error frame arrives after the command (protocol
+                desync, stale bytes, firmware bug).
 
         Example:
             >>> ft.biss_set_bank(164)   # device replies with BISS_FAULT_WRITE
             Traceback (most recent call last):
                 ...
-            FlashToolError: BiSS error: error_type=0x01 (ERROR_TYPE_BISS),
+            FlashToolError: BiSS error: offender_cmd=0x0D (HEX_WRITE_CMD),
+                error_type=0x01 (ERROR_TYPE_BISS),
                 error_code=0x04 (UART_ERROR_BISS_WRITE_FAULT: BiSS write fault),
                 fault_state=0x02 (BISS_FAULT_WRITE: BiSS write fault)
         """

@@ -468,6 +468,7 @@ class UartCmd(IntEnum):
         >>> UART_ERROR_LEN_IS_NOT_CORRECT = 0x07 # Incorrect data length
         >>> UART_ERROR_INVALID_CMD = 0x08       # Invalid command received
         >>> UART_ERROR_INVALID_MODE = 0x09      # Invalid operation mode
+        >>> UART_ERROR_INVALID_CHANNEL = 0x10   # Invalid channel
 
     BiSS Fault States:
         >>> BISS_NO_FAULTS = 0x00       # No faults detected

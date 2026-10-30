@@ -201,6 +201,7 @@ def send_hex_irs_enc(filename: str) -> bool:
                         )[1:])
                         ft._write_to_port(tx_data)
                         sleep(0.1)
+                        # ft._check_write_response(0.005)
 
                     elif (tx_row[3] == 3):
                         tx_data = bytes.fromhex(generate_hex_line(
@@ -210,6 +211,7 @@ def send_hex_irs_enc(filename: str) -> bool:
                         )[1:])
                         ft._write_to_port(tx_data)
                         sleep(0.1)
+                        # ft._check_write_response(0.005)
 
                         enc_upl_answ = ft.port_read(len(tx_data) - 1)
                         enc_upl_answ_hex = enc_upl_answ.tobytes().hex().upper()

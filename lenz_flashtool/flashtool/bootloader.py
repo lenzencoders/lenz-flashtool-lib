@@ -423,6 +423,7 @@ class BootloaderMixin:
                 data=UartBootloaderSeq.UART_SEQ_STAY_IN_BL,
             )[1:])
             self._write_to_port(tx_row)
+            self._check_write_response(0.005)
 
             enc_ans = self.port_read(len(tx_row)-1)
             if enc_ans is None or len(enc_ans) == 0:
@@ -469,7 +470,6 @@ class BootloaderMixin:
             return success
 
         try:
-            self.select_spi_channel('channel2')
             self.select_flashtool_mode('spi_uart_irs')
             self.encoder_power_off()
             time.sleep(0.1)
