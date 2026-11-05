@@ -401,3 +401,60 @@ class EncoderControlMixin:
         self._port.reset_output_buffer()
         self._port.write(tx_row)
         self._port.flush()
+
+    def select_rs485_address(self, address: Literal[
+            "adr0", "adr1", "adr2", "adr3",
+            "adr4", "adr5", "adr6", "adr7"
+        ]) -> None:
+        """
+        Select RS485 encoder address.
+
+        Sends a SELECT RS485 ADDRESS command to configure the RS485
+        address used by the FlashTool in AB_UART mode.
+
+        Available addresses:
+            "adr0" - RS485_ADR0 (0)
+            "adr1" - RS485_ADR1 (1)
+            "adr2" - RS485_ADR2 (2)
+            "adr3" - RS485_ADR3 (3)
+            "adr4" - RS485_ADR4 (4)
+            "adr5" - RS485_ADR5 (5)
+            "adr6" - RS485_ADR6 (6)
+            "adr7" - RS485_ADR7 (7)
+
+        Args:
+            address: RS485 address as descriptive string.
+
+        Raises:
+            ValueError: If invalid address provided.
+
+        Example:
+            >>> ft.select_rs485_address("adr2")
+            >>> ft.select_rs485_address("adr5")
+        """
+        address_mapping = {
+            "adr0": (0, "RS485_ADR0"),
+            "adr1": (1, "RS485_ADR1"),
+            "adr2": (2, "RS485_ADR2"),
+            "adr3": (3, "RS485_ADR3"),
+            "adr4": (4, "RS485_ADR4"),
+            "adr5": (5, "RS485_ADR5"),
+            "adr6": (6, "RS485_ADR6"),
+            "adr7": (7, "RS485_ADR7"),
+        }
+
+        if address not in address_mapping:
+            valid_addresses = list(address_mapping.keys())
+            raise ValueError(
+                f'Invalid RS485 address: "{address}". '
+                f'Must be one of: {valid_addresses}'
+            )
+
+        address_num, address_desc = address_mapping[address]
+        logger.info(f"Selected RS485 address: {address_num} - {address_desc}")
+
+        tx_row = bytes.fromhex(generate_hex_line(0, UartCmd.CMD_SELECT_RS485_ADDRESS, [address_num])[1:])
+
+        self._port.reset_output_buffer()
+        self._port.write(tx_row)
+        self._port.flush()

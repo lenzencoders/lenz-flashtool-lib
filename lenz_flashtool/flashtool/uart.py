@@ -383,6 +383,34 @@ class UartCmd(IntEnum):
         - Maintains backward compatibility with angle calculation
     """
 
+    CMD_SELECT_RS485_ADDRESS = 0x14
+    """int: Command to select RS485 encoder address.
+
+    Usage:
+        - Used to select the RS485 address for communication in BISS_MODE_AB_UART
+        - Parameter:
+            0x00 for RS485_ADR0,
+            0x01 for RS485_ADR1,
+            0x02 for RS485_ADR2,
+            0x03 for RS485_ADR3,
+            0x04 for RS485_ADR4,
+            0x05 for RS485_ADR5,
+            0x06 for RS485_ADR6,
+            0x07 for RS485_ADR7
+        - Defines the RS485 address used for subsequent CDM and nCDM requests
+
+    Note:
+        RS485 address is persistent until changed or power cycled
+        Default: RS485_ADR2 (0x02)
+
+    Packet Structure:
+        Request: [01][REG_ADDR][0x14][ADDRESS_BYTE][CHECKSUM]
+        Where ADDRESS_BYTE is 0x00 to 0x07
+
+    Example:
+        >>> :0100001402e9  Select RS485 address - RS485_ADR2
+    """
+
     HEX_READ_ANGLE_TWO_ENC_SPI = 0x80
     """int: Command to read angle data from two encoders via SPI.
 
