@@ -26,12 +26,16 @@ Example Commands:
     >>> python -m lenz_flashtool.biss.cli run
     >>> python -m lenz_flashtool.biss.cli registers 2
     >>> python -m lenz_flashtool.biss.cli reg 0x02 0x10
+    >>> python -m lenz_flashtool.biss.cli regb 1 0x10 4
     >>> python -m lenz_flashtool.biss.cli hex 41 82 AA55FF
     >>> python -m lenz_flashtool.biss.cli readserial
-    >>> python -m lenz_flashtool.biss.cli readserial_ils
+    >>> python -m lenz_flashtool.biss.cli readhsi
+    >>> python -m lenz_flashtool.biss.cli flags
     >>> python -m lenz_flashtool.biss.cli sendhexfile SAB039_1_1_4.hex
     >>> python -m lenz_flashtool.biss.cli setmode spi_spi
     >>> python -m lenz_flashtool.biss.cli setspi channel1
+    >>> python -m lenz_flashtool.biss.cli setspich1mode lenz_biss
+    >>> python -m lenz_flashtool.biss.cli flashtool_rst
     >>> python -m lenz_flashtool.biss.cli read_dual_spi_spi 0.1
     >>> python -m lenz_flashtool.biss.cli read_dual_ab_spi 2.0 data.csv
     >>> python -m lenz_flashtool.biss.cli readversions
@@ -45,6 +49,7 @@ Example Commands:
 # |_____|_____|_| \_/____|  |_____|_| \_|\____\___/|____/|_____|_| \_|____/
 #
 
+import os
 import sys
 import logging
 import time
@@ -63,16 +68,82 @@ except ImportError:
     pass
 
 
-class ValidModes(Enum):
-    SPI_SPI = "spi_spi"
-    AB_UART = "ab_uart"
-    SPI_UART_IRS = "spi_uart_irs"
-    AB_SPI = "ab_spi"
-    DEFAULT_SPI = "default_spi"
+MODE_ALIASES = {
+    "spispi":      "spi_spi",
+    "spi_spi":     "spi_spi",
+    "abuart":      "ab_uart",
+    "ab_uart":     "ab_uart",
+    "spiuartirs":  "spi_uart_irs",
+    "spi_uart_irs":"spi_uart_irs",
+    "abspi":       "ab_spi",
+    "ab_spi":      "ab_spi",
+    "defaultspi":  "default_spi",
+    "default_spi": "default_spi",
+}
 
-class ValidSPIChannels(Enum):
-    CHANNEL1 = "channel1"
-    CHANNEL2 = "channel2"
+SPI_CHANNEL_ALIASES = {
+    "channel1": "channel1",
+    "ch1":      "channel1",
+    "1":        "channel1",
+    "channel2": "channel2",
+    "ch2":      "channel2",
+    "2":        "channel2",
+}
+
+SPI_CH1_MODE_ALIASES = {
+    "lenzbiss":     "lenz_biss",
+    "lenz_biss":    "lenz_biss",
+    "lirssi":       "lir_ssi",
+    "lir_ssi":      "lir_ssi",
+    "lirbiss21b":   "lir_biss_21b",
+    "lir_biss_21b": "lir_biss_21b",
+}
+
+ANGLE_SOURCE_ALIASES = {
+    "pkt":      "packet",
+    "packet":   "packet",
+    "inst":     "instant",
+    "instant":  "instant",
+    "dual":     "dual",
+    "d":        "dual",
+}
+
+COMMAND_ALIASES = {
+    # FlashTool
+    "ftrst":            "flashtool_rst",
+    "rst":              "flashtool_rst",
+    "reset":            "flashtool_rst",
+    # Versions
+    "ver":              "readversions",
+    "versions":         "readversions",
+    # Device info
+    "ser":              "readserial",
+    "serial":           "readserial",
+    "hsi":              "readhsi",
+    "fl":               "flags",
+    # Angle
+    "a":                "angle",
+    "ang":              "angle",
+    "al":               "angleloop",
+    "loop":             "angleloop",
+    # Firmware
+    "fw":               "download_fw",
+    "dlfw":             "download_fw",
+    "shf":              "sendhexfile",
+    # Dual reading
+    "rdss":             "read_dual_spi_spi",
+    "rds":              "read_dual_spi_spi",
+    "rdas":             "read_dual_ab_spi",
+    "rda":              "read_dual_ab_spi",
+    # Registers
+    "regs":             "registers",
+    "r":                "reg",
+    "rb":               "regb",
+    # Configuration
+    "mode":             "setmode",
+    "spi":              "setspi",
+    "ch1mode":          "setspich1mode",
+}
 
 class BiSSCommandLine:
     """Command line interface for BiSS encoder operations"""
@@ -133,15 +204,35 @@ class BiSSCommandLine:
 
                     commands_requiring_args = {
                         'read_dual_spi_spi': 'read_time_seconds [output_file.csv]',
-                        'read_dual_ab_spi': 'read_time_seconds [output_file.csv]',
-                        'reg': '<address> <length>',
-                        'regb': '<bank> <address> <length>',
-                        'hex': '<address> <command> <data_hex_str>',
-                        'sendhexfile': '<filename> [pbar]',
-                        'download_fw': '<filename> [pbar]',
-                        'setmode': '<mode>',
-                        'setspi': '<channel>',
-                        'registers': '[bank]'
+                        'read_dual_ab_spi':  'read_time_seconds [output_file.csv]',
+                        'rdss':              'read_time_seconds [output_file.csv]',
+                        'rds':               'read_time_seconds [output_file.csv]',
+                        'rdas':              'read_time_seconds [output_file.csv]',
+                        'rda':               'read_time_seconds [output_file.csv]',
+                        'reg':               '<address> <length>',
+                        'r':                 '<address> <length>',
+                        'regb':              '<bank> <address> <length>',
+                        'rb':                '<bank> <address> <length>',
+                        'hex':               '<address> <command> <data_hex_str>',
+                        'sendhexfile':       '<filename> [pbar]',
+                        'shf':               '<filename> [pbar]',
+                        'download_fw':       '<filename> [pbar]',
+                        'fw':                '<filename> [pbar]',
+                        'dlfw':              '<filename> [pbar]',
+                        'setmode':           '<mode>',
+                        'mode':              '<mode>',
+                        'setspi':            '<channel>',
+                        'spi':               '<channel>',
+                        'setspich1mode':     '<valid_modes>',
+                        'ch1mode':           '<valid_modes>',
+                        'registers':         '[bank]',
+                        'regs':              '[bank]',
+                        'angle':             '[pkt|inst|dual]',
+                        'a':                 '[pkt|inst|dual]',
+                        'ang':               '[pkt|inst|dual]',
+                        'angleloop':         '[interval_seconds]',
+                        'al':                '[interval_seconds]',
+                        'loop':              '[interval_seconds]',
                     }
                     if command in commands_requiring_args and not args:
                         needed_args = commands_requiring_args[command]
@@ -168,19 +259,54 @@ class BiSSCommandLine:
                     traceback.print_exc()
                 print()
 
+    @staticmethod
+    def _normalize(value: str, aliases: dict, kind: str) -> str:
+        """Normalize user input (accepts merged and canonical forms) to canonical value."""
+        key = value.strip().lower()
+        if key in aliases:
+            return aliases[key]
+        valid = sorted({v for v in aliases.values()})
+        raise ValueError(f"Invalid {kind}: '{value}'. Choose from: {', '.join(valid)}")
+
+    @staticmethod
+    def _resolve_command(name: str) -> str:
+        """Resolve CLI command alias → canonical command name."""
+        key = name.strip().lower()
+        return COMMAND_ALIASES.get(key, key)
+
     def _get_example_args(self, command: str) -> str:
         """Get example arguments for a command"""
         examples = {
             'read_dual_spi_spi': '0.1 data.csv',
-            'read_dual_ab_spi': '0.5 output.csv',
-            'reg': '0x10 2',
-            'regb': '1 0x10 4',
-            'hex': '0x40 0x82 0x11',
-            'sendhexfile': 'firmware.hex True',
-            'download_fw': 'app_1.0.10.hex True',
-            'setmode': 'spi_spi',
-            'setspi': 'channel1',
-            'registers': '2'
+            'read_dual_ab_spi':  '0.5 output.csv',
+            'rdss':              '0.1 data.csv',
+            'rds':               '0.1 data.csv',
+            'rdas':              '0.5 output.csv',
+            'rda':               '0.5 output.csv',
+            'reg':               '0x10 2',
+            'r':                 '0x10 2',
+            'regb':              '1 0x10 4',
+            'rb':                '1 0x10 4',
+            'hex':               '0x40 0x82 0x11',
+            'sendhexfile':       'firmware.hex True',
+            'shf':               'firmware.hex True',
+            'download_fw':       'app_1.0.10.hex True',
+            'fw':                'app_1.0.10.hex True',
+            'dlfw':              'app_1.0.10.hex True',
+            'setmode':           'spispi',
+            'mode':              'spispi',
+            'setspi':            'ch1',
+            'spi':               'ch1',
+            'setspich1mode':     'lenzbiss',
+            'ch1mode':           'lenzbiss',
+            'registers':         '2',
+            'regs':              '2',
+            'angle':             'pkt',
+            'a':                 'pkt',
+            'ang':               'pkt',
+            'angleloop':         '0.05',
+            'al':                '0.05',
+            'loop':              '0.05',
         }
         return examples.get(command, '<required arguments>')
 
@@ -199,9 +325,20 @@ class BiSSCommandLine:
     def _setup_completer(self):
         """Setup command completion for interactive mode"""
         commands = list(biss_commands.keys()) + [
-            'registers', 'reg', 'regb', 'hex', 'readserial', 'readserial_ils',
-            'readhsi', 'sendhexfile', 'setmode', 'setspi', 'read_dual_spi_spi',
-            'read_dual_ab_spi', 'readversions', 'download_fw', 'help', 'exit'
+            'registers', 'reg', 'regb', 'hex', 'readserial', 'readhsi',
+            'flags', 'ctv', 'angle', 'angleloop',
+            'sendhexfile', 'setmode', 'setspi', 'setspich1mode',
+            'flashtool_rst', 'read_dual_spi_spi', 'read_dual_ab_spi',
+            'readversions', 'download_fw',
+            'help', 'exit',
+            # aliases
+            'ftrst', 'rst', 'reset', 'ver', 'versions',
+            'ser', 'serial', 'hsi', 'fl',
+            'a', 'ang', 'al', 'loop',
+            'fw', 'dlfw', 'shf',
+            'rdss', 'rds', 'rdas', 'rda',
+            'regs', 'r', 'rb',
+            'mode', 'spi', 'ch1mode',
         ]
         
         class Completer:
@@ -363,7 +500,8 @@ class BiSSCommandLine:
     def _show_usage(self, script_name: str) -> None:
         """Display command usage information"""
         print("LENZ BiSS Encoder Command Line Interface\n")
-        print(f"Usage: {script_name} <command> [arguments]\n")
+        prog = os.path.basename(script_name) if script_name else "lenz-flashtool-cli"
+        print(f"Usage: {prog} <command> [arguments]\n")
         print("Available commands:")
         for cmd, (_, desc) in biss_commands.items():
             print(f"  {cmd.ljust(14)} - {desc}")
@@ -375,13 +513,20 @@ class BiSSCommandLine:
         print("                             Example: regb 1 0x10 4 - Reads 4 bytes from BiSS C bank")
         print("\nDevice Information:")
         print("  readserial               - Read encoder serial number, manufacturing date, device ID, and firmware version")
-        print("  readserial_ils           - Read ILS encoder serial number (AB/UART mode, channel 2)")
         print("  readhsi                  - Read hardware status indicator")
+        print("  flags                    - Read and display encoder status flags")
+        print("  ctv                      - Read calibration, temperature and Vcc in a loop")
+        print("  angle [source]           - Read single encoder angle")
+        print("                             Sources: pkt (default), inst, dual")
+        print("                             Example: angle pkt / angle inst / angle dual")
+        print("  angleloop [interval]     - Continuously read encoder angle")
+        print("                             Interval in seconds (default: 0.01)")
+        print("                             Example: angleloop 0.05")
         print("\nAdvanced Operation:")
         print("  hex <addr> <cmd> <data>  - Send custom hexadecimal FlashTool command sequence")
         print("                             Format: <target_addr> <command_byte> <data_bytes...>")
         print("                             Examples: hex 0x0 0x0B 0x10    - Turn off power of first channel")
-        print("                                       hex 0x40 0x82 0x11   - Read 0x40 register, any <data> defines lenght.")
+        print("                                       hex 0x40 0x82 0x11   - Read 0x40 register, any <data> defines length.")
         print("                                       hex 0x40 0x82 0x1111 - Read 0x40 and 0x41 registers, ")
         print("                                                              <data> used only for length.")
         print("  sendhexfile <filename>   - Send a hex file to the encoder")
@@ -390,8 +535,15 @@ class BiSSCommandLine:
         print("                             Example: download_fw app_1.0.10.hex True")
         print("\nFlashTool Configuration:")
         print("  setmode <mode>           - Set FlashTool operation mode")
-        print("                             Modes: spi_spi, ab_uart, spi_uart_irs, ab_spi, default_spi")
-        print("  setspi <channel>         - Select SPI channel (channel1 or channel2)")
+        print("                             Modes: spispi, abuart, spiuartirs, abspi, defaultspi")
+        print("                             (underscored forms also accepted: spi_spi, ab_uart, ...)")
+        print("  setspi <channel>         - Select SPI channel")
+        print("                             Channels: ch1, ch2")
+        print("                             (long forms: channel1, channel2)")
+        print("  setspich1mode <mode>     - Select SPI channel 1 mode")
+        print("                             Modes: lenzbiss, lirssi, lirbiss21b")
+        print("                             (underscored forms also accepted: lenz_biss, lir_ssi, lir_biss_21b")
+        print("  flashtool_rst            - Reset the FlashTool device (reinitialize internal state)")
         print("\nDual Encoder Reading:")
         print("  read_dual_spi_spi <time> [output.csv] - Read data from both encoders via SPI interface")
         print("                             Both encoders use SPI protocol")
@@ -404,6 +556,28 @@ class BiSSCommandLine:
         print("\nSystem Information:")
         print("  readversions             - Read FlashTool firmware and bootloader versions")
         print("                             Shows versions in readable format (e.g., 0.1.0.11)")
+        print("\nGlobal options:")
+        print("  -h, --help               - Show argparse help (options, defaults)")
+        print("  -v, --verbose            - Increase verbosity (repeatable: -vv for debug)")
+        print("  -i, --interactive        - Start in interactive mode")
+        print("  -c, --config <file>      - Batch configuration file (JSON)")
+        print("  --format {text,json,csv} - Output format (default: text)")
+        print("  --log-file <path>        - Log file path (default: biss_cli.log)")
+        print("\nCommand aliases:")
+        print("  ftrst, rst, reset        -> flashtool_rst")
+        print("  ver, versions            -> readversions")
+        print("  ser, serial              -> readserial")
+        print("  hsi                      -> readhsi")
+        print("  fl                       -> flags")
+        print("  a, ang                   -> angle")
+        print("  al, loop                 -> angleloop")
+        print("  rdss, rds                -> read_dual_spi_spi")
+        print("  rdas, rda                -> read_dual_ab_spi")
+        print("  fw, dlfw                 -> download_fw")
+        print("  shf                      -> sendhexfile")
+        print("  regs                     -> registers")
+        print("  r / rb                   -> reg / regb")
+        print("  mode / spi / ch1mode     -> setmode / setspi / setspich1mode")
 
     def execute_command(self, args: List[str]) -> None:
         """
@@ -448,10 +622,6 @@ class BiSSCommandLine:
             readserial
                 - Description: Reads device serial number, date of manufacture, firmware version, and ID.
                 - Usage: readserial
-            
-            readserial_ils
-                - Description: Reads ILS encoder serial information using AB/UART mode on channel 2.
-                - Usage: readserial_ils
 
             readhsi
                 - Description: Reads the hardware status indicator.
@@ -479,6 +649,20 @@ class BiSSCommandLine:
                     channel2     - Select SPI channel 2
                 - Usage: setspi channel1        # selects channel 1 for SPI communication
                         setspi channel2         # selects channel 2 for SPI communication
+
+            setspich1mode <mode>
+                - Description: Sets the SPI channel 1 communication mode.
+                - Available modes:
+                    lenz_biss    - Channel 1: LENZ BiSS protocol (default LENZ encoder)
+                    lir_ssi      - Channel 1: LIR SSI protocol
+                    lir_biss_21b - Channel 1: LIR BiSS 21-bit protocol
+                - Usage: setspich1mode lenz_biss      # LENZ BiSS mode
+                        setspich1mode lir_ssi        # LIR SSI mode
+                        setspich1mode lir_biss_21b   # LIR BiSS 21-bit mode
+            
+            flashtool_rst
+                - Description: Resets the FlashTool device, reinitializing its internal state.
+                - Usage: flashtool_rst
 
             read_dual <time>
                 - Description: Reads data from both encoders simultaneously via SPI interface.
@@ -522,7 +706,7 @@ class BiSSCommandLine:
             self._show_usage(args[0] if args else 'biss')
             sys.exit(1)
 
-        command = args[1].lower()
+        command = self._resolve_command(args[1].lower())
 
         if self.interactive and command in ['read_dual_spi_spi', 'read_dual_ab_spi']:
             if len(args) < 3:
@@ -547,20 +731,22 @@ class BiSSCommandLine:
                 self._send_hex(args)
             elif command == "readserial":
                 self._read_serial()
-            elif command == 'readserial_ils':
-                self._read_serial_ils()
             elif command == "readhsi":
                 self._read_hsi()
             elif command == "angle":
-                self._read_angle_once()
+                self._read_angle_once(args)
             elif command == "angleloop":
-                self._read_angle_loop()
+                self._read_angle_loop(args)
             elif command == "sendhexfile":
                 self._send_hex_file(args)
             elif command == "setmode":
                 self._set_flashtool_mode(args)
             elif command == "setspi":
-                self._set_spi_channel(args)
+                self._set_spi_channel(args)  
+            elif command == "setspich1mode":
+                self._set_spi_ch1_mode(args)
+            elif command == "flashtool_rst":
+                self._flashtool_rst()
             elif command == "read_dual_spi_spi":
                 self._read_dual_encoders_spi_spi(args)
             elif command == "read_dual_ab_spi":
@@ -591,8 +777,31 @@ class BiSSCommandLine:
 
     def _read_registers(self, args: List[str]) -> None:
         """Read all registers in specified bank"""
-        bank = int(args[2]) if len(args) > 2 else 2  # Default to service bank
-        self.ft.biss_read_registers(bank)
+        if len(args) > 2:
+            try:
+                bank = self._parse_hex(args[2])
+            except ValueError as e:
+                print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+                self._print_registers_help()
+                return
+        else:
+            bank = 2
+
+        print(f"\nReading all registers in bank {bank}:")
+        try:
+            self.ft.biss_read_registers(bank)
+        except Exception as e:
+            print(f"{TermColors.Red}Error reading registers: {e}{TermColors.ENDC}")
+
+    def _print_registers_help(self) -> None:
+        """Print help for registers command."""
+        print(f"{TermColors.Yellow}Usage: registers [bank]{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Arguments:{TermColors.ENDC}")
+        print("  [bank]     - BiSS bank number (hex 0xNN or decimal NN, default: 2 = service bank)")
+        print(f"{TermColors.DarkGray}Examples:{TermColors.ENDC}")
+        print("  registers        # read all registers in bank 2 (service bank)")
+        print("  registers 1      # read all registers in bank 1 (BiSS C bank)")
+        print("  registers 0x02   # same as above, hex form")
 
     def _read_flags(self) -> None:
         """Read and display status flags"""
@@ -608,7 +817,7 @@ class BiSSCommandLine:
             print("-" * 40)
             for flag in flags:
                 print(f"  {flag}")
-            print(f"\nCommand State: {cmd_state[0]}")
+            print(f"\nCommand State: {cmd_state[0] if cmd_state else 'N/A'}")
             print("-" * 40)
         
         self._print_formatted(data, text_output)
@@ -620,79 +829,115 @@ class BiSSCommandLine:
     def _read_register(self, args: List[str]) -> None:
         """Read specific register range"""
         if len(args) < 3:
-            raise ValueError("Usage: reg <address> <length>")
+            self._print_reg_help()
+            return
 
-        address = self._parse_hex(args[2])
-        length = self._parse_hex(args[3]) if len(args) > 3 else 1  # default one register
+        try:
+            address = self._parse_hex(args[2])
+            length = self._parse_hex(args[3]) if len(args) > 3 else 1
+        except ValueError as e:
+            print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+            self._print_reg_help()
+            return
 
         print(f"\nReading registers {hex(address)}-{hex(address + length - 1)}:")
-        result = self.ft.biss_addr_read(address, length)
+        try:
+            result = self.ft.biss_addr_read(address, length)
+        except Exception as e:
+            print(f"{TermColors.Red}Error reading registers: {e}{TermColors.ENDC}")
+            return
         self._print_register_data(result)
+
+    def _print_reg_help(self) -> None:
+        """Print help for reg command."""
+        print(f"{TermColors.Yellow}Usage: reg <address> [length]{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Arguments:{TermColors.ENDC}")
+        print("  <address>  - starting register address (hex 0xNN or decimal NN)")
+        print("  [length]   - number of bytes to read (default: 1)")
+        print(f"{TermColors.DarkGray}Examples:{TermColors.ENDC}")
+        print("  reg 0x1A           # read 1 byte from address 0x1A")
+        print("  reg 0x1A 2         # read 2 bytes from addresses 0x1A-0x1B")
+        print("  reg 0x10 4         # read 4 bytes from addresses 0x10-0x13")
+        print(f"{TermColors.DarkGray}Note: uses the current BiSS bank (set via 'setbank' or 'regb').{TermColors.ENDC}")
 
     def _read_bank_register(self, args: List[str]) -> None:
         """Read registers in specific bank"""
         if len(args) < 4:
-            raise ValueError("Usage: regb <bissbank> <address> <length>")
+            self._print_regb_help()
+            return
 
-        bank = self._parse_hex(args[2])
-        address = self._parse_hex(args[3])
-        length = self._parse_hex(args[4]) if len(args) > 4 else 1  # default one register
+        try:
+            bank = self._parse_hex(args[2])
+            address = self._parse_hex(args[3])
+            length = self._parse_hex(args[4]) if len(args) > 4 else 1
+        except ValueError as e:
+            print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+            self._print_regb_help()
+            return
 
         print(f"\nReading bank {bank}, registers {hex(address)}-{hex(address + length - 1)}:")
-        result = self.ft.biss_addr_readb(bank, address, length)
+        try:
+            result = self.ft.biss_addr_readb(bank, address, length)
+        except Exception as e:
+            print(f"{TermColors.Red}Error reading bank registers: {e}{TermColors.ENDC}")
+            return
         self._print_register_data(result)
+
+    def _print_regb_help(self) -> None:
+        """Print help for regb command."""
+        print(f"{TermColors.Yellow}Usage: regb <bank> <address> [length]{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Arguments:{TermColors.ENDC}")
+        print("  <bank>     - BiSS bank number (hex 0xNN or decimal NN)")
+        print("  <address>  - starting register address (hex 0xNN or decimal NN)")
+        print("  [length]   - number of bytes to read (default: 1)")
+        print(f"{TermColors.DarkGray}Examples:{TermColors.ENDC}")
+        print("  regb 1 0x10        # read 1 byte from bank 1, address 0x10")
+        print("  regb 1 0x10 4      # read 4 bytes from bank 1, addresses 0x10-0x13")
+        print("  regb 2 0x00 64     # read 64 bytes from bank 2 (service bank)")
 
     def _send_hex(self, args: List[str]) -> None:
         """Send raw hex command"""
         if len(args) < 5:
-            raise ValueError("Usage: hex <address> <command> <data_hex_str>")
-
-        address = self._parse_hex(args[2])
-        command = self._parse_hex(args[3])
-        hex_str = args[4].replace('0x', '').replace(' ', '')
+            self._print_hex_help()
+            return
 
         try:
+            address = self._parse_hex(args[2])
+            command = self._parse_hex(args[3])
+            hex_str = args[4].replace('0x', '').replace(' ', '')
             data = bytes.fromhex(hex_str)
-        except ValueError:
-            raise ValueError("Invalid hex string format")
+        except ValueError as e:
+            print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+            self._print_hex_help()
+            return
 
         hex_line = generate_hex_line(address, command, data)
-        print("Sending hex line: %s", hex_line)
+        print(f"Sending hex line: {hex_line}")
         self.ft.hex_line_send(hex_line)
 
         if len(data) > 0:
             print("\nTrying to read response data...")
-            response = self.ft.port_read(len(data))  # +1 for checksum
+            response = self.ft.port_read(len(data))
             self._print_register_data(response)
+
+    def _print_hex_help(self) -> None:
+        """Print help for hex command."""
+        print(f"{TermColors.Yellow}Usage: hex <address> <command> <data_hex_str>{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Format:{TermColors.ENDC}")
+        print("  <address>      - target register address (hex or decimal)")
+        print("  <command>      - command byte (hex or decimal)")
+        print("  <data_hex_str> - data bytes as continuous hex string (without spaces or 0x)")
+        print(f"{TermColors.DarkGray}Examples:{TermColors.ENDC}")
+        print("  hex 0x00 0x0B 0x10         # turn off power of first channel")
+        print("  hex 0x40 0x82 0x11         # read 1 byte from register 0x40")
+        print("  hex 0x40 0x82 0x1122       # read 2 bytes from registers 0x40-0x41")
+        print("  hex 0x80 0x91              # generic command with no data")
+        print(f"{TermColors.DarkGray}Note: <data> length defines how many bytes will be read in response.{TermColors.ENDC}")
 
     def _read_serial(self) -> None:
         """Read device serial information"""
         bootloader, serial, mfg_date, program = self.ft.biss_read_snum()
         
-        data = {
-            'serial_number': serial,
-            'firmware_version': program,
-            'manufacture_date': mfg_date,
-            'bootloader_version': bootloader
-        }
-
-        def text_output():
-            print("\nDevice Information:")
-            print("-" * 40)
-            print(f"Serial Number:   \t {serial}")
-            print(f"Firmware Version:\t {program}")
-            print(f"Manufacture Date:\t {mfg_date}")
-            print(f"Bootloader:      \t {bootloader}")
-            print("-" * 40)
-
-        self._print_formatted(data, text_output)
-
-    def _read_serial_ils(self) -> None:
-        """Read device serial information ILS encoder"""
-        self.ft.select_flashtool_mode("ab_uart")
-        self.ft.select_spi_channel("channel2")
-        bootloader, serial, mfg_date, program = self.ft.biss_read_snum()
-
         data = {
             'serial_number': serial,
             'firmware_version': program,
@@ -722,18 +967,77 @@ class BiSSCommandLine:
 
         self._print_formatted(data, text_output)
 
-    def _read_angle_once(self) -> None:
-        """Read angle"""
-        self.ft.biss_read_angle_once()
-
-    def _read_angle_loop(self) -> None:
-        """Read angle in loop"""
+    def _read_angle_once(self, args: List[str] = None) -> None:
+        """Read angle once; optional source: pkt|inst|dual (default: pkt)."""
         degree_sign = "\N{DEGREE SIGN}"
+
+        source = "packet"
+        if args and len(args) > 2:
+            try:
+                source = self._normalize(args[2], ANGLE_SOURCE_ALIASES, "angle source")
+            except ValueError as e:
+                if self.interactive:
+                    print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+                    return
+                raise
+
+        if source == "packet":
+            ans = self.ft.read_instant_angle_packet_enc_SPI()
+            if not ans:
+                print(f"{TermColors.Red}Error: no data from encoder{TermColors.ENDC}")
+                return
+            angle_value, info = ans
+            degrees, minutes, seconds = info[0], info[1], info[2]
+            nE, nW, received_crc, status = info[3], info[4], info[5], info[6]
+            self._std(angle_value, degrees, degree_sign, minutes, seconds)
+            status_color = TermColors.Green if status == "OK" else TermColors.Red
+            print(
+                f"\n{TermColors.DarkGray}"
+                f"nE:{nE:01X} nW:{nW:01X} CRC:{received_crc:02X} "
+                f"({status_color}{status}{TermColors.DarkGray})"
+                f"{TermColors.ENDC}"
+            )
+        elif source == "instant":
+            ans = self.ft.read_instant_angle_enc_SPI()
+            if not ans:
+                print(f"{TermColors.Red}Error: no data from encoder{TermColors.ENDC}")
+                return
+            angle_value, parts = ans
+            self._std(angle_value, parts[0], degree_sign, parts[1], parts[2])
+        elif source == "dual":
+            _, ans = self.ft.read_data_enc1_enc2_SPI(0.01, False)
+            if not ans:
+                print(f"{TermColors.Red}Error: no data from encoder{TermColors.ENDC}")
+                return
+            res = 2**24
+            ang = int(ans[0]) * 360 / res
+            degrs = int(ang)
+            mins = int((ang - degrs) * 60)
+            secs = int((ang - degrs - (mins / 60)) * 3600)
+            self._std(ans[0], degrs, degree_sign, mins, secs)
+
+    def _read_angle_loop(self, args: List[str] = None) -> None:
+        """Continuously read angle; optional interval in seconds (default: 0.01)."""
+        degree_sign = "\N{DEGREE SIGN}"
+        interval = 0.01
+        if args and len(args) > 2:
+            try:
+                interval = float(args[2])
+                if interval <= 0:
+                    raise ValueError("interval must be > 0")
+            except ValueError as e:
+                if self.interactive:
+                    print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+                    return
+                raise
+
         res = 2**24
         while not self.exit_flag:
-            _, ans = self.ft.read_data_enc1_enc2_SPI(0.01, False)
-            if self.exit_flag:  # Check the flag immediately after reading
+            _, ans = self.ft.read_data_enc1_enc2_SPI(interval, False)
+            if self.exit_flag:
                 break
+            if not ans:
+                continue
             ang = int(ans[0]) * 360 / res
             degrs = int(ang)
             mins = int((ang - degrs) * 60)
@@ -755,22 +1059,86 @@ class BiSSCommandLine:
     def _set_flashtool_mode(self, args: List[str]) -> None:
         """Set the FlashTool operation mode"""
         if len(args) < 3:
-            raise ValueError("Usage: setmode <mode>")
+            self._print_setmode_help()
+            return
         
-        mode = args[2].lower()
-        self._validate_mode(mode)
-        self.ft.select_flashtool_mode(mode)  # Прямой вызов
+        try:
+            mode = self._normalize(args[2], MODE_ALIASES, "mode")
+        except ValueError as e:
+            print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+            self._print_setmode_help()
+            return
+
+        self.ft.select_flashtool_mode(mode)
         print(f"{TermColors.Green}FlashTool mode set to: {mode}{TermColors.ENDC}")
+
+    def _print_setmode_help(self) -> None:
+        """Print help for setmode command."""
+        print(f"{TermColors.Yellow}Usage: setmode <mode>{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Available modes:{TermColors.ENDC}")
+        print("  spispi      / spi_spi       - Channel 1: SPI, Channel 2: SPI")
+        print("  abuart      / ab_uart       - Channel 1: AB signal, Channel 2: UART")
+        print("  spiuartirs  / spi_uart_irs  - Channel 1: SPI, Channel 2: UART for IRS encoders")
+        print("  abspi       / ab_spi        - Channel 1: AB signal, Channel 2: SPI")
+        print("  defaultspi  / default_spi   - Channel 1: None, Channel 2: SPI")
+        print(f"{TermColors.DarkGray}Example: setmode spispi{TermColors.ENDC}")
 
     def _set_spi_channel(self, args: List[str]) -> None:
         """Set the SPI channel"""
         if len(args) < 3:
-            raise ValueError("Usage: setspi <channel>")
-        
-        channel = args[2].lower()
-        self._validate_spi_channel(channel)
+            self._print_setspi_help()
+            return
+
+        try:
+            channel = self._normalize(args[2], SPI_CHANNEL_ALIASES, "channel")
+        except ValueError as e:
+            print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+            self._print_setspi_help()
+            return
+
         self.ft.select_spi_channel(channel)
         print(f"{TermColors.Green}SPI channel set to: {channel}{TermColors.ENDC}")
+
+    def _print_setspi_help(self) -> None:
+        """Print help for setspi command."""
+        print(f"{TermColors.Yellow}Usage: setspi <channel>{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Available channels:{TermColors.ENDC}")
+        print("  ch1 / 1 / channel1  - Select SPI channel 1")
+        print("  ch2 / 2 / channel2  - Select SPI channel 2")
+        print(f"{TermColors.DarkGray}Example: setspi ch1{TermColors.ENDC}")
+
+    def _set_spi_ch1_mode(self, args: List[str]) -> None:
+        """Set SPI channel 1 mode."""
+        if len(args) < 3:
+            self._print_setspich1mode_help()
+            return
+
+        try:
+            mode = self._normalize(args[2], SPI_CH1_MODE_ALIASES, "mode")
+        except ValueError as e:
+            print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+            self._print_setspich1mode_help()
+            return
+
+        try:
+            self.ft.select_spi_ch1_mode(mode)
+            print(f"{TermColors.Green}SPI channel 1 mode set to: {mode}{TermColors.ENDC}")
+        except Exception as e:
+            print(f"{TermColors.Red}Error setting SPI channel 1 mode: {e}{TermColors.ENDC}")
+
+    def _print_setspich1mode_help(self) -> None:
+        """Print help for setspich1mode command."""
+        print(f"{TermColors.Yellow}Usage: setspich1mode <mode>{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Available modes:{TermColors.ENDC}")
+        print("  lenzbiss    / lenz_biss     - LENZ BiSS protocol (default LENZ encoder)")
+        print("  lirssi      / lir_ssi       - LIR SSI protocol")
+        print("  lirbiss21b  / lir_biss_21b  - LIR BiSS 21-bit protocol")
+        print(f"{TermColors.DarkGray}Example: setspich1mode lenzbiss{TermColors.ENDC}")
+
+    def _flashtool_rst(self) -> None:
+        """Reset the FlashTool device."""
+        self.ft.flashtool_rst()
+        print(f"{TermColors.Green}FlashTool reset sent{TermColors.ENDC}")
 
     def _read_dual_encoders_spi_spi(self, args: List[str]) -> None:
         """
@@ -1057,24 +1425,6 @@ class BiSSCommandLine:
                 if result['status'] == 'failed':
                     print(f"  - {name}: {result.get('error', 'Unknown error')}")
         print("=" * 60)
-
-    def _validate_mode(self, mode: str) -> bool:
-        """Validate FlashTool mode"""
-        try:
-            ValidModes(mode.lower())
-            return True
-        except ValueError:
-            valid = [m.value for m in ValidModes]
-            raise ValueError(f"Invalid mode. Choose from: {', '.join(valid)}")
-
-    def _validate_spi_channel(self, channel: str) -> bool:
-        """Validate SPI channel"""
-        try:
-            ValidSPIChannels(channel.lower())
-            return True
-        except ValueError:
-            valid = [c.value for c in ValidSPIChannels]
-            raise ValueError(f"Invalid channel. Choose from: {', '.join(valid)}")
 
     @staticmethod
     def _hex_to_version(hex_str: str) -> str:
