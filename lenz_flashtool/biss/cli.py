@@ -54,7 +54,6 @@ import sys
 import logging
 import time
 from typing import List
-from enum import Enum
 from ..flashtool import FlashTool, biss_send_hex, generate_hex_line
 from ..utils.termcolors import TermColors
 from . import (
@@ -160,9 +159,9 @@ class BiSSCommandLine:
         self.interactive = interactive
         self.config_file = config
         self.output_format = 'text'
-        self.ft = (flashtool
-                   .register_cleanup(self._script_cleanup)
-                   .enable_signal_handling())
+        self.ft = flashtool.register_cleanup(self._script_cleanup)
+        if not interactive:
+            self.ft.enable_signal_handling()
         self.logger = logging.getLogger(__name__)
         self.exit_flag = False
 
@@ -202,45 +201,6 @@ class BiSSCommandLine:
                     command = parts[0]
                     args = parts[1:] if len(parts) > 1 else []
 
-                    commands_requiring_args = {
-                        'read_dual_spi_spi': 'read_time_seconds [output_file.csv]',
-                        'read_dual_ab_spi':  'read_time_seconds [output_file.csv]',
-                        'rdss':              'read_time_seconds [output_file.csv]',
-                        'rds':               'read_time_seconds [output_file.csv]',
-                        'rdas':              'read_time_seconds [output_file.csv]',
-                        'rda':               'read_time_seconds [output_file.csv]',
-                        'reg':               '<address> <length>',
-                        'r':                 '<address> <length>',
-                        'regb':              '<bank> <address> <length>',
-                        'rb':                '<bank> <address> <length>',
-                        'hex':               '<address> <command> <data_hex_str>',
-                        'sendhexfile':       '<filename> [pbar]',
-                        'shf':               '<filename> [pbar]',
-                        'download_fw':       '<filename> [pbar]',
-                        'fw':                '<filename> [pbar]',
-                        'dlfw':              '<filename> [pbar]',
-                        'setmode':           '<mode>',
-                        'mode':              '<mode>',
-                        'setspi':            '<channel>',
-                        'spi':               '<channel>',
-                        'setspich1mode':     '<valid_modes>',
-                        'ch1mode':           '<valid_modes>',
-                        'registers':         '[bank]',
-                        'regs':              '[bank]',
-                        'angle':             '[pkt|inst|dual]',
-                        'a':                 '[pkt|inst|dual]',
-                        'ang':               '[pkt|inst|dual]',
-                        'angleloop':         '[interval_seconds]',
-                        'al':                '[interval_seconds]',
-                        'loop':              '[interval_seconds]',
-                    }
-                    if command in commands_requiring_args and not args:
-                        needed_args = commands_requiring_args[command]
-                        print(f"{TermColors.Yellow}Command '{command}' requires arguments: {needed_args}{TermColors.ENDC}")
-                        print(f"{TermColors.DarkGray}Example: {command} {self._get_example_args(command)}{TermColors.ENDC}")
-                        print()
-                        continue
-                    
                     # Execute command
                     self.execute_command(['interactive', command] + args)
                     print()
@@ -542,7 +502,7 @@ class BiSSCommandLine:
         print("                             (long forms: channel1, channel2)")
         print("  setspich1mode <mode>     - Select SPI channel 1 mode")
         print("                             Modes: lenzbiss, lirssi, lirbiss21b")
-        print("                             (underscored forms also accepted: lenz_biss, lir_ssi, lir_biss_21b")
+        print("                             (underscored forms also accepted: lenz_biss, lir_ssi, lir_biss_21b)")
         print("  flashtool_rst            - Reset the FlashTool device (reinitialize internal state)")
         print("\nDual Encoder Reading:")
         print("  read_dual_spi_spi <time> [output.csv] - Read data from both encoders via SPI interface")
@@ -664,13 +624,19 @@ class BiSSCommandLine:
                 - Description: Resets the FlashTool device, reinitializing its internal state.
                 - Usage: flashtool_rst
 
-            read_dual <time>
+            read_dual_spi_spi <time>
                 - Description: Reads data from both encoders simultaneously via SPI interface.
-                - Requires FlashTool mode to be set to 'spi_spi' using setmode command first.
                 - Reads encoder data for specified duration and displays sample values.
                 - Time parameter specifies reading duration in seconds (can be fractional).
-                - Usage: read_dual 0.1          # reads data for 100 milliseconds
-                        read_dual 2.0           # reads data for 2 seconds
+                - Usage: read_dual_spi_spi 0.1        # reads data for 100 milliseconds
+                        read_dual_spi_spi 2.0        # reads data for 2 seconds
+            
+            read_dual_ab_spi <time>
+                - Description: Reads data from AB and SPI encoder simultaneously.
+                - Reads encoder data for specified duration and displays sample values.
+                - Time parameter specifies reading duration in seconds (can be fractional).
+                - Usage: read_dual_ab_spi 0.1         # reads data for 100 milliseconds
+                        read_dual_ab_spi 2.0         # reads data for 2 seconds
 
             readversions
                 - Description: Reads firmware and bootloader versions from the FlashTool device.
@@ -707,12 +673,6 @@ class BiSSCommandLine:
             sys.exit(1)
 
         command = self._resolve_command(args[1].lower())
-
-        if self.interactive and command in ['read_dual_spi_spi', 'read_dual_ab_spi']:
-            if len(args) < 3:
-                print(f"{TermColors.Yellow}Usage: {command} <time_in_seconds> [output_file.csv]{TermColors.ENDC}")
-                print(f"{TermColors.DarkGray}Example: {command} 0.1{TermColors.ENDC}")
-                return
 
         try:
             if command in biss_commands:
@@ -759,10 +719,16 @@ class BiSSCommandLine:
                 raise ValueError(f"Unknown command: {command}")
         except ValueError as e:
             self.logger.error("Invalid input: %s", e)
+            print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+            if self.interactive:
+                return
             self._show_usage(args[0])
             sys.exit(1)
         except Exception as e:
             self.logger.error("Operation failed: %s", e)
+            print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+            if self.interactive:
+                return
             sys.exit(1)
 
     def _send_biss_command(self, command: str) -> None:
@@ -805,7 +771,11 @@ class BiSSCommandLine:
 
     def _read_flags(self) -> None:
         """Read and display status flags"""
-        flags, cmd_state = self.ft.biss_read_flags()
+        try:
+            flags, cmd_state = self.ft.biss_read_flags()
+        except Exception as e:
+            print(f"{TermColors.Red}Error reading flags: {e}{TermColors.ENDC}")
+            return
         
         data = {
             'flags': list(flags),
@@ -936,7 +906,11 @@ class BiSSCommandLine:
 
     def _read_serial(self) -> None:
         """Read device serial information"""
-        bootloader, serial, mfg_date, program = self.ft.biss_read_snum()
+        result = self.ft.biss_read_snum()
+        if not result:
+            print(f"{TermColors.Red}Error: no serial data from encoder{TermColors.ENDC}")
+            return
+        bootloader, serial, mfg_date, program = result
         
         data = {
             'serial_number': serial,
@@ -959,6 +933,9 @@ class BiSSCommandLine:
     def _read_hsi(self) -> None:
         """Read hardware status indicator"""
         hsi = self.ft.biss_read_HSI()
+        if hsi is None:
+            print(f"{TermColors.Red}Error: no HSI data from encoder{TermColors.ENDC}")
+            return
 
         data = {'hsi': hsi}
 
@@ -976,10 +953,9 @@ class BiSSCommandLine:
             try:
                 source = self._normalize(args[2], ANGLE_SOURCE_ALIASES, "angle source")
             except ValueError as e:
-                if self.interactive:
-                    print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
-                    return
-                raise
+                print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+                self._print_angle_help()
+                return
 
         if source == "packet":
             ans = self.ft.read_instant_angle_packet_enc_SPI()
@@ -1016,6 +992,18 @@ class BiSSCommandLine:
             secs = int((ang - degrs - (mins / 60)) * 3600)
             self._std(ans[0], degrs, degree_sign, mins, secs)
 
+    def _print_angle_help(self) -> None:
+        print(f"{TermColors.Yellow}Usage: angle [source]{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Sources:{TermColors.ENDC}")
+        print("  pkt / packet   - packet API with nE/nW/CRC (default)")
+        print("  inst / instant - instantaneous angle only")
+        print("  dual / d       - via read_data_enc1_enc2_SPI")
+        print(f"{TermColors.DarkGray}Examples:{TermColors.ENDC}")
+        print("  angle          # packet source")
+        print("  angle pkt")
+        print("  angle inst")
+        print("  angle dual")
+
     def _read_angle_loop(self, args: List[str] = None) -> None:
         """Continuously read angle; optional interval in seconds (default: 0.01)."""
         degree_sign = "\N{DEGREE SIGN}"
@@ -1026,10 +1014,9 @@ class BiSSCommandLine:
                 if interval <= 0:
                     raise ValueError("interval must be > 0")
             except ValueError as e:
-                if self.interactive:
-                    print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
-                    return
-                raise
+                print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+                self._print_angleloop_help()
+                return
 
         res = 2**24
         while not self.exit_flag:
@@ -1044,17 +1031,40 @@ class BiSSCommandLine:
             secs = int((ang - degrs - (mins / 60)) * 3600)
             self._std(ans[0], degrs, degree_sign, mins, secs)
 
+    def _print_angleloop_help(self) -> None:
+        print(f"{TermColors.Yellow}Usage: angleloop [interval_seconds]{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Arguments:{TermColors.ENDC}")
+        print("  [interval_seconds] - polling interval (default: 0.01)")
+        print(f"{TermColors.DarkGray}Examples:{TermColors.ENDC}")
+        print("  angleloop")
+        print("  angleloop 0.05")
+
     def _send_hex_file(self, args: List[str]) -> None:
         """Send a hex file to the encoder"""
         if len(args) < 3:
-            raise ValueError("Usage: sendhexfile <filename> [pbar]")
+            self._print_sendhexfile_help()
+            return
 
         filename = args[2]
         pbar = len(args) > 3 and args[3].lower() in ('true', '1', 't', 'y', 'yes')
 
         print(f"\nSending hex file: {filename} (Progress bar: {'enabled' if pbar else 'disabled'})")
-        biss_send_hex(filename, pbar=pbar)
+        try:
+            biss_send_hex(filename, pbar=pbar)
+        except Exception as e:
+            print(f"{TermColors.Red}Error sending hex file: {e}{TermColors.ENDC}")
+            return
         print(f"Successfully sent hex file: {filename}")
+
+    def _print_sendhexfile_help(self) -> None:
+        """Print help for sendhexfile command."""
+        print(f"{TermColors.Yellow}Usage: sendhexfile <filename> [pbar]{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Arguments:{TermColors.ENDC}")
+        print("  <filename>  - path to Intel HEX file")
+        print("  [pbar]      - true/false, show progress bar (default: false)")
+        print(f"{TermColors.DarkGray}Examples:{TermColors.ENDC}")
+        print("  sendhexfile SAB039_1_1_4.hex")
+        print("  sendhexfile firmware.hex True")
 
     def _set_flashtool_mode(self, args: List[str]) -> None:
         """Set the FlashTool operation mode"""
@@ -1143,31 +1153,25 @@ class BiSSCommandLine:
     def _read_dual_encoders_spi_spi(self, args: List[str]) -> None:
         """
         Read data from both encoders in SPI-SPI mode.
-        
+
         Both encoders communicate via SPI interface.
-        
+
         Args:
             args: Command line arguments containing read time and optional output file
         """
         if len(args) < 3:
-            if self.interactive:
-                print(f"{TermColors.Yellow}Missing required argument: read_time_seconds{TermColors.ENDC}")
-                print(f"{TermColors.DarkGray}Usage: read_dual_spi_spi <read_time_seconds> [output_file.csv]{TermColors.ENDC}")
-                print(f"{TermColors.DarkGray}Example: read_dual_spi_spi 0.1 data.csv{TermColors.ENDC}")
-                return
-            else:
-                raise ValueError("Usage: read_dual_spi_spi <read_time_seconds> [output_file.csv]")
-        
+            self._print_read_dual_help("read_dual_spi_spi")
+            return
+
         try:
             read_time = float(args[2])
-        except ValueError:
-            if self.interactive:
-                print(f"{TermColors.Red}Error: read_time must be a number{TermColors.ENDC}")
-                print(f"{TermColors.DarkGray}Example: read_dual_spi_spi 0.1{TermColors.ENDC}")
-                return
-            else:
-                raise ValueError("read_time must be a number")
-        
+            if read_time <= 0:
+                raise ValueError("read_time must be > 0")
+        except ValueError as e:
+            print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+            self._print_read_dual_help("read_dual_spi_spi")
+            return
+
         # Optional filename for saving data
         save_file = args[3] if len(args) > 3 else None
 
@@ -1175,43 +1179,79 @@ class BiSSCommandLine:
         self.ft.encoder_power_cycle()
         self.ft.encoder_ch1_power_cycle()
 
-        enc1, enc2 = self.ft.read_data_enc1_enc2_SPI(read_time, status=True)
-        
-        self._print_dual_encoder_results(enc1, enc2, save_file, mode="SPI-SPI", output_format=self.output_format)
+        try:
+            enc1, enc2 = self.ft.read_data_enc1_enc2_SPI(read_time, status=True)
+        except Exception as e:
+            print(f"{TermColors.Red}Error reading encoders: {e}{TermColors.ENDC}")
+            return
+
+        self._print_dual_encoder_results(
+            enc1, enc2, save_file,
+            mode="SPI-SPI",
+            output_format=self.output_format,
+        )
+
+    def _print_read_dual_help(self, mode: str) -> None:
+        """Print help for read_dual_spi_spi / read_dual_ab_spi commands."""
+        print(f"{TermColors.Yellow}Usage: {mode} <read_time_seconds> [output_file.csv]{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Arguments:{TermColors.ENDC}")
+        print("  <read_time_seconds>  - duration in seconds (float, e.g. 0.1, 2.0)")
+        print("  [output_file.csv]    - optional CSV file to save samples")
+        print(f"{TermColors.DarkGray}Examples:{TermColors.ENDC}")
+        print(f"  {mode} 0.1                # read for 100 ms")
+        print(f"  {mode} 2.0 data.csv       # read for 2 s and save to data.csv")
+        print(f"{TermColors.DarkGray}Note: sets FlashTool mode automatically and power-cycles encoders.{TermColors.ENDC}")
 
     def _read_dual_encoders_ab_spi(self, args: List[str]) -> None:
         """
         Read data from both encoders in AB-SPI mode.
-        
+
         Encoder 1 communicates via AB interface, Encoder 2 via SPI.
-        
+
         Args:
             args: Command line arguments containing read time and optional output file
         """
         if len(args) < 3:
-            raise ValueError("Usage: read_dual_ab_spi <read_time_seconds> [output_file.csv]")
-        
+            self._print_read_dual_help("read_dual_ab_spi")
+            return
+
         try:
             read_time = float(args[2])
-        except ValueError:
-            raise ValueError("read_time must be a number")
-        
+            if read_time <= 0:
+                raise ValueError("read_time must be > 0")
+        except ValueError as e:
+            print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
+            self._print_read_dual_help("read_dual_ab_spi")
+            return
+
         # Optional filename for saving data
         save_file = args[3] if len(args) > 3 else None
-        
+
         self.ft.select_flashtool_mode('ab_spi')
         self.ft.encoder_power_cycle()
         self.ft.encoder_ch1_power_cycle()
 
-        enc1, enc2 = self.ft.read_data_enc1_AB_enc2_SPI(read_time, status=True)
-        
-        self._print_dual_encoder_results(enc1, enc2, save_file, mode="AB-SPI", output_format=self.output_format)
+        try:
+            enc1, enc2 = self.ft.read_data_enc1_AB_enc2_SPI(read_time, status=True)
+        except Exception as e:
+            print(f"{TermColors.Red}Error reading encoders: {e}{TermColors.ENDC}")
+            return
+
+        self._print_dual_encoder_results(
+            enc1, enc2, save_file,
+            mode="AB-SPI",
+            output_format=self.output_format,
+        )
 
     def _read_versions(self) -> None:
         """Read FlashTool firmware and bootloader versions"""
-        self.ft.reboot_to_bl()
-        fw_ver_hex, bl_ver_hex = self.ft.read_fw_bl_ver()
-        self.ft.reboot_to_fw()
+        try:
+            self.ft.reboot_to_bl()
+            fw_ver_hex, bl_ver_hex = self.ft.read_fw_bl_ver()
+            self.ft.reboot_to_fw()
+        except Exception as e:
+            print(f"{TermColors.Red}Error reading versions: {e}{TermColors.ENDC}")
+            return
         
         fw_ver_readable = self._hex_to_version(fw_ver_hex)
         bl_ver_readable = self._hex_to_version(bl_ver_hex)
@@ -1233,32 +1273,33 @@ class BiSSCommandLine:
         self._print_formatted(data, text_output)
 
     def _download_fw_to_ft(self, args: List[str]) -> None:
-        """
-        Download firmware to FlashTool device.
-        
-        This method:
-        1. Reboots to bootloader
-        2. Downloads the firmware hex file
-        3. Reboots back to firmware mode
-        
-        Args:
-            args: Command line arguments containing [filename, pbar]
-            
-        Example:
-            download_fw app_1.0.10.hex True
-            download_fw firmware.hex false
-        """
+        """Download firmware to FlashTool device."""
         if len(args) < 3:
-            raise ValueError("Usage: download_fw <filename> [pbar]")
-        
+            self._print_download_fw_help()
+            return
+
         filename = args[2]
         pbar = len(args) > 3 and args[3].lower() in ('true', '1', 't', 'y', 'yes')
 
         self.ft.reboot_to_bl()
         print(f"\nSending hex file: {filename} (Progress bar: {'enabled' if pbar else 'disabled'})")
-        self.ft.download_fw_to_ft(filename, max_retries=3, pbar=pbar)
-        print(f"Firmware downloaded successfully: {filename}")
-        self.ft.reboot_to_fw()
+        try:
+            self.ft.download_fw_to_ft(filename, max_retries=3, pbar=pbar)
+            print(f"Firmware downloaded successfully: {filename}")
+        except Exception as e:
+            print(f"{TermColors.Red}Firmware download failed: {e}{TermColors.ENDC}")
+        finally:
+            self.ft.reboot_to_fw()
+
+    def _print_download_fw_help(self) -> None:
+        """Print help for download_fw command."""
+        print(f"{TermColors.Yellow}Usage: download_fw <filename> [pbar]{TermColors.ENDC}")
+        print(f"{TermColors.DarkGray}Arguments:{TermColors.ENDC}")
+        print("  <filename>  - path to FlashTool firmware HEX file")
+        print("  [pbar]      - true/false, show progress bar (default: false)")
+        print(f"{TermColors.DarkGray}Examples:{TermColors.ENDC}")
+        print("  download_fw app_1.0.10.hex True")
+        print("  download_fw firmware.hex false")
 
     @staticmethod
     def _print_dual_encoder_results(enc1, enc2, save_file: str = None, mode: str = "", output_format: str = 'text') -> None:
@@ -1341,13 +1382,15 @@ class BiSSCommandLine:
             raise ValueError(f"Invalid number format: {value}")
 
     def _print_register_data(self, data) -> None:
-        """Format register data for display"""
-        print(f'{TermColors.Green}{data}{TermColors.ENDC}')
-        if hasattr(data, 'tolist'):  # numpy array
+        """Format register data as hexdump (8 bytes per row: hex | dec)."""
+        if hasattr(data, 'tolist'):
             data = data.tolist()
 
-        for i, byte in enumerate(data):
-            print(f"{TermColors.DarkGray}{i:04X}: {byte:02X} ({byte:3d}){TermColors.ENDC}")
+        for offset in range(0, len(data), 8):
+            chunk = data[offset:offset + 8]
+            hex_part = ' '.join(f"{b:02X}" for b in chunk)
+            dec_part = ' '.join(f"{b:3d}" for b in chunk)
+            print(f"{TermColors.DarkGray}{offset:04X}: {hex_part:<24}  | {dec_part}{TermColors.ENDC}")
 
     def execute_batch(self, config_file: str) -> None:
         """Execute multiple commands from JSON configuration file"""
