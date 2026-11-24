@@ -368,11 +368,11 @@ class DataStreamingMixin:
             degrees = int(angle_deg)
             remaining = angle_deg - degrees
             minutes = int(remaining * 60)
-            seconds = int((remaining * 60 - minutes) * 60)
+            seconds = round((remaining * 60 - minutes) * 60, 2)
 
             logger.info(
                 f"[{ans_angle}]: {degrees:>3}{DEGREE_SIGN} "
-                f"{minutes:02d}' {seconds:02d}\""
+                f"{minutes:02d}' {seconds:05.2f}\""
             )
 
             return ans_angle, [degrees, minutes, seconds]
@@ -464,14 +464,14 @@ class DataStreamingMixin:
             degrees = int(angle_deg)
             remaining = angle_deg - degrees
             minutes = int(remaining * 60)
-            seconds = int((remaining * 60 - minutes) * 60)
+            seconds = round((remaining * 60 - minutes) * 60, 2)
 
             crc_ok = (expected_crc == received_crc)
             status = "OK" if crc_ok else "ERR"
 
             logger.info(
                 f"[{angle_value}]: {degrees:>3}{DEGREE_SIGN} "
-                f"{minutes:02d}' {seconds:02d}\"\n"
+                f"{minutes:02d}' {seconds:05.2f}\"\n"
                 f"nE:{nE:01X} nW:{nW:01X} CRC:{received_crc:02X} "
                 f"({status})"
             )

@@ -844,7 +844,7 @@ class BiSSIOMixin:
         degree_sign = "\N{DEGREE SIGN}"
         try:
             ans, _ = self.read_data_enc1_AB_enc2_SPI(0.01, False)
-            if not ans.any() or len(ans) < 1:
+            if len(ans) < 1:
                 logger.error("No valid data received from encoder")
                 return
 
@@ -862,7 +862,6 @@ class BiSSIOMixin:
                       f"{minutes:02d}' "
                       f"{seconds:05.2f}\"")
 
-            sys.stdout.write("\r" + output + " " * 10)
             logger.debug(output)
 
         except ValueError as e:
