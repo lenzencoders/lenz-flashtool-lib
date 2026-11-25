@@ -1014,6 +1014,7 @@ class BiSSIOMixin:
             INFO: Done uploading!
         """
         max_retries = 3
+        retry_delay = 0.2
 
         first_idx = start_page - 1
         last_idx = min(end_page - 1, len(pages) - 1)
@@ -1031,42 +1032,75 @@ class BiSSIOMixin:
             retry_count = 0
             success = False
 
+            
             while retry_count < max_retries and not success:
-                # Every page writes its own CRC and page number
-                self.biss_set_bank(BiSSBank.BISS_BANK_SERV)
-                self.biss_write_word(BiSSBank.CRC32_REG_INDEX, crc)
-                self.biss_write_word(BiSSBank.PAGENUM_REG_INDEX, page_num)
-                time.sleep(0.01)
+                try:
+                    # Every page writes its own CRC and page number
+                    self.biss_set_bank(BiSSBank.BISS_BANK_SERV)
+                    self.biss_write_word(BiSSBank.CRC32_REG_INDEX, crc)
+                    self.biss_write_word(BiSSBank.PAGENUM_REG_INDEX, page_num)
+                    time.sleep(0.01)
 
-                # Send each bank in the page
-                for bank_idx, bank_data in enumerate(page_data):
-                    bank_num = bank_idx + BiSSBank.BISS_USERBANK_START
-                    if bank_num == 5:
-                        self.biss_set_bank(bank_num)
-                    time.sleep(0.05)
+                    # Send each bank in the page
+                    for bank_idx, bank_data in enumerate(page_data):
+                        bank_num = bank_idx + BiSSBank.BISS_USERBANK_START
+                        if bank_num == 5:
+                            self.biss_set_bank(bank_num)
+                        time.sleep(0.05)
 
-                    if pbar:
-                        percent_complete(bank_idx, BiSSBank.BANKS_PER_PAGE - 1,
-                                        title=f"Sending Page {page_idx}")
-                    hex_line = generate_hex_line(0, UartCmd.HEX_WRITE_CMD, bank_data)
-                    self.hex_line_send(hex_line)
+                        if pbar:
+                            percent_complete(bank_idx, BiSSBank.BANKS_PER_PAGE - 1, title=f"Sending Page {page_idx}",)
 
-                time.sleep(0.3)
-                if difmode:
-                    self.biss_write_command('savediftable')
-                else:
-                    self.biss_write_command('load2k')
+                        hex_line = generate_hex_line(0, UartCmd.HEX_WRITE_CMD, bank_data)
+                        self.hex_line_send(hex_line)
 
-                time.sleep(1.25)
+                    time.sleep(0.3)
 
-                if not self.biss_read_flags_flashCRC()[0]:
+                    if difmode:
+                        self.biss_write_command('savediftable')
+                    else:
+                        self.biss_write_command('load2k')
+
+                    time.sleep(1.25)
+
+                    crc_error = bool(self.biss_read_flags_flashCRC()[0])
+
+                except FlashToolError as exc:
+                    retry_count += 1
+
+                    logger.error("Page %s transmission error (attempt %s/%s): %s", page_idx, retry_count, max_retries, exc,)
+
+                    if retry_count >= max_retries:
+                        logger.critical("Failed to send page %s after %s attempts", page_idx, max_retries,)
+                        raise FlashToolError(
+                            f"Failed to send page {page_idx} "
+                            f"after {max_retries} attempts: {exc}"
+                        ) from exc
+
+                    try:
+                        self._port.reset_input_buffer()
+                    except Exception as reset_exc:
+                        logger.debug("reset_input_buffer failed between retries: %s", reset_exc,)
+
+                    time.sleep(retry_delay)
+                    continue
+
+                if not crc_error:
                     success = True
                     logger.debug("Page %s sent successfully", page_idx)
+
                 else:
                     retry_count += 1
-                    logger.error("Page %s CRC mismatch! Retry %s/%s", page_idx, retry_count, max_retries)
-                    if retry_count == max_retries:
-                        logger.critical("Failed to send page %s after %s attempts", page_idx, max_retries)
-                        raise FlashToolError(f"Failed to send page {page_idx} after {max_retries} attempts")
+
+                    logger.error("Page %s CRC mismatch! Retry %s/%s", page_idx, retry_count, max_retries,)
+
+                    if retry_count >= max_retries:
+                        logger.critical("Failed to send page %s after %s attempts",page_idx, max_retries,)
+                        raise FlashToolError(
+                            f"Failed to send page {page_idx} "
+                            f"after {max_retries} attempts"
+                        )
+
+                    time.sleep(retry_delay)
 
         logger.info(" Done uploading!")
