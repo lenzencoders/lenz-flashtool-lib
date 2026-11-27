@@ -1,0 +1,159 @@
+#compdef lenz-flashtool-cli lenz_flashtool.biss.cli
+#
+# zsh completion for lenz-flashtool-cli. See completions/README.md for install.
+#
+# NOTE: the per-argument hints below use _message, which zsh only DISPLAYS when
+# a `format` style is set for the messages/descriptions tags. If hints don't
+# appear, add this to ~/.zshrc (see README.md):
+#     zstyle ':completion:*' format '%B%d%b'
+#     zstyle ':completion:*:descriptions' format '%U%B%d%b%u'
+#     zstyle ':completion:*:messages' format '%F{yellow}%d%f'
+#     zstyle ':completion:*' group-name ''
+#
+# Reload when change:                                                                                                                                                                                                                                                                                ─╯
+#     unfunction _lenz-flashtool-cli 2>/dev/null
+#     autoload -Uz _lenz-flashtool-cli
+#     compdef _lenz-flashtool-cli lenz-flashtool-cli
+
+_lenz-flashtool-cli() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    local -a commands
+    commands=(
+        'non:No operation; device stays in current state'
+        'load2k:Load 2 KB from registers into device memory'
+        'staybl:Force device to stay in bootloader mode'
+        'run:Exit bootloader and run the main application'
+        'zeroing:Zero the position counter at current position'
+        'set_dir_cw:Set direction sensing to clockwise'
+        'set_dir_ccw:Set direction sensing to counterclockwise'
+        'saveflash:Commit current configuration to flash'
+        'ampcalibrate:Run amplitude calibration routine'
+        'cleardiflut:Clear differential lookup table (DifLUT)'
+        'setfastbiss:Enable high-speed BiSS communication mode'
+        'setdefbiss:Revert to standard BiSS communication mode'
+        'reboot:Reboot the device'
+        'reboot2bl:Reboot directly into bootloader mode'
+        'loadseriald:Write serial number and mfg date to OTP (permanent)'
+        'loaddevid:Program DevID into OTP (permanent)'
+        'loadkey:Store key in secure flash memory'
+        'savediftable:Save differential compensation table to memory'
+        'unlockflash:Enable write access to protected flash'
+        'unlocksetup:Disable configuration write protection'
+        'enarccal:Enable arc-based calibration mode'
+        'clearcalflash:Erase HSI and differential calibration data'
+        'registers:Read all registers in a bank (default: service bank 2)'
+        'reg:Read register(s) at a hex address with byte length'
+        'regb:Read register(s) in a bank at a hex address'
+        'readserial:Read serial number, mfg date, device ID, firmware version'
+        'readhsi:Read hardware status indicator'
+        'flags:Read and display status flags'
+        'ctv:Read calibration, temperature and Vcc data'
+        'angle:Read the angle once'
+        'angleloop:Read the angle continuously'
+        'dump:Decode fixed registers (0x40-0x7F); optional bank 0-37'
+        'hex:Send a custom hex FlashTool command sequence'
+        'sendhexfile:Send a hex file to the encoder'
+    )
+
+    _arguments -C \
+        '1: :->command' \
+        '*:: :->args' && return 0
+
+    case $state in
+        command)
+            _describe -t commands 'lenz-flashtool-cli command' commands
+            ;;
+        args)
+            # $words[1] is the subcommand, $CURRENT counts from subcommand
+            # $CURRENT == 2 means first arg after subcommand, 3 = second arg, etc.
+            #
+            # Shared value lists, sourced from the library:
+            #   banks    -> BiSSBank banking constants (registers.py)
+            #   regaddrs -> fixed-address registers 0x40-0x7F (_FIXED_REG_MAP in cli.py)
+            local -a banks regaddrs
+            banks=(
+                '0:calibration page'
+                '2:service bank (default)'
+                '5:user bank (range 5-37)'
+                {6..37}
+            )
+            regaddrs=(
+                '0x40:BankSelect'      '0x41:EDSBankNum'   '0x42:ProfileID'
+                '0x44:SerialNum'       '0x48:CMD'          '0x4A:EncoderState'
+                '0x4C:EncoderTemp'     '0x4D:ExternalTemp' '0x4E:Vcc'
+                '0x50:FirstHarm'       '0x54:OutCfg (rev/resolution)'
+                '0x58:SignalAmp'       '0x5A:CalPhase'     '0x5B:ExcPhase'
+                '0x5C:CalParams'       '0x61:CommandState' '0x62:ErrorFlags'
+                '0x6C:BootloaderVer'   '0x70:ProgramVer'   '0x74:ProdDate'
+                '0x78:DevID'           '0x7E:MfrID'
+            )
+            case $line[1] in
+                sendhexfile)
+                    case $CURRENT in
+                        2) _files -g '*.hex' ;;
+                        3) _values 'progress bar' 'true' 'false' ;;
+                        *) _message 'no more arguments' ;;
+                    esac
+                    ;;
+                registers)
+                    [[ $CURRENT -eq 2 ]] && _describe -t banks 'bank number (default: service bank 2)' banks
+                    ;;
+                dump)
+                    [[ $CURRENT -eq 2 ]] && _describe -t banks 'bank number 0-37 (omit for fixed registers 0x40-0x7F)' banks
+                    ;;
+                reg)
+                    case $CURRENT in
+                        2) _describe -t regaddr 'fixed-address register (hex)' regaddrs ;;
+                        3) _message 'length in bytes (e.g. 2)' ;;
+                    esac
+                    ;;
+                regb)
+                    case $CURRENT in
+                        2) _describe -t banks 'BiSS bank number' banks ;;
+                        3) _message 'address in bank (hex, e.g. 0x10)' ;;
+                        4) _message 'length in bytes (e.g. 4)' ;;
+                    esac
+                    ;;
+                hex)
+                    # FlashTool command bytes (UartCmd in lenz_flashtool/flashtool/uart.py).
+                    # For many commands the address/data only define the data length.
+                    local -a hexcmds
+                    hexcmds=(
+                        '0x01:select FlashTool mode (0=SPI/SPI,1=AB/UART,2=SPI/UART/IRS,3=AB/SPI,4=default)'
+                        '0x08:power OFF encoder channel 1'
+                        '0x09:power ON encoder channel 1'
+                        '0x0A:select SPI channel (data 0x00=ch1, 0x01=ch2)'
+                        '0x0B:power OFF encoder channel 2'
+                        '0x0C:power ON encoder channel 2'
+                        '0x0D:write data to encoder register(s) (addr=reg, data=value)'
+                        '0x0E:select channel 1 SPI mode (0=LENZ-BiSS,1=LiR-SSI,2=LiR-BiSS-21b)'
+                        '0x0F:IRS encoder write/read'
+                        '0x10:read instant angle, one encoder (SPI)'
+                        '0x11:select current-sensor mode (data 0x00=disable, 0x01=enable; black FlashTool)'
+                        '0x12:read channel 2 current'
+                        '0x13:read instant angle packet (SPI; adds status + CRC)'
+                        '0x78:read both encoders (ch1 AB, ch2 SPI)'
+                        '0x79:read both encoders via AB over UART'
+                        '0x80:stream both encoders, 30 frames/packet (SPI)'
+                        '0x82:generic read register(s) (addr=reg; data length = bytes to read)'
+                        '0x83:non-volatile reset of the FlashTool'
+                        '0xFF:reboot FlashTool to bootloader'
+                    )
+                    case $CURRENT in
+                        2) _describe -t regaddr 'target register/address (hex; ignored by many commands)' regaddrs ;;
+                        3) _describe -t hexcmd 'FlashTool command byte' hexcmds ;;
+                        4) _message 'data bytes (hex; value to write, or sets read length, e.g. AA55FF)' ;;
+                    esac
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+if [[ $funcstack[1] = _lenz-flashtool-cli ]]; then
+    _lenz-flashtool-cli "$@"
+else
+    compdef _lenz-flashtool-cli lenz-flashtool-cli
+fi

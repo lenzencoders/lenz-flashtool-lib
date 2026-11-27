@@ -67,6 +67,11 @@ with FlashTool(port_description_prefixes=('XR21V')) as ft:
 ### Note on Naming
 The package is installed as `lenz-flashtool` (with a hyphen), but imported in Python as `lenz_flashtool` (with an underscore) due to Python’s naming conventions.
 
+### Shell completion (zsh)
+A zsh completion for the `lenz-flashtool-cli` command ships in
+[`completions/`](completions/). See [`completions/README.md`](completions/README.md)
+for installation and the `zstyle` settings required to display argument hints.
+
 ## Documentation
 
 For detailed API documentation, examples, and usage instructions, visit the [LENZ FlashTool Documentation](https://flashtool.lenzencoders.com).

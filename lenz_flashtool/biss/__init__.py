@@ -28,6 +28,19 @@ from .crc import biss_crc6_calc
 from .registers import (
     BiSSBank,
 )
+from .encoder_state import (
+    SetupLock,
+    FlashLock,
+    Zeroing,
+    ClearDifLUT,
+    AmplitudeCalibration,
+    ArcCalibration,
+    Flashing,
+    ClearDifFlash,
+    FlashDifLUT,
+    UserBankState,
+    ENCODER_STATE_FIELDS,
+)
 
 __all__ = [
     'BISS_COMMANDSTATE',
@@ -38,5 +51,17 @@ __all__ = [
 
     'biss_crc6_calc',
 
-    'BiSSBank'
+    'BiSSBank',
+
+    'SetupLock',
+    'FlashLock',
+    'Zeroing',
+    'ClearDifLUT',
+    'AmplitudeCalibration',
+    'ArcCalibration',
+    'Flashing',
+    'ClearDifFlash',
+    'FlashDifLUT',
+    'UserBankState',
+    'ENCODER_STATE_FIELDS',
 ]

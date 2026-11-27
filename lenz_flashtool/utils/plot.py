@@ -28,7 +28,7 @@ Author:
 import os
 from typing import Optional, Union, Sequence
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 
 def plot(
@@ -51,6 +51,7 @@ def plot(
         >>> data = [1, 3, 2, 4, 3]
         >>> plot(data, 'trend.png', 'plots')  # Saves to 'plots/trend.png'
     """
+    import matplotlib.pyplot as plt
     plt.ion()
     plt.figure()
     plt.plot(data)
@@ -91,6 +92,7 @@ def plot2(
     Returns:
         None: Displays interactive comparison plot
     """
+    import matplotlib.pyplot as plt
     plt.ion()
     plt.figure()
     plt.plot(a, label=label1)

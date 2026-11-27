@@ -88,14 +88,8 @@ def biss_send_hex(file_path: str, nonce: Optional[int] = None, pbar: Optional[An
     logger.info("Nonce: %s", nonce)
 
     ft.biss_set_bank(BiSSBank.BISS_BANK_SERV)
-    ft.biss_set_bank(BiSSBank.BISS_BANK_SERV)
-
     ft.biss_write_word(BiSSBank.NONCE_REG_INDEX, nonce)
-    ft.biss_write_word(BiSSBank.CRC32_REG_INDEX, crc_values[0])
-    ft.biss_write_word(BiSSBank.PAGENUM_REG_INDEX, page_numbers[0])
-    # print(page_numbers[0])
-    # ft.biss_read_registers(BISS_BANK_SERV)
-    # print('=====')
+
     ft.send_data_to_device(pages, crc_values, page_numbers, START_PAGE, END_PAGE, pbar)
     ft.biss_read_flags()
     sleep(0.2)
