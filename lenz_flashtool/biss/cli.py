@@ -32,12 +32,12 @@ Example Commands:
     >>> python -m lenz_flashtool.biss.cli readhsi
     >>> python -m lenz_flashtool.biss.cli flags
     >>> python -m lenz_flashtool.biss.cli sendhexfile SAB039_1_1_4.hex
-    >>> python -m lenz_flashtool.biss.cli setmode spi_spi
+    >>> python -m lenz_flashtool.biss.cli setmode spi-spi
     >>> python -m lenz_flashtool.biss.cli setspi channel1
-    >>> python -m lenz_flashtool.biss.cli setspich1mode lenz_biss
-    >>> python -m lenz_flashtool.biss.cli flashtool_rst
-    >>> python -m lenz_flashtool.biss.cli read_dual_spi_spi 0.1
-    >>> python -m lenz_flashtool.biss.cli read_dual_ab_spi 2.0 data.csv
+    >>> python -m lenz_flashtool.biss.cli setspich1mode lenz-biss
+    >>> python -m lenz_flashtool.biss.cli flashtool-rst
+    >>> python -m lenz_flashtool.biss.cli read-dual-spi-spi 0.1
+    >>> python -m lenz_flashtool.biss.cli read-dual-ab-spi 2.0 data.csv
     >>> python -m lenz_flashtool.biss.cli readversions
 """
 #
@@ -69,15 +69,15 @@ except ImportError:
 
 MODE_ALIASES = {
     "spispi":      "spi_spi",
-    "spi_spi":     "spi_spi",
+    "spi-spi":     "spi_spi",
     "abuart":      "ab_uart",
-    "ab_uart":     "ab_uart",
+    "ab-uart":     "ab_uart",
     "spiuartirs":  "spi_uart_irs",
-    "spi_uart_irs":"spi_uart_irs",
+    "spi-uart-irs":"spi_uart_irs",
     "abspi":       "ab_spi",
-    "ab_spi":      "ab_spi",
+    "ab-spi":      "ab_spi",
     "defaultspi":  "default_spi",
-    "default_spi": "default_spi",
+    "default-spi": "default_spi",
 }
 
 SPI_CHANNEL_ALIASES = {
@@ -91,11 +91,11 @@ SPI_CHANNEL_ALIASES = {
 
 SPI_CH1_MODE_ALIASES = {
     "lenzbiss":     "lenz_biss",
-    "lenz_biss":    "lenz_biss",
+    "lenz-biss":    "lenz_biss",
     "lirssi":       "lir_ssi",
-    "lir_ssi":      "lir_ssi",
+    "lir-ssi":      "lir_ssi",
     "lirbiss21b":   "lir_biss_21b",
-    "lir_biss_21b": "lir_biss_21b",
+    "lir-biss-21b": "lir_biss_21b",
 }
 
 ANGLE_SOURCE_ALIASES = {
@@ -112,6 +112,7 @@ COMMAND_ALIASES = {
     "ftrst":            "flashtool_rst",
     "rst":              "flashtool_rst",
     "reset":            "flashtool_rst",
+    "flashtool-rst":    "flashtool_rst",
     # Versions
     "ver":              "readversions",
     "versions":         "readversions",
@@ -134,6 +135,8 @@ COMMAND_ALIASES = {
     "rds":              "read_dual_spi_spi",
     "rdas":             "read_dual_ab_spi",
     "rda":              "read_dual_ab_spi",
+    "read-dual-spi-spi": "read_dual_spi_spi",
+    "read-dual-ab-spi":  "read_dual_ab_spi",
     # Registers
     "regs":             "registers",
     "r":                "reg",
@@ -237,8 +240,8 @@ class BiSSCommandLine:
     def _get_example_args(self, command: str) -> str:
         """Get example arguments for a command"""
         examples = {
-            'read_dual_spi_spi': '0.1 data.csv',
-            'read_dual_ab_spi':  '0.5 output.csv',
+            'read-dual-spi-spi': '0.1 data.csv',
+            'read-dual-ab-spi':  '0.5 output.csv',
             'rdss':              '0.1 data.csv',
             'rds':               '0.1 data.csv',
             'rdas':              '0.5 output.csv',
@@ -267,6 +270,11 @@ class BiSSCommandLine:
             'angleloop':         '0.05',
             'al':                '0.05',
             'loop':              '0.05',
+            'flashtool-rst':     '',
+            'flashtool_rst':     '',
+            'ftrst':             '',
+            'rst':               '',
+            'reset':             '',
         }
         return examples.get(command, '<required arguments>')
 
@@ -288,7 +296,8 @@ class BiSSCommandLine:
             'registers', 'reg', 'regb', 'hex', 'readserial', 'readhsi',
             'flags', 'ctv', 'angle', 'angleloop',
             'sendhexfile', 'setmode', 'setspi', 'setspich1mode',
-            'flashtool_rst', 'read_dual_spi_spi', 'read_dual_ab_spi',
+            'flashtool_rst', 'flashtool-rst', 'read-dual-spi-spi', 'read-dual-ab-spi',
+            'read_dual_spi_spi', 'read_dual_ab_spi',
             'readversions', 'download_fw',
             'help', 'exit',
             # aliases
@@ -496,23 +505,24 @@ class BiSSCommandLine:
         print("\nFlashTool Configuration:")
         print("  setmode <mode>           - Set FlashTool operation mode")
         print("                             Modes: spispi, abuart, spiuartirs, abspi, defaultspi")
-        print("                             (underscored forms also accepted: spi_spi, ab_uart, ...)")
+        print("                             (hyphenated forms also accepted: spi-spi, ab-uart, ...)")
         print("  setspi <channel>         - Select SPI channel")
         print("                             Channels: ch1, ch2")
         print("                             (long forms: channel1, channel2)")
         print("  setspich1mode <mode>     - Select SPI channel 1 mode")
         print("                             Modes: lenzbiss, lirssi, lirbiss21b")
-        print("                             (underscored forms also accepted: lenz_biss, lir_ssi, lir_biss_21b)")
-        print("  flashtool_rst            - Reset the FlashTool device (reinitialize internal state)")
+        print("                             (hyphenated forms also accepted: lenz-biss, lir-ssi, lir-biss-21b)")
+        print("  flashtool-rst            - Reset the FlashTool device (reinitialize internal state)")
         print("\nDual Encoder Reading:")
-        print("  read_dual_spi_spi <time> [output.csv] - Read data from both encoders via SPI interface")
+        print("  read-dual-spi-spi <time> [output.csv] - Read data from both encoders via SPI interface")
         print("                             Both encoders use SPI protocol")
-        print("                             Example: read_dual_spi_spi 0.1           - Read for 100ms")
-        print("                                      read_dual_spi_spi 2.0 data.csv   - Save to CSV file")
-        print("  read_dual_ab_spi <time> [output.csv]  - Read data from encoders in mixed mode")
+        print("                             Example: read-dual-spi-spi 0.1           - Read for 100ms")
+        print("                                      read-dual-spi-spi 2.0 data.csv   - Save to CSV file")
+        print("  read-dual-ab-spi <time> [output.csv]  - Read data from encoders in mixed mode")
         print("                             Encoder 1: AB interface, Encoder 2: SPI interface")
-        print("                             Example: read_dual_ab_spi 0.5             - Read for 500ms")
-        print("                                      read_dual_ab_spi 3.0 data.csv    - Save to CSV file")
+        print("                             Example: read-dual-ab-spi 0.5             - Read for 500ms")
+        print("                                      read-dual-ab-spi 3.0 data.csv    - Save to CSV file")
+        print("                             (legacy underscored forms read_dual_spi_spi / read_dual_ab_spi still accepted)")
         print("\nSystem Information:")
         print("  readversions             - Read FlashTool firmware and bootloader versions")
         print("                             Shows versions in readable format (e.g., 0.1.0.11)")
@@ -594,13 +604,13 @@ class BiSSCommandLine:
             setmode <mode>
                 - Description: Sets the FlashTool communication mode for both channels.
                 - Available modes:
-                    spi_spi      - Channel 1: SPI, Channel 2: SPI
-                    ab_uart      - Channel 1: AB signal, Channel 2: UART
-                    spi_uart_irs - Channel 1: SPI, Channel 2: UART for IRS encoders
-                    ab_spi       - Channel 1: AB signal, Channel 2: SPI
-                    default_spi  - Default mode: Channel 1: None, Channel 2: SPI
-                - Usage: setmode spi_spi        # sets SPI on both channels
-                        setmode ab_uart         # sets AB on channel1, UART on channel2
+                    spi-spi      - Channel 1: SPI, Channel 2: SPI
+                    ab-uart      - Channel 1: AB signal, Channel 2: UART
+                    spi-uart-irs - Channel 1: SPI, Channel 2: UART for IRS encoders
+                    ab-spi       - Channel 1: AB signal, Channel 2: SPI
+                    default-spi  - Default mode: Channel 1: None, Channel 2: SPI
+                - Usage: setmode spi-spi        # sets SPI on both channels
+                        setmode ab-uart         # sets AB on channel1, UART on channel2
 
             setspi <channel>
                 - Description: Selects which SPI channel to use for communication.
@@ -613,30 +623,30 @@ class BiSSCommandLine:
             setspich1mode <mode>
                 - Description: Sets the SPI channel 1 communication mode.
                 - Available modes:
-                    lenz_biss    - Channel 1: LENZ BiSS protocol (default LENZ encoder)
-                    lir_ssi      - Channel 1: LIR SSI protocol
-                    lir_biss_21b - Channel 1: LIR BiSS 21-bit protocol
-                - Usage: setspich1mode lenz_biss      # LENZ BiSS mode
-                        setspich1mode lir_ssi        # LIR SSI mode
-                        setspich1mode lir_biss_21b   # LIR BiSS 21-bit mode
+                    lenz-biss    - Channel 1: LENZ BiSS protocol (default LENZ encoder)
+                    lir-ssi      - Channel 1: LIR SSI protocol
+                    lir-biss-21b - Channel 1: LIR BiSS 21-bit protocol
+                - Usage: setspich1mode lenz-biss      # LENZ BiSS mode
+                        setspich1mode lir-ssi        # LIR SSI mode
+                        setspich1mode lir-biss-21b   # LIR BiSS 21-bit mode
             
-            flashtool_rst
+            flashtool-rst
                 - Description: Resets the FlashTool device, reinitializing its internal state.
-                - Usage: flashtool_rst
+                - Usage: flashtool-rst
 
-            read_dual_spi_spi <time>
+            read-dual-spi-spi <time>
                 - Description: Reads data from both encoders simultaneously via SPI interface.
                 - Reads encoder data for specified duration and displays sample values.
                 - Time parameter specifies reading duration in seconds (can be fractional).
-                - Usage: read_dual_spi_spi 0.1        # reads data for 100 milliseconds
-                        read_dual_spi_spi 2.0        # reads data for 2 seconds
-            
-            read_dual_ab_spi <time>
+                - Usage: read-dual-spi-spi 0.1        # reads data for 100 milliseconds
+                        read-dual-spi-spi 2.0        # reads data for 2 seconds
+
+            read-dual-ab-spi <time>
                 - Description: Reads data from AB and SPI encoder simultaneously.
                 - Reads encoder data for specified duration and displays sample values.
                 - Time parameter specifies reading duration in seconds (can be fractional).
-                - Usage: read_dual_ab_spi 0.1         # reads data for 100 milliseconds
-                        read_dual_ab_spi 2.0         # reads data for 2 seconds
+                - Usage: read-dual-ab-spi 0.1         # reads data for 100 milliseconds
+                        read-dual-ab-spi 2.0         # reads data for 2 seconds
 
             readversions
                 - Description: Reads firmware and bootloader versions from the FlashTool device.
@@ -1086,11 +1096,11 @@ class BiSSCommandLine:
         """Print help for setmode command."""
         print(f"{TermColors.Yellow}Usage: setmode <mode>{TermColors.ENDC}")
         print(f"{TermColors.DarkGray}Available modes:{TermColors.ENDC}")
-        print("  spispi      / spi_spi       - Channel 1: SPI, Channel 2: SPI")
-        print("  abuart      / ab_uart       - Channel 1: AB signal, Channel 2: UART")
-        print("  spiuartirs  / spi_uart_irs  - Channel 1: SPI, Channel 2: UART for IRS encoders")
-        print("  abspi       / ab_spi        - Channel 1: AB signal, Channel 2: SPI")
-        print("  defaultspi  / default_spi   - Channel 1: None, Channel 2: SPI")
+        print("  spispi      / spi-spi       - Channel 1: SPI, Channel 2: SPI")
+        print("  abuart      / ab-uart       - Channel 1: AB signal, Channel 2: UART")
+        print("  spiuartirs  / spi-uart-irs  - Channel 1: SPI, Channel 2: UART for IRS encoders")
+        print("  abspi       / ab-spi        - Channel 1: AB signal, Channel 2: SPI")
+        print("  defaultspi  / default-spi   - Channel 1: None, Channel 2: SPI")
         print(f"{TermColors.DarkGray}Example: setmode spispi{TermColors.ENDC}")
 
     def _set_spi_channel(self, args: List[str]) -> None:
@@ -1140,9 +1150,9 @@ class BiSSCommandLine:
         """Print help for setspich1mode command."""
         print(f"{TermColors.Yellow}Usage: setspich1mode <mode>{TermColors.ENDC}")
         print(f"{TermColors.DarkGray}Available modes:{TermColors.ENDC}")
-        print("  lenzbiss    / lenz_biss     - LENZ BiSS protocol (default LENZ encoder)")
-        print("  lirssi      / lir_ssi       - LIR SSI protocol")
-        print("  lirbiss21b  / lir_biss_21b  - LIR BiSS 21-bit protocol")
+        print("  lenzbiss    / lenz-biss     - LENZ BiSS protocol (default LENZ encoder)")
+        print("  lirssi      / lir-ssi       - LIR SSI protocol")
+        print("  lirbiss21b  / lir-biss-21b  - LIR BiSS 21-bit protocol")
         print(f"{TermColors.DarkGray}Example: setspich1mode lenzbiss{TermColors.ENDC}")
 
     def _flashtool_rst(self) -> None:
@@ -1160,7 +1170,7 @@ class BiSSCommandLine:
             args: Command line arguments containing read time and optional output file
         """
         if len(args) < 3:
-            self._print_read_dual_help("read_dual_spi_spi")
+            self._print_read_dual_help("read-dual-spi-spi")
             return
 
         try:
@@ -1169,7 +1179,7 @@ class BiSSCommandLine:
                 raise ValueError("read_time must be > 0")
         except ValueError as e:
             print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
-            self._print_read_dual_help("read_dual_spi_spi")
+            self._print_read_dual_help("read-dual-spi-spi")
             return
 
         # Optional filename for saving data
@@ -1192,7 +1202,7 @@ class BiSSCommandLine:
         )
 
     def _print_read_dual_help(self, mode: str) -> None:
-        """Print help for read_dual_spi_spi / read_dual_ab_spi commands."""
+        """Print help for read-dual-spi-spi / read-dual-ab-spi commands."""
         print(f"{TermColors.Yellow}Usage: {mode} <read_time_seconds> [output_file.csv]{TermColors.ENDC}")
         print(f"{TermColors.DarkGray}Arguments:{TermColors.ENDC}")
         print("  <read_time_seconds>  - duration in seconds (float, e.g. 0.1, 2.0)")
@@ -1212,7 +1222,7 @@ class BiSSCommandLine:
             args: Command line arguments containing read time and optional output file
         """
         if len(args) < 3:
-            self._print_read_dual_help("read_dual_ab_spi")
+            self._print_read_dual_help("read-dual-ab-spi")
             return
 
         try:
@@ -1221,7 +1231,7 @@ class BiSSCommandLine:
                 raise ValueError("read_time must be > 0")
         except ValueError as e:
             print(f"{TermColors.Red}Error: {e}{TermColors.ENDC}")
-            self._print_read_dual_help("read_dual_ab_spi")
+            self._print_read_dual_help("read-dual-ab-spi")
             return
 
         # Optional filename for saving data
@@ -1311,16 +1321,20 @@ class BiSSCommandLine:
             enc2: Data from encoder 2
             save_file: Optional CSV filename to save data
             mode: Mode description for display (e.g., "SPI-SPI" or "AB-SPI")
+            output_format: 'text' | 'json' | 'csv'
         """
         # Save to file if requested (without index column)
         if save_file:
             import csv
-            with open(save_file, 'w', newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow(['Encoder1', 'Encoder2'])  # Header without index
-                for e1, e2 in zip(enc1, enc2):
-                    writer.writerow([int(e1), int(e2)])
-            print(f"\n{TermColors.Green}Data saved to: {save_file}{TermColors.ENDC}")
+            try:
+                with open(save_file, 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(['Encoder1', 'Encoder2'])  # Header without index
+                    for e1, e2 in zip(enc1, enc2):
+                        writer.writerow([int(e1), int(e2)])
+                print(f"\n{TermColors.Green}Data saved to: {save_file}{TermColors.ENDC}")
+            except OSError as e:
+                print(f"{TermColors.Red}Error saving to '{save_file}': {e}{TermColors.ENDC}")
         
         # Convert numpy ints to Python ints for clean display
         enc1_clean = [int(x) for x in enc1]
